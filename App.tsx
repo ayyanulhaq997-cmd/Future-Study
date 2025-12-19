@@ -20,6 +20,7 @@ import QualificationCatalogue from './components/QualificationCatalogue';
 import QualificationLeadForm from './components/QualificationLeadForm';
 import HandoverView from './components/HandoverView';
 import RegistrationForm from './components/RegistrationForm';
+import AIChat from './components/AIChat';
 import { ViewState, User } from './types';
 import { api } from './services/apiService';
 
@@ -163,6 +164,8 @@ const App: React.FC = () => {
             </div>
           </div>
         </footer>
+
+        <AIChat />
       </div>
     </div>
   );
@@ -179,7 +182,7 @@ const EnquirySection = () => (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
       <div>
         <h2 className="text-4xl md:text-6xl font-display font-bold mb-8">Direct <span className="text-primary-400">Council</span> Links.</h2>
-        <p className="text-slate-400 text-lg leading-relaxed mb-10">We handle the complexity of global test registration so you can focus on your scores.</p>
+        <p className="text-slate-400 text-lg leading-relaxed mb-10"> we handle the complexity of global test registration so you can focus on your scores.</p>
         <div className="space-y-6">
           <FeatureItem icon="🎖️" title="Certified Partners" desc="Official agents for PTE and IELTS boards." />
           <FeatureItem icon="🌍" title="24/7 Support" desc="Assisting students across 12 timezones." />

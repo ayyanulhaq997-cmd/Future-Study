@@ -1,8 +1,20 @@
 
-import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
+import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 
 // Initialize Gemini API client correctly using the environment variable.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+
+const SYSTEM_INSTRUCTION = `You are the Nexus EDU Assistant, a highly sophisticated AI consultant for the Nexus EDU platform.
+Your goal is to help students, agents, and trainers navigate the platform.
+
+Key Platform Information:
+1. Exam Vouchers: We sell vouchers for PTE Academic, IELTS, TOEFL iBT, Duolingo, LanguageCert, Oxford ELLT, and Password Skills Plus.
+2. Full Registration: For PTE and others, we offer a full-service registration where we handle the booking for the student.
+3. LMS Academy: We provide Mastery Courses and Mock Tests. Students get instant results for Reading/Listening and human grading for Writing/Speaking.
+4. Qualifications: We offer OTHM Level 3 Diplomas and other professional certifications.
+5. Roles: Students (customers), Agents (resellers with tiered discounts), and Trainers (graders).
+
+Be professional, concise, and helpful. Use a polite and encouraging tone.`;
 
 export class GeminiService {
   /**
@@ -14,11 +26,9 @@ export class GeminiService {
         model: 'gemini-3-flash-preview',
         contents: prompt,
         config: {
-          systemInstruction: 'You are Nexus AI, a highly sophisticated AI assistant. You are helpful, professional, and creative.',
+          systemInstruction: SYSTEM_INSTRUCTION,
         }
       });
-      
-      // Access the .text property directly (not as a method).
       return response.text;
     } catch (error) {
       console.error("Error generating text:", error);
@@ -27,27 +37,23 @@ export class GeminiService {
   }
 
   /**
-   * Analyzes an image with a text prompt.
+   * Starts a streaming content generation for the chat interface.
    */
-  static async analyzeImage(prompt: string, base64Image: string) {
+  static async *chatStream(message: string, history: { role: 'user' | 'model', parts: { text: string }[] }[] = []) {
     try {
-      const response: GenerateContentResponse = await ai.models.generateContent({
+      const response = await ai.models.generateContentStream({
         model: 'gemini-3-flash-preview',
-        contents: {
-          parts: [
-            { text: prompt },
-            {
-              inlineData: {
-                data: base64Image,
-                mimeType: 'image/jpeg'
-              }
-            }
-          ]
-        }
+        contents: [...history, { role: 'user', parts: [{ text: message }] }],
+        config: {
+          systemInstruction: SYSTEM_INSTRUCTION,
+        },
       });
-      return response.text;
+
+      for await (const chunk of response) {
+        yield chunk.text;
+      }
     } catch (error) {
-      console.error("Error analyzing image:", error);
+      console.error("Error in chat stream:", error);
       throw error;
     }
   }
@@ -69,7 +75,6 @@ export class GeminiService {
         }
       });
 
-      // Safely extract the image data from the response parts.
       const candidate = response.candidates?.[0];
       if (candidate?.content?.parts) {
         for (const part of candidate.content.parts) {
