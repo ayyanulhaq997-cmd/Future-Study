@@ -1,0 +1,8 @@
+{
+  "name": "study Abroad",
+  "description": "A cutting-edge, world-class AI-powered creative platform showcasing Gemini integration, image generation, and intelligent chat.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
