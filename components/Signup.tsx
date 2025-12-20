@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/apiService';
-import { ViewState } from '../types';
 
 interface SignupProps {
   onSuccess: (email: string) => void;
@@ -10,7 +9,6 @@ interface SignupProps {
 
 const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
   const [formData, setFormData] = useState({
-    name: '',
     email: '',
     password: '',
     confirmPassword: ''
@@ -31,26 +29,36 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords don't match");
+      setError("Passwords do not match");
       return;
     }
     if (passwordStrength < 50) {
-      setError("Password is too weak");
+      setError("Your password does not meet the minimum security requirements");
       return;
     }
 
     setLoading(true);
     setError('');
     try {
-      await api.signup(formData.name, formData.email);
+      await api.signup(formData.email);
       onSuccess(formData.email);
     } catch (err: any) {
-      setError(err.message || 'Signup failed. Please try again.');
+      setError(err.message || 'Registration failed. Please try a different email.');
       setLoading(false);
     }
   };
 
-  const strengthColor = passwordStrength <= 25 ? 'bg-red-500' : passwordStrength <= 50 ? 'bg-orange-500' : passwordStrength <= 75 ? 'bg-yellow-500' : 'bg-emerald-500';
+  const strengthColor = 
+    passwordStrength <= 25 ? 'bg-red-500' : 
+    passwordStrength <= 50 ? 'bg-orange-500' : 
+    passwordStrength <= 75 ? 'bg-yellow-500' : 
+    'bg-emerald-500';
+
+  const strengthLabel = 
+    passwordStrength <= 25 ? 'Critical' : 
+    passwordStrength <= 50 ? 'Vulnerable' : 
+    passwordStrength <= 75 ? 'Strong' : 
+    'Unbreakable';
 
   return (
     <div className="max-w-md mx-auto py-12 px-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -62,42 +70,34 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
         <div className="text-center mb-10">
           <div className="w-16 h-16 bg-primary-600/10 rounded-2xl mx-auto flex items-center justify-center mb-4 shadow-lg border border-primary-500/20">
             <svg className="w-8 h-8 text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A10.003 10.003 0 0012 21a10.003 10.003 0 008.384-4.562l.054.09c1.744-2.772 2.753-6.054 2.753-9.571 0-5.523-4.477-10-10-10S2 6.477 2 12c0 1.933.55 3.738 1.5 5.264" />
             </svg>
           </div>
-          <h2 className="text-3xl font-display font-bold">Create <span className="text-primary-400">Account</span></h2>
-          <p className="text-slate-500 text-sm mt-2">Join Nexus EDU and start your global journey.</p>
+          <h2 className="text-3xl font-display font-bold">New <span className="text-primary-400">Identity</span></h2>
+          <p className="text-slate-500 text-sm mt-2">Initialize your Nexus Academy credentials.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
             <div>
-              <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Full Name</label>
-              <input 
-                type="text"
-                required
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Alex Smith"
-                className="w-full bg-slate-900 border border-slate-700 rounded-xl p-4 text-slate-200 outline-none focus:border-primary-500 transition-all"
-              />
-            </div>
-            <div>
-              <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Email Address</label>
+              <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Primary Email</label>
               <input 
                 type="email"
                 required
+                autoComplete="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="alex@example.com"
+                placeholder="alex@nexus-edu.com"
                 className="w-full bg-slate-900 border border-slate-700 rounded-xl p-4 text-slate-200 outline-none focus:border-primary-500 transition-all"
               />
             </div>
+            
             <div>
-              <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Password</label>
+              <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Secret Password</label>
               <input 
                 type="password"
                 required
+                autoComplete="new-password"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 placeholder="••••••••"
@@ -109,17 +109,19 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
                 ))}
               </div>
               <p className="text-[10px] text-slate-500 mt-2 flex justify-between uppercase font-bold tracking-tighter">
-                <span>Security Level</span>
-                <span className={passwordStrength >= 50 ? 'text-primary-400' : 'text-slate-600'}>
-                  {passwordStrength <= 25 ? 'Weak' : passwordStrength <= 50 ? 'Fair' : passwordStrength <= 75 ? 'Good' : 'Exceptional'}
+                <span>Entropy Analysis</span>
+                <span className={passwordStrength >= 50 ? (passwordStrength >= 75 ? 'text-emerald-400' : 'text-primary-400') : 'text-red-400'}>
+                  {strengthLabel}
                 </span>
               </p>
             </div>
+
             <div>
-              <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Confirm Password</label>
+              <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Verify Password</label>
               <input 
                 type="password"
                 required
+                autoComplete="new-password"
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                 placeholder="••••••••"
@@ -128,23 +130,23 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
             </div>
           </div>
 
-          {error && <p className="text-red-400 text-xs font-bold bg-red-500/10 p-4 rounded-xl border border-red-500/20 animate-pulse">{error}</p>}
+          {error && <div className="text-red-400 text-[11px] font-bold bg-red-500/10 p-3 rounded-lg border border-red-500/20 text-center">{error}</div>}
 
           <button 
             type="submit"
             disabled={loading}
-            className="w-full py-5 bg-primary-600 hover:bg-primary-500 text-white font-bold rounded-2xl transition-all flex items-center justify-center gap-3 shadow-xl shadow-primary-500/20 active:scale-95 disabled:opacity-50"
+            className="w-full py-4 bg-primary-600 hover:bg-primary-500 text-white font-bold rounded-2xl transition-all flex items-center justify-center gap-3 shadow-xl shadow-primary-500/20 active:scale-95 disabled:opacity-50"
           >
             {loading ? (
               <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
             ) : (
-              'Create My Account'
+              'Create My Terminal'
             )}
           </button>
 
-          <div className="relative py-4">
+          <div className="relative py-2">
             <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-800"></div></div>
-            <div className="relative flex justify-center text-[10px] font-black uppercase tracking-widest"><span className="bg-[#020617] px-4 text-slate-600">Or continue with</span></div>
+            <div className="relative flex justify-center text-[10px] font-black uppercase tracking-widest"><span className="bg-[#020617] px-4 text-slate-600">Or use Social ID</span></div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -158,14 +160,14 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
              </button>
           </div>
 
-          <p className="text-center text-sm text-slate-500 mt-8">
-            Already have an account?{' '}
+          <p className="text-center text-sm text-slate-500 mt-6">
+            Already have an identity?{' '}
             <button 
               type="button" 
               onClick={onNavigateToLogin}
               className="text-primary-400 font-bold hover:underline"
             >
-              Sign In
+              Log In
             </button>
           </p>
         </form>

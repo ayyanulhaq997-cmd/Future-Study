@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Hero from './components/Hero';
 import Features from './components/Features';
 import VoucherStore from './components/VoucherStore';
@@ -7,6 +7,7 @@ import AdminDashboard from './components/AdminDashboard';
 import AgentDashboard from './components/AgentDashboard';
 import CustomerDashboard from './components/CustomerDashboard';
 import TrainerDashboard from './components/TrainerDashboard';
+import FinanceDashboard from './components/FinanceDashboard';
 import Login from './components/Login';
 import Signup from './components/Signup';
 import VerificationPending from './components/VerificationPending';
@@ -14,6 +15,7 @@ import CheckoutProcess from './components/CheckoutProcess';
 import SuccessScreen from './components/SuccessScreen';
 import EnquiryForm from './components/EnquiryForm';
 import APIDocs from './components/APIDocs';
+import AdminDeveloperGuide from './components/AdminDeveloperGuide';
 import LMSDashboard from './components/LMSDashboard';
 import LMSCoursePlayer from './components/LMSCoursePlayer';
 import LMSPracticeTest from './components/LMSPracticeTest';
@@ -23,6 +25,10 @@ import QualificationLeadForm from './components/QualificationLeadForm';
 import HandoverView from './components/HandoverView';
 import RegistrationForm from './components/RegistrationForm';
 import AIChat from './components/AIChat';
+import Navbar from './components/Navbar';
+import CountryGuide from './components/CountryGuide';
+import UniversityProfile from './components/UniversityProfile';
+import SearchOverlay from './components/SearchOverlay';
 import { ViewState, User } from './types';
 import { api } from './services/apiService';
 
@@ -30,24 +36,38 @@ const App: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const [view, setView] = useState<ViewState>({ type: 'store' });
   const [user, setUser] = useState<User | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   const navigateTo = (newView: ViewState) => {
     setView(newView);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
   const handleLogin = (u: User) => {
     setUser(u);
-    if (u.role === 'Admin') navigateTo({ type: 'admin' });
-    else if (u.role === 'Agent') navigateTo({ type: 'agent' });
-    else if (u.role === 'Trainer') navigateTo({ type: 'trainer' });
-    else navigateTo({ type: 'lms-dashboard' }); 
+    const redirectMap: Record<string, ViewState> = {
+      'Admin': { type: 'admin' },
+      'Agent': { type: 'agent' },
+      'Trainer': { type: 'trainer' },
+      'Finance': { type: 'finance' },
+    };
+    navigateTo(redirectMap[u.role] || { type: 'lms-dashboard' });
   };
 
   const handleLogout = () => {
@@ -56,140 +76,117 @@ const App: React.FC = () => {
     navigateTo({ type: 'store' });
   };
 
+  const mainContent = useMemo(() => {
+    switch (view.type) {
+      case 'store':
+        return (
+          <div className="page-transition">
+            <Hero onStart={() => document.getElementById('inventory')?.scrollIntoView({ behavior: 'smooth' })} />
+            <div id="inventory">
+              <VoucherStore 
+                onCheckout={(pid, qty) => !user ? navigateTo({type:'login'}) : setView({type:'checkout', productId: pid, quantity: qty})} 
+                onBook={(pid) => !user ? navigateTo({type:'login'}) : setView({type:'book-test', productId: pid})}
+              />
+            </div>
+            <Features />
+            <EnquirySection />
+          </div>
+        );
+      case 'login': return <div className="page-transition"><Login onLogin={handleLogin} onNavigateToSignup={() => navigateTo({ type: 'signup' })} /></div>;
+      case 'signup': return <div className="page-transition"><Signup onNavigateToLogin={() => navigateTo({ type: 'login' })} onSuccess={(email) => navigateTo({ type: 'verification-pending', email })} /></div>;
+      case 'verification-pending': return <div className="page-transition"><VerificationPending email={view.email} onVerified={() => { alert('Identity Verified'); navigateTo({ type: 'login' }); }} /></div>;
+      case 'admin': return user?.role === 'Admin' ? <div className="page-transition"><AdminDashboard /></div> : null;
+      case 'trainer': return user?.role === 'Trainer' ? <div className="page-transition"><TrainerDashboard user={user} /></div> : null;
+      case 'agent': return user?.role === 'Agent' ? <div className="page-transition"><AgentDashboard user={user} onBuy={(pid, qty) => setView({ type: 'checkout', productId: pid, quantity: qty })} /></div> : null;
+      case 'finance': return user?.role === 'Finance' ? <div className="page-transition"><FinanceDashboard user={user} /></div> : null;
+      case 'customer': return user?.role === 'Customer' ? <div className="page-transition"><CustomerDashboard user={user} /></div> : null;
+      case 'api-docs': return <div className="page-transition"><APIDocs /></div>;
+      case 'admin-guide': return <div className="page-transition"><AdminDeveloperGuide /></div>;
+      case 'course-catalogue': return <div className="page-transition"><CourseCatalogue onCheckout={(pid, qty) => !user ? navigateTo({type:'login'}) : setView({type:'checkout', productId: pid, quantity: qty})} /></div>;
+      case 'qualifications': return <div className="page-transition"><QualificationCatalogue onApply={(id) => navigateTo({ type: 'qualification-apply', qualificationId: id })} /></div>;
+      case 'qualification-apply': return <div className="page-transition"><QualificationLeadForm qualificationId={view.qualificationId} onCancel={() => navigateTo({ type: 'qualifications' })} onSuccess={(l) => navigateTo({ type: 'store' })} /></div>;
+      case 'lms-dashboard': return <div className="page-transition"><LMSDashboard onNavigate={navigateTo} /></div>;
+      case 'lms-course-player': return <div className="page-transition"><LMSCoursePlayer courseId={view.courseId} onNavigate={navigateTo} /></div>;
+      case 'lms-practice-test': return <div className="page-transition"><LMSPracticeTest testId={view.testId} onNavigate={navigateTo} /></div>;
+      case 'success': return <div className="page-transition"><SuccessScreen orderId={view.orderId} onClose={() => navigateTo({type:'store'})} /></div>;
+      case 'checkout': return <div className="page-transition"><CheckoutProcess productId={view.productId} quantity={view.quantity} onSuccess={(oid) => navigateTo({ type: 'success', orderId: oid })} onCancel={() => navigateTo({type:'store'})} /></div>;
+      case 'book-test': return <div className="page-transition"><RegistrationForm productId={view.productId} onCancel={() => navigateTo({type:'store'})} onSuccess={(b) => { alert(`Booking Confirmed: ${b.trackingRef}`); navigateTo({type:'store'}); }} /></div>;
+      case 'country-guide': return <div className="page-transition"><CountryGuide slug={view.slug} onViewUniversity={(uslug) => navigateTo({ type: 'university', slug: uslug })} /></div>;
+      case 'university': return <div className="page-transition"><UniversityProfile slug={view.slug} /></div>;
+      case 'handover': return <div className="page-transition"><HandoverView /></div>;
+      default: return null;
+    }
+  }, [view, user]);
+
   return (
-    <div className="min-h-screen bg-[#020617] text-slate-50 selection:bg-primary-500/30">
-      <div className="fixed inset-0 gradient-bg pointer-events-none z-0" />
+    <div className="min-h-screen bg-slate-950 text-slate-50 selection:bg-primary-500/30">
+      <div className="fixed inset-0 gradient-bg pointer-events-none z-0" aria-hidden="true" />
       
       <div className="relative z-10 flex flex-col min-h-screen">
-        <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled ? 'py-3 glass border-b border-slate-800/50 shadow-2xl' : 'py-6 bg-transparent'
-        }`}>
-          <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
-            <div className="flex items-center gap-2 cursor-pointer group" onClick={() => navigateTo({ type: 'store' })}>
-              <div className="w-10 h-10 bg-gradient-to-br from-primary-400 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
-              </div>
-              <span className="text-xl font-display font-bold tracking-tight">NEXUS<span className="text-primary-400">EDU</span></span>
-            </div>
-            
-            <div className="hidden md:flex items-center gap-1 bg-slate-900/40 p-1 rounded-2xl border border-slate-800/50 backdrop-blur-md">
-              <NavBtn active={view.type === 'store'} onClick={() => navigateTo({ type: 'store' })}>Exams</NavBtn>
-              <NavBtn active={view.type === 'course-catalogue'} onClick={() => navigateTo({ type: 'course-catalogue' })}>LMS</NavBtn>
-              <NavBtn active={view.type === 'qualifications'} onClick={() => navigateTo({ type: 'qualifications' })}>Degrees</NavBtn>
-              <NavBtn active={view.type === 'lms-dashboard'} onClick={() => navigateTo({ type: 'lms-dashboard' })}>Academy</NavBtn>
-            </div>
-
-            <div className="flex items-center gap-4">
-              {user ? (
-                <div className="flex items-center gap-4">
-                  <button 
-                    onClick={() => {
-                      if(user.role === 'Admin') navigateTo({type:'admin'});
-                      else if(user.role === 'Agent') navigateTo({type:'agent'});
-                      else if(user.role === 'Trainer') navigateTo({type:'trainer'});
-                      else navigateTo({type:'customer'});
-                    }} 
-                    className="text-sm font-bold text-primary-400 hover:text-white transition-colors"
-                  >
-                    Dashboard
-                  </button>
-                  <button onClick={handleLogout} className="bg-red-500/10 hover:bg-red-500/20 text-red-400 px-4 py-2 rounded-xl text-xs font-bold transition-all border border-red-500/20">
-                    Exit
-                  </button>
-                </div>
-              ) : (
-                <button onClick={() => navigateTo({ type: 'login' })} className="bg-primary-600 hover:bg-primary-500 text-white px-6 py-2.5 rounded-xl transition-all shadow-lg font-bold text-sm">
-                  Sign In
-                </button>
-              )}
-            </div>
-          </div>
-        </nav>
+        <Navbar 
+          view={view} 
+          user={user} 
+          scrolled={scrolled} 
+          onNavigate={navigateTo} 
+          onLogout={handleLogout} 
+          onOpenSearch={() => setSearchOpen(true)}
+        />
         
         <main className="flex-grow pt-24">
-          {view.type === 'store' && (
-            <>
-              <Hero onStart={() => document.getElementById('inventory')?.scrollIntoView({ behavior: 'smooth' })} />
-              <div id="inventory">
-                <VoucherStore 
-                  onCheckout={(pid, qty) => !user ? navigateTo({type:'login'}) : setView({type:'checkout', productId: pid, quantity: qty})} 
-                  onBook={(pid) => !user ? navigateTo({type:'login'}) : setView({type:'book-test', productId: pid})}
-                />
-              </div>
-              <Features />
-              <EnquirySection />
-            </>
-          )}
-
-          {view.type === 'login' && <Login onLogin={handleLogin} onNavigateToSignup={() => navigateTo({ type: 'signup' })} />}
-          {view.type === 'signup' && <Signup onNavigateToLogin={() => navigateTo({ type: 'login' })} onSuccess={(email) => navigateTo({ type: 'verification-pending', email })} />}
-          {view.type === 'verification-pending' && <VerificationPending email={view.email} onVerified={() => { alert('Verification Successful!'); navigateTo({ type: 'login' }); }} />}
-          {view.type === 'admin' && user?.role === 'Admin' && <AdminDashboard />}
-          {view.type === 'trainer' && user?.role === 'Trainer' && <TrainerDashboard user={user} />}
-          {view.type === 'api-docs' && <APIDocs />}
-          {view.type === 'course-catalogue' && <CourseCatalogue onCheckout={(pid, qty) => !user ? navigateTo({type:'login'}) : setView({type:'checkout', productId: pid, quantity: qty})} />}
-          {view.type === 'qualifications' && <QualificationCatalogue onApply={(id) => navigateTo({ type: 'qualification-apply', qualificationId: id })} />}
-          {view.type === 'qualification-apply' && <QualificationLeadForm qualificationId={view.qualificationId} onCancel={() => navigateTo({ type: 'qualifications' })} onSuccess={(l) => { alert(`Success! Tracking ID: ${l.trackingId}`); navigateTo({ type: 'store' }); }} />}
-          {view.type === 'lms-dashboard' && <LMSDashboard onNavigate={navigateTo} />}
-          {view.type === 'lms-course-player' && <LMSCoursePlayer courseId={view.courseId} onNavigate={navigateTo} />}
-          {view.type === 'lms-practice-test' && <LMSPracticeTest testId={view.testId} onNavigate={navigateTo} />}
-          {view.type === 'agent' && user?.role === 'Agent' && <AgentDashboard user={user} onBuy={(pid, qty) => setView({ type: 'checkout', productId: pid, quantity: qty })} />}
-          {view.type === 'customer' && user?.role === 'Customer' && <CustomerDashboard user={user} />}
-          {view.type === 'success' && <SuccessScreen orderId={view.orderId} onClose={() => navigateTo({type:'store'})} />}
-          {view.type === 'checkout' && <CheckoutProcess productId={view.productId} quantity={view.quantity} onSuccess={(oid) => navigateTo({ type: 'success', orderId: oid })} onCancel={() => navigateTo({type:'store'})} />}
-          {view.type === 'book-test' && <RegistrationForm productId={view.productId} onCancel={() => navigateTo({type:'store'})} onSuccess={(b) => { alert(`Test Registration Submitted! Tracking Ref: ${b.trackingRef}`); navigateTo({type:'store'}); }} />}
-          {view.type === 'handover' && <HandoverView />}
+          {mainContent}
         </main>
 
-        <footer className="py-12 border-t border-slate-900 bg-[#020617]">
-          <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-12">
+        <footer className="py-20 border-t border-slate-900 bg-slate-950 relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary-500/50 to-transparent" />
+          <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-16">
             <div className="col-span-2">
-              <h3 className="text-xl font-display font-bold mb-4">NEXUS<span className="text-primary-400">EDU</span></h3>
-              <p className="text-slate-500 max-w-sm text-sm leading-relaxed">
-                Enterprise infrastructure for global exam registration. Verified partner for Pearson, IDP, and British Council.
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary-500/20">
+                   <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                </div>
+                <h3 className="text-2xl font-display font-bold tracking-tighter">NEXUS<span className="text-primary-400">EDU</span></h3>
+              </div>
+              <p className="text-slate-500 max-w-sm text-sm leading-relaxed mb-8">
+                Enterprise infrastructure for international exam procurement. Verified partner for PTE Academic, IELTS, and global academic boards.
               </p>
             </div>
             <div>
-              <h4 className="text-[10px] font-black uppercase text-slate-500 mb-6 tracking-widest">Platform</h4>
-              <ul className="space-y-4 text-sm text-slate-400">
-                <li><button onClick={() => navigateTo({type:'store'})} className="hover:text-primary-400">Voucher Vault</button></li>
-                <li><button onClick={() => navigateTo({type:'course-catalogue'})} className="hover:text-primary-400">Academy</button></li>
-                <li><button onClick={() => navigateTo({type:'qualifications'})} className="hover:text-primary-400">Degrees</button></li>
+              <h4 className="text-[10px] font-black uppercase text-slate-500 mb-8 tracking-widest">Global Destinations</h4>
+              <ul className="space-y-4 text-sm font-medium text-slate-400">
+                {['United Kingdom', 'Australia', 'Canada', 'USA'].map(c => (
+                  <li key={c}><button onClick={() => navigateTo({type:'country-guide', slug:c.toLowerCase().replace(' ', '-')})} className="hover:text-primary-400 transition-colors">{c}</button></li>
+                ))}
               </ul>
             </div>
             <div>
-              <h4 className="text-[10px] font-black uppercase text-slate-500 mb-6 tracking-widest">Developer</h4>
-              <ul className="space-y-4 text-sm text-slate-400">
-                <li><button onClick={() => navigateTo({type:'api-docs'})} className="hover:text-primary-400">API Portal</button></li>
-                <li><button onClick={() => navigateTo({type:'handover'})} className="hover:text-primary-400">Tech Docs</button></li>
+              <h4 className="text-[10px] font-black uppercase text-slate-500 mb-8 tracking-widest">System Access</h4>
+              <ul className="space-y-4 text-sm font-medium text-slate-400">
+                <li><button onClick={() => navigateTo({type:'api-docs'})} className="hover:text-primary-400 transition-colors">Developer Console</button></li>
+                <li><button onClick={() => navigateTo({type:'admin-guide'})} className="hover:text-primary-400 transition-colors">Admin Guide</button></li>
+                <li><button onClick={() => navigateTo({type:'handover'})} className="hover:text-primary-400 transition-colors">Infrastructure Specs</button></li>
+                <li><button onClick={() => navigateTo({type:'store'})} className="hover:text-primary-400 transition-colors">Voucher Store</button></li>
               </ul>
             </div>
           </div>
         </footer>
 
         <AIChat />
+        {searchOpen && <SearchOverlay onClose={() => setSearchOpen(false)} onNavigate={navigateTo} />}
       </div>
     </div>
   );
 };
 
-const NavBtn: React.FC<{ children: React.ReactNode; active: boolean; onClick: () => void }> = ({ children, active, onClick }) => (
-  <button onClick={onClick} className={`px-5 py-2 rounded-xl text-xs font-bold transition-all ${active ? 'bg-primary-600/10 text-primary-400' : 'text-slate-500 hover:text-slate-200'}`}>
-    {children}
-  </button>
-);
-
 const EnquirySection = () => (
-  <section className="py-24 max-w-7xl mx-auto px-4">
+  <section className="py-24 max-w-7xl mx-auto px-4 relative overflow-hidden">
+    <div className="absolute top-1/2 left-0 w-64 h-64 bg-primary-500/5 blur-[120px] rounded-full -z-10" />
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
       <div>
-        <h2 className="text-4xl md:text-6xl font-display font-bold mb-8">Direct <span className="text-primary-400">Council</span> Links.</h2>
-        <p className="text-slate-400 text-lg leading-relaxed mb-10"> we handle the complexity of global test registration so you can focus on your scores.</p>
-        <div className="space-y-6">
-          <FeatureItem icon="🎖️" title="Certified Partners" desc="Official agents for PTE and IELTS boards." />
-          <FeatureItem icon="🌍" title="24/7 Support" desc="Assisting students across 12 timezones." />
+        <h2 className="text-5xl md:text-7xl font-display font-bold mb-8 leading-[1.1] tracking-tight">Direct <span className="gradient-text">Council</span> Links.</h2>
+        <p className="text-slate-400 text-lg leading-relaxed mb-10 max-w-lg">Authorized procurement node for Pearson and British Council exams. Zero-latency registration fulfillment for students worldwide.</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <FeatureItem icon="🎖️" title="Board Certified" desc="Official tier-1 partner status." />
+          <FeatureItem icon="🌍" title="Multi-Region" desc="12 global fulfillment nodes." />
         </div>
       </div>
       <EnquiryForm />
@@ -198,11 +195,11 @@ const EnquirySection = () => (
 );
 
 const FeatureItem = ({ icon, title, desc }: { icon: string; title: string; desc: string }) => (
-  <div className="flex gap-4 p-4 glass rounded-2xl border-slate-800/50">
-    <span className="text-2xl">{icon}</span>
+  <div className="flex flex-col gap-3 p-6 glass rounded-3xl border-slate-800/50 hover:border-primary-500/20 transition-colors group">
+    <span className="text-3xl group-hover:scale-110 transition-transform w-fit">{icon}</span>
     <div>
-      <h4 className="font-bold text-slate-200">{title}</h4>
-      <p className="text-sm text-slate-500">{desc}</p>
+      <h4 className="font-bold text-slate-100 text-sm tracking-tight">{title}</h4>
+      <p className="text-xs text-slate-500 mt-1 leading-relaxed">{desc}</p>
     </div>
   </div>
 );

@@ -96,6 +96,14 @@ const Login: React.FC<LoginProps> = ({ onLogin, onNavigateToSignup }) => {
               <span>Agent Partner</span>
               <span className="opacity-0 group-hover:opacity-100 font-bold">SELECT</span>
             </button>
+            <button onClick={() => setEmail('finance@nexus.ai')} className="text-[10px] bg-slate-900/50 border border-slate-800 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-slate-400 hover:text-white flex justify-between items-center group">
+              <span>Finance Controller</span>
+              <span className="opacity-0 group-hover:opacity-100 font-bold">SELECT</span>
+            </button>
+            <button onClick={() => setEmail('trainer@nexus.ai')} className="text-[10px] bg-slate-900/50 border border-slate-800 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-slate-400 hover:text-white flex justify-between items-center group">
+              <span>Exam Grader</span>
+              <span className="opacity-0 group-hover:opacity-100 font-bold">SELECT</span>
+            </button>
             <button onClick={() => setEmail('alex@gmail.com')} className="text-[10px] bg-slate-900/50 border border-slate-800 px-4 py-3 rounded-xl hover:bg-slate-800 transition-all text-slate-400 hover:text-white flex justify-between items-center group">
               <span>Verified Customer</span>
               <span className="opacity-0 group-hover:opacity-100 font-bold">SELECT</span>

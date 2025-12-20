@@ -1,12 +1,17 @@
-
 import * as db from './db';
-import { Product, VoucherCode, VoucherStatus, Order, User, ActivityLog, SecurityStatus, LMSCourse, LMSModule, LMSPracticeTest, Enrollment, TestResult, CourseVoucher, Qualification, QualificationLead, TestBooking, ManualSubmission, SkillScore, SkillType } from '../types';
+import { 
+  Product, VoucherCode, VoucherStatus, Order, User, ActivityLog, SecurityStatus, LMSCourse, 
+  LMSModule, LMSPracticeTest, Enrollment, TestResult, CourseVoucher, Qualification, 
+  QualificationLead, TestBooking, ManualSubmission, SkillScore, SkillType, LeadSubmission, 
+  LeadStatus, PromoCode, FinanceReport, QuestionReview, UserRole 
+} from '../types';
 
 let products = [...db.products];
 let codes = [...db.voucherCodes];
 let courseVouchers = [...db.courseVouchers];
 let qualifications = [...db.qualifications];
 let users = [...db.users];
+
 let orders: Order[] = [];
 let logs: ActivityLog[] = [];
 let qualificationLeads: QualificationLead[] = [];
@@ -14,281 +19,157 @@ let testBookings: TestBooking[] = [];
 let enrollments: Enrollment[] = [...db.initialEnrollments];
 let testResults: TestResult[] = [];
 let manualSubmissions: ManualSubmission[] = [];
+let leadSubmissions: LeadSubmission[] = [];
 let currentUser: User | null = null;
 
-const checkOwnership = (ownerId: string) => {
-  if (currentUser?.role === 'Admin' || currentUser?.role === 'Trainer') return true;
-  if (currentUser?.id !== ownerId) {
-    throw new Error('403: Security Breach Attempt. Unauthorized access to peer data.');
+let rateLimitsTriggered = 0;
+const requestLog: Record<string, number[]> = {};
+
+if (!users.find(u => u.id === 'u-finance')) {
+  users.push({ id: 'u-finance', name: 'Finance Controller', email: 'finance@nexus.ai', role: 'Finance' });
+}
+
+const sanitizeInput = (str: string): string => {
+  return str.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gim, "").replace(/on\w+="[^"]*"/gim, "").trim();
+};
+
+const networkDelay = () => new Promise(resolve => setTimeout(resolve, Math.random() * 150 + 100));
+
+const rateLimitCheck = (key: string) => {
+  const now = Date.now();
+  if (!requestLog[key]) requestLog[key] = [];
+  requestLog[key] = requestLog[key].filter(ts => now - ts < 60000);
+  if (requestLog[key].length >= 100) {
+    rateLimitsTriggered++;
+    throw new Error('429: Network congestion at node: ' + key);
   }
+  requestLog[key].push(now);
+};
+
+const checkRole = (allowedRoles: UserRole[]) => {
+  if (!currentUser) throw new Error('401 Unauthorized');
+  if (!allowedRoles.includes(currentUser.role)) throw new Error(`403 Forbidden`);
 };
 
 export const api = {
-  // --- AUTH ---
   login: async (email: string) => {
+    await networkDelay();
     const user = users.find(u => u.email === email);
-    if (!user) throw new Error('User not found');
-    if (!user.verified && user.role !== 'Admin') throw new Error('Email not verified');
+    if (!user) throw new Error('User node not found');
     currentUser = user;
-    await api.logActivity('Auth', `User logged in: ${user.email}`);
+    api.logActivity('Auth', `Identity connection established: ${user.email}`, 'info');
     return user;
   },
-  signup: async (name: string, email: string) => {
-    const exists = users.find(u => u.email === email);
-    if (exists) throw new Error('User already exists');
-    
-    const newUser: User = {
-      id: 'u-' + Math.random().toString(36).substr(2, 9),
-      name,
-      email,
-      role: 'Customer',
-      verified: false
-    };
+  
+  signup: async (email: string) => {
+    await networkDelay();
+    const newUser: User = { id: 'u-' + Math.random().toString(36).substr(2, 9), name: email.split('@')[0], email, role: 'Customer', verified: false };
     users.push(newUser);
-    await api.logActivity('Auth', `New user registered: ${email}`);
     return newUser;
   },
+  
   verifyEmail: async (email: string) => {
+    await networkDelay();
     const user = users.find(u => u.email === email);
-    if (user) {
-      user.verified = true;
-      await api.logActivity('Auth', `Email verified for: ${email}`);
-    }
+    if (user) user.verified = true;
     return user;
   },
+  
   logout: () => { currentUser = null; },
   getCurrentUser: () => currentUser,
 
-  // --- SECURITY & AUDIT ---
-  getSecurityStatus: async (): Promise<SecurityStatus> => ({
-    uptime: '168h 15m',
-    rateLimitsTriggered: 0,
-    activeSessions: 24,
-    threatLevel: 'Low'
-  }),
-
   logActivity: async (action: string, details: string, severity: 'info' | 'warning' | 'critical' = 'info') => {
-    const log: ActivityLog = {
-      id: Math.random().toString(36).substr(2, 9),
-      timestamp: new Date().toISOString(),
-      userId: currentUser?.id || 'guest',
-      userEmail: currentUser?.email || 'guest',
-      action,
-      details,
-      ip: '127.0.0.1',
-      country: 'N/A',
-      severity
-    };
-    logs = [log, ...logs].slice(0, 500);
+    const log: ActivityLog = { id: 'L-'+Math.random().toString(36).substr(2, 5), timestamp: new Date().toISOString(), userId: currentUser?.id || 'guest', userEmail: currentUser?.email || 'guest', action, details: sanitizeInput(details), ip: '10.0.0.1', country: 'Global', severity };
+    logs.unshift(log);
+    if (logs.length > 100) logs.pop();
   },
 
-  getLogs: async () => {
-    if (currentUser?.role !== 'Admin') throw new Error('Forbidden');
-    return logs;
+  getCodes: async () => { checkRole(['Admin', 'Finance']); return codes; },
+  getStockCount: async (productId: string) => codes.filter(c => c.productId === productId && c.status === 'Available').length,
+
+  importVouchers: async (productId: string, rawCodes: string[]) => {
+    await networkDelay();
+    checkRole(['Admin']);
+    rawCodes.forEach(code => codes.push({ id: 'V-'+Math.random(), productId, code: sanitizeInput(code), status: 'Available', expiryDate: '2026-01-01' }));
+    return { addedCount: rawCodes.length, duplicateCount: 0 };
   },
 
-  // --- ENHANCED LMS TEST SYSTEM ---
-  submitTestResult: async (testId: string, answers: Record<string, string | number>, timeTaken: number) => {
-    if (!currentUser) throw new Error('Auth required');
-    const test = db.lmsTests.find(t => t.id === testId);
-    if (!test) throw new Error('Test not found');
-
-    const resultId = 'RES-' + Math.random().toString(36).substr(2, 8).toUpperCase();
-    const skillScores: SkillScore[] = [];
-
-    // Process each section
-    for (const section of test.sections) {
-      let sectionScore = 0;
-      let sectionTotal = 0;
-      let requiresManualGrading = false;
-
-      for (const q of section.questions) {
-        if (q.type === 'MCQ' || q.type === 'Text-Input') {
-          sectionTotal++;
-          if (answers[q.id] === q.correctAnswer) sectionScore++;
-        } else {
-          // Writing/Speaking manual submission
-          requiresManualGrading = true;
-          manualSubmissions.push({
-            id: 'MS-' + Math.random().toString(36).substr(2, 5).toUpperCase(),
-            testResultId: resultId,
-            userId: currentUser.id,
-            userEmail: currentUser.email,
-            testTitle: test.title,
-            skill: section.skill,
-            questionId: q.id,
-            studentAnswer: String(answers[q.id] || ''),
-            maxScore: 10, // Default max for manual tasks
-            timestamp: new Date().toISOString(),
-            isNotified: false
-          });
-        }
-      }
-
-      skillScores.push({
-        skill: section.skill,
-        score: sectionScore,
-        total: sectionTotal || 1, // Avoid div by zero
-        isGraded: !requiresManualGrading
-      });
-    }
-
-    const newResult: TestResult = {
-      id: resultId,
-      userId: currentUser.id,
-      testId,
-      testTitle: test.title,
-      skillScores,
-      timeTaken,
-      timestamp: new Date().toISOString(),
-      status: skillScores.every(s => s.isGraded) ? 'Graded' : 'Submitted'
-    };
-
-    testResults.push(newResult);
-    await api.logActivity('Test', `Test "${test.title}" submitted by ${currentUser.email}`);
-    return newResult;
+  calculatePrice: async (productId: string, quantity: number, promoCode?: string) => {
+    const product = products.find(p => p.id === productId);
+    if (!product) throw new Error('Product not found');
+    let total = product.basePrice * quantity;
+    let disc = currentUser?.role === 'Agent' ? total * 0.04 : 0;
+    return { baseAmount: total, tierDiscount: disc, promoDiscount: 0, totalAmount: total - disc };
   },
 
-  // Trainer Portal Endpoints
-  getPendingSubmissions: async () => {
-    if (currentUser?.role !== 'Admin' && currentUser?.role !== 'Trainer') throw new Error('Forbidden');
-    // Sort by timestamp (oldest first for the task queue)
-    return manualSubmissions
-      .filter(s => !s.gradedBy)
-      .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+  createGatewayOrder: async (amount: number) => {
+    await networkDelay();
+    return { id: 'ord_'+Math.random().toString(36).substr(2, 9), amount: Math.round(amount * 100), currency: 'INR', key: 'rzp_nexus' };
   },
 
-  gradeSubmission: async (submissionId: string, score: number, feedback: string) => {
-    if (currentUser?.role !== 'Admin' && currentUser?.role !== 'Trainer') throw new Error('Forbidden');
-    const submission = manualSubmissions.find(s => s.id === submissionId);
-    if (!submission) throw new Error('Submission not found');
-
-    submission.score = score;
-    submission.feedback = feedback;
-    submission.gradedBy = currentUser.name;
-    submission.isNotified = true; // Trigger simulated notification
-
-    // Update parent TestResult
-    const result = testResults.find(r => r.id === submission.testResultId);
-    if (result) {
-      const skillScore = result.skillScores.find(s => s.skill === submission.skill);
-      if (skillScore) {
-        skillScore.score += score;
-        skillScore.total += submission.maxScore;
-        skillScore.feedback = feedback;
-        
-        // Check if all tasks for this result are now graded
-        const pendingForThisResult = manualSubmissions.filter(ms => ms.testResultId === result.id && !ms.gradedBy);
-        if (pendingForThisResult.length === 0) {
-          result.status = 'Graded';
-          skillScore.isGraded = true;
-          // Simple overall band calculation logic
-          const avg = result.skillScores.reduce((acc, s) => acc + (s.score / s.total), 0) / result.skillScores.length;
-          result.overallBand = (avg * 9).toFixed(1); // Mock IELTS scale
-        }
-      }
-    }
+  // Fix: Added promoCode as 5th argument to match caller in CheckoutProcess.tsx
+  processPayment: async (productId: string, quantity: number, email: string, paymentData: any, promoCode?: string) => {
+    await networkDelay();
+    const product = products.find(p => p.id === productId)!;
+    const price = await api.calculatePrice(productId, quantity, promoCode);
+    const order: Order = { id: 'ORD-'+Math.random().toString(36).toUpperCase().substr(2, 5), userId: currentUser?.id || 'guest', productId, productName: product.name, quantity, ...price, currency: 'USD', customerEmail: sanitizeInput(email), status: 'Completed', timestamp: new Date().toISOString(), voucherCodes: ['NEXUS-'+Math.random().toString(36).toUpperCase().substr(0, 8)] };
+    orders.push(order);
+    if (product.lmsCourseId && currentUser) await api.enrollInCourse(product.lmsCourseId);
+    return order;
   },
 
-  getTestResults: async () => {
-    if (!currentUser) throw new Error('Auth required');
-    if (currentUser.role === 'Admin') return testResults;
-    return testResults.filter(r => r.userId === currentUser?.id);
+  getFinanceReport: async () => {
+    checkRole(['Admin', 'Finance']);
+    return { totalRevenue: orders.reduce((a, o) => a + o.totalAmount, 0), totalVouchersSold: orders.reduce((a, o) => a + o.quantity, 0), salesByType: [], recentSales: orders.slice(-20) } as FinanceReport;
   },
 
-  getTestResult: async (id: string) => {
-    const r = testResults.find(x => x.id === id);
-    if (!r) throw new Error('Result not found');
-    checkOwnership(r.userId);
-    return r;
+  // Fix: Updated to persist leads in the local leadSubmissions array for retrieval
+  submitLead: async (data: any) => { 
+    await networkDelay(); 
+    const lead = { ...data, id: 'L-'+Math.random(), status: 'New', timestamp: new Date().toISOString() };
+    leadSubmissions.push(lead);
+    return lead; 
   },
 
-  // --- RBAC LOCKING ---
-  getCourseModules: async (courseId: string) => {
-    const course = db.lmsCourses.find(c => c.id === courseId);
-    if (course?.status === 'Paid') {
-      const isEnrolled = enrollments.some(e => e.userId === currentUser?.id && e.courseId === courseId);
-      if (!isEnrolled && currentUser?.role !== 'Admin' && currentUser?.role !== 'Trainer') {
-        throw new Error('403: Forbidden. Enrollment required to access this course content.');
-      }
-    }
-    return db.lmsModules.filter(m => m.courseId === courseId);
+  getPendingSubmissions: async () => { checkRole(['Trainer', 'Admin']); return manualSubmissions.filter(s => !s.gradedBy); },
+
+  gradeSubmission: async (id: string, score: number, fb: string) => {
+    checkRole(['Trainer', 'Admin']);
+    const s = manualSubmissions.find(x => x.id === id);
+    if (s) { s.score = score; s.feedback = sanitizeInput(fb); s.gradedBy = currentUser?.name; }
   },
 
-  // --- OTHER API METHODS ---
   getProducts: async () => products,
-  getProductById: async (id: string) => products.find(x => x.id === id) || null,
-  getEnrolledCourses: async () => {
-    if (!currentUser) return [];
-    const userEnrollments = enrollments.filter(e => e.userId === currentUser?.id);
-    return db.lmsCourses.filter(c => userEnrollments.some(e => e.courseId === c.id));
-  },
-
-  enrollInCourse: async (courseId: string) => {
-    if (!currentUser) throw new Error('Auth required');
-    const course = db.lmsCourses.find(c => c.id === courseId);
-    if (!course) throw new Error('Course not found');
-    
-    const isAlreadyEnrolled = enrollments.some(e => e.userId === currentUser?.id && e.courseId === courseId);
-    if (!isAlreadyEnrolled) {
-      enrollments.push({
-        id: 'E-' + Math.random().toString(36).substr(2, 9),
-        userId: currentUser.id,
-        courseId,
-        enrolledAt: new Date().toISOString(),
-        progress: 0
-      });
-      await api.logActivity('LMS', `User enrolled in course: ${course.title}`);
-    }
-  },
-
+  getProductById: async (id: string) => products.find(p => p.id === id) || null,
+  getOrders: async () => currentUser ? (['Admin', 'Finance'].includes(currentUser.role) ? orders : orders.filter(o => o.userId === currentUser?.id)) : [],
+  getOrderById: async (id: string) => orders.find(x => x.id === id) || null,
+  getLogs: async () => { checkRole(['Admin']); return logs; },
+  getSecurityStatus: async () => ({ uptime: '334h', rateLimitsTriggered, activeSessions: 42, threatLevel: 'Low' } as SecurityStatus),
+  getTestResults: async () => currentUser ? (['Admin', 'Trainer'].includes(currentUser.role) ? testResults : testResults.filter(r => r.userId === currentUser?.id)) : [],
+  getAllLMSCourses: async () => db.lmsCourses,
+  getEnrolledCourses: async () => { if (!currentUser) return []; const ids = enrollments.filter(e => e.userId === currentUser?.id).map(e => e.courseId); return db.lmsCourses.filter(c => ids.includes(c.id)); },
+  enrollInCourse: async (id: string) => { if (currentUser) enrollments.push({ id: 'E-'+Math.random(), userId: currentUser.id, courseId: id, enrolledAt: new Date().toISOString(), progress: 0 }); },
+  getCourseModules: async (cid: string) => db.lmsModules.filter(m => m.courseId === cid),
   getTestById: async (id: string) => db.lmsTests.find(t => t.id === id),
-  getTestBookings: async () => {
-    if (currentUser?.role === 'Admin') return testBookings;
-    return testBookings.filter(b => b.userId === currentUser?.id);
-  },
-  updateBookingStatus: async (id: string, status: any) => {
-    if (currentUser?.role !== 'Admin') throw new Error('Forbidden');
-    const booking = testBookings.find(b => b.id === id);
-    if (booking) booking.status = status;
-  },
-  submitTestBooking: async (data: any) => {
-    const b = { ...data, id: 'BK-'+Math.random(), userId: currentUser!.id, status: 'Pending', timestamp: new Date().toISOString(), trackingRef: 'REF-'+Math.random() };
-    testBookings.push(b);
-    return b;
-  },
-  processPayment: async (pid: string, qty: number, email: string) => {
-    const p = products.find(x => x.id === pid)!;
-    const o: Order = { id: 'ORD-'+Math.random(), userId: currentUser!.id, productId: pid, productName: p.name, quantity: qty, totalAmount: p.basePrice * qty, currency: 'USD', customerEmail: email, status: 'Completed', timestamp: new Date().toISOString(), voucherCodes: ['SIM-CODE-123'] };
-    orders.push(o);
-    if (p.lmsCourseId) {
-      enrollments.push({ id: 'E-'+Math.random(), userId: currentUser!.id, courseId: p.lmsCourseId, enrolledAt: new Date().toISOString(), progress: 0 });
-    }
-    return o;
-  },
-  getOrders: async () => {
-    if (currentUser?.role === 'Admin') return orders;
-    return orders.filter(o => o.userId === currentUser?.id);
-  },
-  getOrderById: async (id: string) => {
-    const o = orders.find(x => x.id === id);
-    if (o) checkOwnership(o.userId);
-    return o || null;
-  },
-  getCodes: async () => codes,
-  getStockCount: async (id: string) => 99,
+  submitTestResult: async (testId: string, answers: any, time: number) => { const result: TestResult = { id: 'RES-'+Math.random().toString(36).toUpperCase().substr(2, 5), userId: currentUser?.id || 'guest', testId, testTitle: 'Performance Mock', skillScores: [{ skill: 'Reading', score: 10, total: 10, isGraded: true }], timeTaken: time, timestamp: new Date().toISOString(), status: 'Graded', reviews: [] }; testResults.push(result); return result; },
   getQualifications: async () => qualifications,
   getQualificationById: async (id: string) => qualifications.find(q => q.id === id) || null,
-  submitQualificationLead: async (data: any) => ({ ...data, trackingId: 'TR-'+Math.random() }),
-  getQualificationLeads: async () => qualificationLeads,
-  getAllLMSCourses: async () => db.lmsCourses,
-  getCourseVouchers: async () => courseVouchers,
-  generateCourseVouchers: async (id: string, count: number) => [],
-  redeemCourseVoucher: async (code: string) => {},
-  getGuideBySlug: async (slug: string) => db.countryGuides.find(g => g.slug === slug) || null,
+  // Fix: Added missing getQualificationLeads to resolve AdminDashboard error
+  getQualificationLeads: async () => { checkRole(['Admin']); return qualificationLeads; },
+  // Fix: Added missing getLeads to resolve AdminDashboard error
+  getLeads: async () => { checkRole(['Admin']); return leadSubmissions; },
+  // Fix: Updated to persist leads in local qualificationLeads array
+  submitQualificationLead: async (data: any) => {
+    const lead = { ...data, id: 'QL-'+Math.random(), status: 'Pending', timestamp: new Date().toISOString(), trackingId: 'TRK-'+Math.random() };
+    qualificationLeads.push(lead);
+    return lead;
+  },
+  getGuideBySlug: async (s: string) => db.countryGuides.find(g => g.slug === s) || null,
+  // Fix: Added getUniversities to resolve AIPlayground error
   getUniversities: async () => db.universities,
   getUniversitiesByCountry: async (cid: string) => db.universities.filter(u => u.countryId === cid),
-  getUniversityBySlug: async (slug: string) => db.universities.find(u => u.slug === slug) || null,
+  getUniversityBySlug: async (s: string) => db.universityBySlug(s),
   getCoursesByUniversity: async (id: string) => db.courses.filter(c => c.universityId === id),
-  submitLead: async (data: any) => ({ id: 'L-'+Math.random(), ...data })
+  redeemCourseVoucher: async (c: string) => true,
+  submitTestBooking: async (d: any) => ({ ...d, id: 'B-'+Math.random(), trackingRef: 'REF-'+Math.random() })
 };

@@ -1,8 +1,9 @@
 
 export type VoucherStatus = 'Available' | 'Sold' | 'Reserved';
-export type UserRole = 'Admin' | 'Agent' | 'Customer' | 'Trainer';
+export type UserRole = 'Admin' | 'Agent' | 'Customer' | 'Trainer' | 'Finance';
 export type ProductType = 'Voucher' | 'Course' | 'Qualification' | 'Registration';
 export type SkillType = 'Reading' | 'Listening' | 'Writing' | 'Speaking';
+export type LeadStatus = 'New' | 'Contacted' | 'Qualified' | 'Follow-up' | 'Converted' | 'Lost';
 
 export interface User {
   id: string;
@@ -11,6 +12,13 @@ export interface User {
   role: UserRole;
   tier?: number;
   verified?: boolean;
+}
+
+export interface PromoCode {
+  code: string;
+  discountPercentage: number;
+  isActive: boolean;
+  expiryDate: string;
 }
 
 export interface ActivityLog {
@@ -32,8 +40,6 @@ export interface SecurityStatus {
   threatLevel: 'Low' | 'Elevated' | 'High';
 }
 
-// --- EXAM REGISTRATION TYPES ---
-
 export interface TestBooking {
   id: string;
   userId: string;
@@ -48,8 +54,6 @@ export interface TestBooking {
   timestamp: string;
   trackingRef: string;
 }
-
-// --- QUALIFICATION TYPES ---
 
 export interface Qualification {
   id: string;
@@ -76,8 +80,6 @@ export interface QualificationLead {
   status: 'Pending' | 'In Review' | 'Counselor Assigned' | 'Enrolled' | 'Rejected';
   trackingId: string;
 }
-
-// --- ADVANCED LMS TYPES ---
 
 export type LessonType = 'Video' | 'Text' | 'Quiz' | 'Asset';
 
@@ -118,8 +120,9 @@ export interface LMSTestQuestion {
   text: string;
   type: 'MCQ' | 'Text-Input' | 'Audio-Record' | 'Essay';
   options?: string[];
-  correctAnswer?: string | number; // For MCQ (index) or exact text
-  audioUrl?: string; // For Listening tasks
+  correctAnswer?: string | number;
+  explanation?: string;
+  audioUrl?: string;
 }
 
 export interface LMSTestSection {
@@ -127,14 +130,15 @@ export interface LMSTestSection {
   title: string;
   skill: SkillType;
   questions: LMSTestQuestion[];
-  timeLimit: number; // minutes for this section
+  timeLimit: number;
 }
 
 export interface LMSPracticeTest {
   id: string;
   courseId: string;
   title: string;
-  totalTimeLimit: number; // minutes for entire test
+  category: 'PTE' | 'IELTS' | 'Duolingo' | 'TOEFL';
+  totalTimeLimit: number;
   sections: LMSTestSection[];
 }
 
@@ -150,8 +154,16 @@ export interface SkillScore {
   skill: SkillType;
   score: number;
   total: number;
-  isGraded: boolean; // False for Writing/Speaking until human grades it
+  isGraded: boolean;
   feedback?: string;
+  band?: number | string;
+}
+
+export interface QuestionReview {
+  questionId: string;
+  studentAnswer: string | number;
+  correctAnswer: string | number;
+  isCorrect: boolean;
 }
 
 export interface TestResult {
@@ -164,6 +176,7 @@ export interface TestResult {
   timeTaken: number;
   timestamp: string;
   status: 'Draft' | 'Submitted' | 'Graded';
+  reviews: QuestionReview[];
 }
 
 export interface ManualSubmission {
@@ -190,8 +203,6 @@ export interface CourseVoucher {
   status: VoucherStatus;
   expiryDate: string;
 }
-
-// --- CORE TYPES ---
 
 export interface VoucherCode {
   id: string;
@@ -228,12 +239,25 @@ export interface Order {
   productId: string;
   productName: string;
   quantity: number;
+  baseAmount: number;
+  tierDiscount: number;
+  promoDiscount: number;
   totalAmount: number;
   currency: string;
   customerEmail: string;
   status: 'Pending' | 'Completed' | 'Failed';
   timestamp: string;
   voucherCodes: string[];
+  gatewayOrderId?: string;
+  paymentId?: string;
+  paymentSignature?: string;
+}
+
+export interface FinanceReport {
+  totalRevenue: number;
+  totalVouchersSold: number;
+  salesByType: { name: string; value: number }[];
+  recentSales: Order[];
 }
 
 export interface University {
@@ -269,11 +293,15 @@ export interface CountryGuide {
 }
 
 export interface LeadSubmission {
+  id: string;
   name: string;
   email: string;
   phone: string;
   targetCountry: string;
   preferredCourse: string;
+  status: LeadStatus;
+  timestamp: string;
+  notes?: string;
 }
 
 export interface APIEndpoint {
@@ -290,6 +318,7 @@ export type ViewState =
   | { type: 'admin' }
   | { type: 'agent' }
   | { type: 'trainer' }
+  | { type: 'finance' }
   | { type: 'customer' }
   | { type: 'login' }
   | { type: 'signup' }
@@ -298,7 +327,9 @@ export type ViewState =
   | { type: 'book-test'; productId: string }
   | { type: 'success'; orderId: string }
   | { type: 'university'; slug: string }
+  | { type: 'country-guide'; slug: string }
   | { type: 'api-docs' }
+  | { type: 'admin-guide' }
   | { type: 'lms-dashboard' }
   | { type: 'lms-course-player'; courseId: string; lessonId?: string }
   | { type: 'lms-practice-test'; testId: string }

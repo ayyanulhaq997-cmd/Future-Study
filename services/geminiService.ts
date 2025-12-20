@@ -1,8 +1,7 @@
 
-import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
+import { GoogleGenAI, GenerateContentResponse, Type } from "@google/genai";
 
-// Initialize Gemini API client correctly using the environment variable.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 const SYSTEM_INSTRUCTION = `You are the Nexus EDU Assistant, a highly sophisticated AI consultant for the Nexus EDU platform.
 Your goal is to help students, agents, and trainers navigate the platform.
@@ -59,34 +58,40 @@ export class GeminiService {
   }
 
   /**
-   * Generates an image using the gemini-2.5-flash-image model.
+   * Performs an intelligent search across platform resources.
    */
-  static async generateImage(prompt: string) {
+  static async platformSearch(query: string) {
     try {
-      const response: GenerateContentResponse = await ai.models.generateContent({
-        model: 'gemini-2.5-flash-image',
-        contents: {
-          parts: [{ text: prompt }]
-        },
+      const response = await ai.models.generateContent({
+        model: 'gemini-3-flash-preview',
+        contents: `Search the Nexus platform for: "${query}". Return relevant categories and specific items available.`,
         config: {
-          imageConfig: {
-            aspectRatio: "1:1"
+          systemInstruction: "You are the platform's search engine. Analyze user queries and map them to: 'Vouchers', 'Academy', 'Universities', or 'Qualifications'. Be precise.",
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              results: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    title: { type: Type.STRING },
+                    description: { type: Type.STRING },
+                    category: { type: Type.STRING },
+                    linkType: { type: Type.STRING, description: "One of: store, academy, degree, global" }
+                  },
+                  required: ["title", "description", "category", "linkType"]
+                }
+              }
+            }
           }
         }
       });
-
-      const candidate = response.candidates?.[0];
-      if (candidate?.content?.parts) {
-        for (const part of candidate.content.parts) {
-          if (part.inlineData) {
-            return `data:image/png;base64,${part.inlineData.data}`;
-          }
-        }
-      }
-      throw new Error("No image data returned from model");
-    } catch (error) {
-      console.error("Error generating image:", error);
-      throw error;
+      return JSON.parse(response.text || '{"results":[]}');
+    } catch (e) {
+      console.error("Search error:", e);
+      return { results: [] };
     }
   }
 }

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/apiService';
 import { Order } from '../types';
@@ -11,6 +10,7 @@ interface SuccessScreenProps {
 const SuccessScreen: React.FC<SuccessScreenProps> = ({ orderId, onClose }) => {
   const [order, setOrder] = useState<Order | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     api.getOrderById(orderId).then(setOrder);
@@ -20,6 +20,14 @@ const SuccessScreen: React.FC<SuccessScreenProps> = ({ orderId, onClose }) => {
     navigator.clipboard.writeText(text);
     setCopied(text);
     setTimeout(() => setCopied(null), 2000);
+  };
+
+  const simulateInvoiceDownload = () => {
+    setDownloading(true);
+    setTimeout(() => {
+      setDownloading(false);
+      alert(`Automated Invoice for ${orderId} generated and ready. (Simulation: File saved to virtual drive)`);
+    }, 1500);
   };
 
   if (!order) return null;
@@ -33,7 +41,7 @@ const SuccessScreen: React.FC<SuccessScreenProps> = ({ orderId, onClose }) => {
       <h1 className="text-4xl md:text-6xl font-display font-bold mb-6">Payment <span className="text-emerald-500">Verified.</span></h1>
       <p className="text-xl text-slate-400 mb-12 max-w-2xl mx-auto">
         Your order <strong>{order.id}</strong> was processed successfully. 
-        Your secure vouchers are listed below and have also been sent to <strong>{order.customerEmail}</strong>.
+        Your secure vouchers are listed below and have also been sent to <strong>{order.customerEmail}</strong> via automated fulfillment.
       </p>
 
       <div className="grid grid-cols-1 gap-6 mb-12 max-w-2xl mx-auto">
@@ -70,9 +78,19 @@ const SuccessScreen: React.FC<SuccessScreenProps> = ({ orderId, onClose }) => {
         >
           Back to Store
         </button>
-        <button className="px-10 py-5 glass hover:bg-slate-800 text-white rounded-2xl font-bold transition-all flex items-center justify-center gap-2">
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
-          Print Invoice
+        <button 
+          onClick={simulateInvoiceDownload}
+          disabled={downloading}
+          className="px-10 py-5 glass hover:bg-slate-800 text-white rounded-2xl font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+        >
+          {downloading ? (
+            <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+          ) : (
+            <>
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+              Download Invoice
+            </>
+          )}
         </button>
       </div>
     </div>

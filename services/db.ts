@@ -84,15 +84,29 @@ export const universities: University[] = [
     slug: 'oxford',
     location: 'United Kingdom',
     countryId: 'uk',
-    description: 'A world-leading centre of learning.',
+    description: 'A world-leading centre of learning and a dream destination for researchers.',
     logo: 'https://images.unsplash.com/photo-1590403323719-2f22b82e2f3d?w=128&h=128&fit=crop',
     ranking: 1,
     website: 'https://www.ox.ac.uk'
+  },
+  {
+    id: 'uni2',
+    name: 'Monash University',
+    slug: 'monash',
+    location: 'Melbourne, Australia',
+    countryId: 'au',
+    description: 'Monash is a modern, global, research-intensive university.',
+    logo: 'https://images.unsplash.com/photo-1525921429624-479b6a29d840?w=128&h=128&fit=crop',
+    ranking: 57,
+    website: 'https://www.monash.edu'
   }
 ];
 
+export const universityBySlug = (slug: string) => universities.find(u => u.slug === slug) || null;
+
 export const courses: Course[] = [
-  { id: 'c1', title: 'MSc Computer Science', degree: 'Postgraduate', duration: '1 Year', tuitionFee: '£32,000', universityId: 'uni1' }
+  { id: 'c1', title: 'MSc Computer Science', degree: 'Postgraduate', duration: '1 Year', tuitionFee: '£32,000', universityId: 'uni1' },
+  { id: 'c2', title: 'Bachelor of IT', degree: 'Undergraduate', duration: '3 Years', tuitionFee: 'A$45,000', universityId: 'uni2' }
 ];
 
 export const countryGuides: CountryGuide[] = [
@@ -101,10 +115,40 @@ export const countryGuides: CountryGuide[] = [
     countryId: 'uk',
     slug: 'united-kingdom',
     title: 'Study in the United Kingdom',
-    content: 'World-class education system.',
+    content: 'The UK is a world leader in education. With historic universities and a diverse student community, it offers unparalleled academic prestige.',
     heroImage: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1200&h=600&fit=crop',
     costOfLiving: '£12,000 - £15,000 per year',
-    visaRequirements: 'Student Visa required.'
+    visaRequirements: 'Student Visa (formerly Tier 4) required with CAS.'
+  },
+  {
+    id: 'g2',
+    countryId: 'au',
+    slug: 'australia',
+    title: 'Study in Australia',
+    content: 'Australia offers high-quality education, a relaxed lifestyle, and excellent post-study work opportunities for international students.',
+    heroImage: 'https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?w=1200&h=600&fit=crop',
+    costOfLiving: 'A$21,000 - A$25,000 per year',
+    visaRequirements: 'Student Visa (Subclass 500) required.'
+  },
+  {
+    id: 'g3',
+    countryId: 'ca',
+    slug: 'canada',
+    title: 'Study in Canada',
+    content: 'Canada is known for its welcoming atmosphere, affordable quality education, and multicultural campus environments.',
+    heroImage: 'https://images.unsplash.com/photo-1503614472-8c93d56e92ce?w=1200&h=600&fit=crop',
+    costOfLiving: 'C$15,000 - C$20,000 per year',
+    visaRequirements: 'Study Permit required.'
+  },
+  {
+    id: 'g4',
+    countryId: 'us',
+    slug: 'usa',
+    title: 'Study in the USA',
+    content: 'The United States is home to some of the world’s most prestigious universities and is a global hub for innovation and research.',
+    heroImage: 'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=1200&h=600&fit=crop',
+    costOfLiving: '$15,000 - $25,000 per year',
+    visaRequirements: 'F-1 Student Visa required.'
   }
 ];
 
@@ -149,6 +193,7 @@ export const lmsTests: LMSPracticeTest[] = [
     id: 'full-mock-1',
     courseId: 'lms-1',
     title: 'PTE Academic Full Length Mock #1',
+    category: 'PTE',
     totalTimeLimit: 120,
     sections: [
       {
@@ -157,8 +202,8 @@ export const lmsTests: LMSPracticeTest[] = [
         skill: 'Reading',
         timeLimit: 30,
         questions: [
-          { id: 'q1', skill: 'Reading', text: 'What is the main topic of the passage?', type: 'MCQ', options: ['Climate', 'Economy', 'Technology', 'Art'], correctAnswer: 0 },
-          { id: 'q2', skill: 'Reading', text: 'According to paragraph 2, why did the project fail?', type: 'MCQ', options: ['No funds', 'Bad weather', 'Lack of interest'], correctAnswer: 2 }
+          { id: 'q1', skill: 'Reading', text: 'What is the main topic of the passage?', type: 'MCQ', options: ['Climate Change', 'Global Economy', 'Technological Singularity', 'Modern Art'], correctAnswer: 0, explanation: 'The passage primarily focuses on atmospheric changes and their impact.' },
+          { id: 'q2', skill: 'Reading', text: 'According to paragraph 2, why did the project fail?', type: 'MCQ', options: ['Lack of funding', 'Inclement weather', 'Lack of stakeholder interest'], correctAnswer: 2, explanation: 'Paragraph 2 specifically mentions the withdrawal of key investors due to disinterest.' }
         ]
       },
       {
@@ -176,7 +221,7 @@ export const lmsTests: LMSPracticeTest[] = [
         skill: 'Listening',
         timeLimit: 30,
         questions: [
-          { id: 'q4', skill: 'Listening', text: 'Listen to the audio and select the correct summary.', type: 'MCQ', options: ['Option A', 'Option B', 'Option C'], correctAnswer: 1, audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' }
+          { id: 'q4', skill: 'Listening', text: 'Listen to the audio and select the correct summary.', type: 'MCQ', options: ['A description of local history.', 'A detailed scientific report on ocean life.', 'A personal anecdote about traveling.'], correctAnswer: 1, audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' }
         ]
       }
     ]
