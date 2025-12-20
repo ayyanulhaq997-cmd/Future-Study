@@ -8,6 +8,8 @@ import AgentDashboard from './components/AgentDashboard';
 import CustomerDashboard from './components/CustomerDashboard';
 import TrainerDashboard from './components/TrainerDashboard';
 import Login from './components/Login';
+import Signup from './components/Signup';
+import VerificationPending from './components/VerificationPending';
 import CheckoutProcess from './components/CheckoutProcess';
 import SuccessScreen from './components/SuccessScreen';
 import EnquiryForm from './components/EnquiryForm';
@@ -121,7 +123,9 @@ const App: React.FC = () => {
             </>
           )}
 
-          {view.type === 'login' && <Login onLogin={handleLogin} />}
+          {view.type === 'login' && <Login onLogin={handleLogin} onNavigateToSignup={() => navigateTo({ type: 'signup' })} />}
+          {view.type === 'signup' && <Signup onNavigateToLogin={() => navigateTo({ type: 'login' })} onSuccess={(email) => navigateTo({ type: 'verification-pending', email })} />}
+          {view.type === 'verification-pending' && <VerificationPending email={view.email} onVerified={() => { alert('Verification Successful!'); navigateTo({ type: 'login' }); }} />}
           {view.type === 'admin' && user?.role === 'Admin' && <AdminDashboard />}
           {view.type === 'trainer' && user?.role === 'Trainer' && <TrainerDashboard user={user} />}
           {view.type === 'api-docs' && <APIDocs />}

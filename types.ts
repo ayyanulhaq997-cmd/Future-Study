@@ -292,6 +292,8 @@ export type ViewState =
   | { type: 'trainer' }
   | { type: 'customer' }
   | { type: 'login' }
+  | { type: 'signup' }
+  | { type: 'verification-pending'; email: string }
   | { type: 'checkout'; productId: string; quantity: number }
   | { type: 'book-test'; productId: string }
   | { type: 'success'; orderId: string }

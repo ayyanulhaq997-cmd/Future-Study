@@ -28,8 +28,32 @@ export const api = {
   login: async (email: string) => {
     const user = users.find(u => u.email === email);
     if (!user) throw new Error('User not found');
+    if (!user.verified && user.role !== 'Admin') throw new Error('Email not verified');
     currentUser = user;
     await api.logActivity('Auth', `User logged in: ${user.email}`);
+    return user;
+  },
+  signup: async (name: string, email: string) => {
+    const exists = users.find(u => u.email === email);
+    if (exists) throw new Error('User already exists');
+    
+    const newUser: User = {
+      id: 'u-' + Math.random().toString(36).substr(2, 9),
+      name,
+      email,
+      role: 'Customer',
+      verified: false
+    };
+    users.push(newUser);
+    await api.logActivity('Auth', `New user registered: ${email}`);
+    return newUser;
+  },
+  verifyEmail: async (email: string) => {
+    const user = users.find(u => u.email === email);
+    if (user) {
+      user.verified = true;
+      await api.logActivity('Auth', `Email verified for: ${email}`);
+    }
     return user;
   },
   logout: () => { currentUser = null; },
