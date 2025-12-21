@@ -27,6 +27,7 @@ import RegistrationForm from './components/RegistrationForm';
 import AIChat from './components/AIChat';
 import Navbar from './components/Navbar';
 import CountryGuide from './components/CountryGuide';
+import ImmigrationGuide from './components/ImmigrationGuide';
 import UniversityProfile from './components/UniversityProfile';
 import SearchOverlay from './components/SearchOverlay';
 import { ViewState, User } from './types';
@@ -112,6 +113,7 @@ const App: React.FC = () => {
       case 'checkout': return <div className="page-transition"><CheckoutProcess productId={view.productId} quantity={view.quantity} onSuccess={(oid) => navigateTo({ type: 'success', orderId: oid })} onCancel={() => navigateTo({type:'store'})} /></div>;
       case 'book-test': return <div className="page-transition"><RegistrationForm productId={view.productId} onCancel={() => navigateTo({type:'store'})} onSuccess={(b) => { alert(`Booking Confirmed: ${b.trackingRef}`); navigateTo({type:'store'}); }} /></div>;
       case 'country-guide': return <div className="page-transition"><CountryGuide slug={view.slug} onViewUniversity={(uslug) => navigateTo({ type: 'university', slug: uslug })} /></div>;
+      case 'immigration-guide': return <div className="page-transition"><ImmigrationGuide slug={view.slug} /></div>;
       case 'university': return <div className="page-transition"><UniversityProfile slug={view.slug} /></div>;
       case 'handover': return <div className="page-transition"><HandoverView /></div>;
       default: return null;
@@ -121,21 +123,13 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-50 selection:bg-primary-500/30">
       <div className="fixed inset-0 gradient-bg pointer-events-none z-0" aria-hidden="true" />
-      
       <div className="relative z-10 flex flex-col min-h-screen">
         <Navbar 
-          view={view} 
-          user={user} 
-          scrolled={scrolled} 
-          onNavigate={navigateTo} 
-          onLogout={handleLogout} 
+          view={view} user={user} scrolled={scrolled} 
+          onNavigate={navigateTo} onLogout={handleLogout} 
           onOpenSearch={() => setSearchOpen(true)}
         />
-        
-        <main className="flex-grow pt-24">
-          {mainContent}
-        </main>
-
+        <main className="flex-grow pt-24">{mainContent}</main>
         <footer className="py-20 border-t border-slate-900 bg-slate-950 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary-500/50 to-transparent" />
           <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-16">
@@ -144,11 +138,9 @@ const App: React.FC = () => {
                 <div className="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary-500/20">
                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
                 </div>
-                <h3 className="text-2xl font-display font-bold tracking-tighter">NEXUS<span className="text-primary-400">EDU</span></h3>
+                <h3 className="text-2xl font-display font-bold tracking-tighter uppercase">NEXUS<span className="text-primary-400">IMMIGRATION</span></h3>
               </div>
-              <p className="text-slate-500 max-w-sm text-sm leading-relaxed mb-8">
-                Enterprise infrastructure for international exam procurement. Verified partner for PTE Academic, IELTS, and global academic boards.
-              </p>
+              <p className="text-slate-500 max-w-sm text-sm leading-relaxed mb-8">Unified Global Infrastructure for Student Mobility and International Settlement.</p>
             </div>
             <div>
               <h4 className="text-[10px] font-black uppercase text-slate-500 mb-8 tracking-widest">Global Destinations</h4>
@@ -163,13 +155,11 @@ const App: React.FC = () => {
               <ul className="space-y-4 text-sm font-medium text-slate-400">
                 <li><button onClick={() => navigateTo({type:'api-docs'})} className="hover:text-primary-400 transition-colors">Developer Console</button></li>
                 <li><button onClick={() => navigateTo({type:'admin-guide'})} className="hover:text-primary-400 transition-colors">Admin Guide</button></li>
-                <li><button onClick={() => navigateTo({type:'handover'})} className="hover:text-primary-400 transition-colors">Infrastructure Specs</button></li>
-                <li><button onClick={() => navigateTo({type:'store'})} className="hover:text-primary-400 transition-colors">Voucher Store</button></li>
+                <li><button onClick={() => navigateTo({type:'store'})} className="hover:text-primary-400 transition-colors">Unified Store</button></li>
               </ul>
             </div>
           </div>
         </footer>
-
         <AIChat />
         {searchOpen && <SearchOverlay onClose={() => setSearchOpen(false)} onNavigate={navigateTo} />}
       </div>
@@ -183,7 +173,7 @@ const EnquirySection = () => (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
       <div>
         <h2 className="text-5xl md:text-7xl font-display font-bold mb-8 leading-[1.1] tracking-tight">Direct <span className="gradient-text">Council</span> Links.</h2>
-        <p className="text-slate-400 text-lg leading-relaxed mb-10 max-w-lg">Authorized procurement node for Pearson and British Council exams. Zero-latency registration fulfillment for students worldwide.</p>
+        <p className="text-slate-400 text-lg leading-relaxed mb-10 max-w-lg">Authorized node for Pearson, British Council, and International Settlement Boards.</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <FeatureItem icon="🎖️" title="Board Certified" desc="Official tier-1 partner status." />
           <FeatureItem icon="🌍" title="Multi-Region" desc="12 global fulfillment nodes." />

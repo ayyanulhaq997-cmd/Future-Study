@@ -1,9 +1,10 @@
+
 import * as db from './db';
 import { 
   Product, VoucherCode, VoucherStatus, Order, User, ActivityLog, SecurityStatus, LMSCourse, 
   LMSModule, LMSPracticeTest, Enrollment, TestResult, CourseVoucher, Qualification, 
   QualificationLead, TestBooking, ManualSubmission, SkillScore, SkillType, LeadSubmission, 
-  LeadStatus, PromoCode, FinanceReport, QuestionReview, UserRole 
+  LeadStatus, PromoCode, FinanceReport, QuestionReview, UserRole, ImmigrationGuideData 
 } from '../types';
 
 let products = [...db.products];
@@ -35,17 +36,6 @@ const sanitizeInput = (str: string): string => {
 
 const networkDelay = () => new Promise(resolve => setTimeout(resolve, Math.random() * 150 + 100));
 
-const rateLimitCheck = (key: string) => {
-  const now = Date.now();
-  if (!requestLog[key]) requestLog[key] = [];
-  requestLog[key] = requestLog[key].filter(ts => now - ts < 60000);
-  if (requestLog[key].length >= 100) {
-    rateLimitsTriggered++;
-    throw new Error('429: Network congestion at node: ' + key);
-  }
-  requestLog[key].push(now);
-};
-
 const checkRole = (allowedRoles: UserRole[]) => {
   if (!currentUser) throw new Error('401 Unauthorized');
   if (!allowedRoles.includes(currentUser.role)) throw new Error(`403 Forbidden`);
@@ -60,40 +50,33 @@ export const api = {
     api.logActivity('Auth', `Identity connection established: ${user.email}`, 'info');
     return user;
   },
-  
   signup: async (email: string) => {
     await networkDelay();
     const newUser: User = { id: 'u-' + Math.random().toString(36).substr(2, 9), name: email.split('@')[0], email, role: 'Customer', verified: false };
     users.push(newUser);
     return newUser;
   },
-  
   verifyEmail: async (email: string) => {
     await networkDelay();
     const user = users.find(u => u.email === email);
     if (user) user.verified = true;
     return user;
   },
-  
   logout: () => { currentUser = null; },
   getCurrentUser: () => currentUser,
-
   logActivity: async (action: string, details: string, severity: 'info' | 'warning' | 'critical' = 'info') => {
     const log: ActivityLog = { id: 'L-'+Math.random().toString(36).substr(2, 5), timestamp: new Date().toISOString(), userId: currentUser?.id || 'guest', userEmail: currentUser?.email || 'guest', action, details: sanitizeInput(details), ip: '10.0.0.1', country: 'Global', severity };
     logs.unshift(log);
     if (logs.length > 100) logs.pop();
   },
-
   getCodes: async () => { checkRole(['Admin', 'Finance']); return codes; },
   getStockCount: async (productId: string) => codes.filter(c => c.productId === productId && c.status === 'Available').length,
-
   importVouchers: async (productId: string, rawCodes: string[]) => {
     await networkDelay();
     checkRole(['Admin']);
     rawCodes.forEach(code => codes.push({ id: 'V-'+Math.random(), productId, code: sanitizeInput(code), status: 'Available', expiryDate: '2026-01-01' }));
     return { addedCount: rawCodes.length, duplicateCount: 0 };
   },
-
   calculatePrice: async (productId: string, quantity: number, promoCode?: string) => {
     const product = products.find(p => p.id === productId);
     if (!product) throw new Error('Product not found');
@@ -101,13 +84,10 @@ export const api = {
     let disc = currentUser?.role === 'Agent' ? total * 0.04 : 0;
     return { baseAmount: total, tierDiscount: disc, promoDiscount: 0, totalAmount: total - disc };
   },
-
   createGatewayOrder: async (amount: number) => {
     await networkDelay();
     return { id: 'ord_'+Math.random().toString(36).substr(2, 9), amount: Math.round(amount * 100), currency: 'INR', key: 'rzp_nexus' };
   },
-
-  // Fix: Added promoCode as 5th argument to match caller in CheckoutProcess.tsx
   processPayment: async (productId: string, quantity: number, email: string, paymentData: any, promoCode?: string) => {
     await networkDelay();
     const product = products.find(p => p.id === productId)!;
@@ -117,28 +97,22 @@ export const api = {
     if (product.lmsCourseId && currentUser) await api.enrollInCourse(product.lmsCourseId);
     return order;
   },
-
   getFinanceReport: async () => {
     checkRole(['Admin', 'Finance']);
     return { totalRevenue: orders.reduce((a, o) => a + o.totalAmount, 0), totalVouchersSold: orders.reduce((a, o) => a + o.quantity, 0), salesByType: [], recentSales: orders.slice(-20) } as FinanceReport;
   },
-
-  // Fix: Updated to persist leads in the local leadSubmissions array for retrieval
   submitLead: async (data: any) => { 
     await networkDelay(); 
     const lead = { ...data, id: 'L-'+Math.random(), status: 'New', timestamp: new Date().toISOString() };
     leadSubmissions.push(lead);
     return lead; 
   },
-
   getPendingSubmissions: async () => { checkRole(['Trainer', 'Admin']); return manualSubmissions.filter(s => !s.gradedBy); },
-
   gradeSubmission: async (id: string, score: number, fb: string) => {
     checkRole(['Trainer', 'Admin']);
     const s = manualSubmissions.find(x => x.id === id);
     if (s) { s.score = score; s.feedback = sanitizeInput(fb); s.gradedBy = currentUser?.name; }
   },
-
   getProducts: async () => products,
   getProductById: async (id: string) => products.find(p => p.id === id) || null,
   getOrders: async () => currentUser ? (['Admin', 'Finance'].includes(currentUser.role) ? orders : orders.filter(o => o.userId === currentUser?.id)) : [],
@@ -154,18 +128,15 @@ export const api = {
   submitTestResult: async (testId: string, answers: any, time: number) => { const result: TestResult = { id: 'RES-'+Math.random().toString(36).toUpperCase().substr(2, 5), userId: currentUser?.id || 'guest', testId, testTitle: 'Performance Mock', skillScores: [{ skill: 'Reading', score: 10, total: 10, isGraded: true }], timeTaken: time, timestamp: new Date().toISOString(), status: 'Graded', reviews: [] }; testResults.push(result); return result; },
   getQualifications: async () => qualifications,
   getQualificationById: async (id: string) => qualifications.find(q => q.id === id) || null,
-  // Fix: Added missing getQualificationLeads to resolve AdminDashboard error
   getQualificationLeads: async () => { checkRole(['Admin']); return qualificationLeads; },
-  // Fix: Added missing getLeads to resolve AdminDashboard error
   getLeads: async () => { checkRole(['Admin']); return leadSubmissions; },
-  // Fix: Updated to persist leads in local qualificationLeads array
   submitQualificationLead: async (data: any) => {
     const lead = { ...data, id: 'QL-'+Math.random(), status: 'Pending', timestamp: new Date().toISOString(), trackingId: 'TRK-'+Math.random() };
     qualificationLeads.push(lead);
     return lead;
   },
   getGuideBySlug: async (s: string) => db.countryGuides.find(g => g.slug === s) || null,
-  // Fix: Added getUniversities to resolve AIPlayground error
+  getImmigrationGuides: async () => db.immigrationGuides,
   getUniversities: async () => db.universities,
   getUniversitiesByCountry: async (cid: string) => db.universities.filter(u => u.countryId === cid),
   getUniversityBySlug: async (s: string) => db.universityBySlug(s),

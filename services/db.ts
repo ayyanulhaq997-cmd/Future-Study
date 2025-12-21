@@ -1,5 +1,5 @@
 
-import { Product, VoucherCode, User, University, Course, CountryGuide, LMSCourse, LMSModule, LMSPracticeTest, Enrollment, CourseVoucher, Qualification } from '../types';
+import { Product, VoucherCode, User, University, Course, CountryGuide, LMSCourse, LMSModule, LMSPracticeTest, Enrollment, CourseVoucher, Qualification, ImmigrationGuideData } from '../types';
 
 export const users: User[] = [
   { id: 'u-admin', name: 'System Admin', email: 'admin@nexus.ai', role: 'Admin' },
@@ -102,6 +102,26 @@ export const universities: University[] = [
   }
 ];
 
+export const immigrationGuides: ImmigrationGuideData[] = [
+  {
+    id: 'i1', countryId: 'uk', slug: 'uk', title: 'Immigrate to UK',
+    content: 'The UK Skilled Worker and Spouse visa routes provide clear pathways to settlement.',
+    heroImage: 'https://images.unsplash.com/photo-1520986606214-8b456906c813?w=1200&auto=format&fit=crop',
+    pathways: [
+      { id: 'p1', title: 'Skilled Worker Visa', description: 'Requires a job offer from a licensed sponsor.', requirements: ['Job Offer', 'Salary Threshold', 'B1 English'] },
+      { id: 'p2', title: 'Family/Spouse Visa', description: 'Settlement through family connection.', requirements: ['Relationship Proof', 'Financial Requirement'] }
+    ]
+  },
+  {
+    id: 'i2', countryId: 'ca', slug: 'canada', title: 'Canada PR Pathways',
+    content: 'Express Entry and PNP routes for high-skilled professionals looking to move to Canada.',
+    heroImage: 'https://images.unsplash.com/photo-1519832758034-f7b71780dec7?w=1200&auto=format&fit=crop',
+    pathways: [
+      { id: 'p3', title: 'Express Entry', description: 'Points based system for federal PR.', requirements: ['IELTS/PTE', 'ECA Report', 'Work Experience'] }
+    ]
+  }
+];
+
 export const universityBySlug = (slug: string) => universities.find(u => u.slug === slug) || null;
 
 export const courses: Course[] = [
@@ -111,44 +131,70 @@ export const courses: Course[] = [
 
 export const countryGuides: CountryGuide[] = [
   {
-    id: 'g1',
-    countryId: 'uk',
-    slug: 'united-kingdom',
-    title: 'Study in the United Kingdom',
-    content: 'The UK is a world leader in education. With historic universities and a diverse student community, it offers unparalleled academic prestige.',
-    heroImage: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1200&h=600&fit=crop',
-    costOfLiving: '£12,000 - £15,000 per year',
-    visaRequirements: 'Student Visa (formerly Tier 4) required with CAS.'
+    id: 'g1', countryId: 'uk', slug: 'uk', title: 'Study in the UK',
+    content: 'The UK offers world-class education with historic universities and a diverse student community.',
+    heroImage: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1200&auto=format&fit=crop',
+    costOfLiving: '£12,000 - £15,000 /yr', visaRequirements: 'Student Visa (Tier 4) required.'
   },
   {
-    id: 'g2',
-    countryId: 'au',
-    slug: 'australia',
-    title: 'Study in Australia',
-    content: 'Australia offers high-quality education, a relaxed lifestyle, and excellent post-study work opportunities for international students.',
-    heroImage: 'https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?w=1200&h=600&fit=crop',
-    costOfLiving: 'A$21,000 - A$25,000 per year',
-    visaRequirements: 'Student Visa (Subclass 500) required.'
+    id: 'g2', countryId: 'au', slug: 'australia', title: 'Study in Australia',
+    content: 'Australia is a leading destination for international students with high-quality education and a relaxed lifestyle.',
+    heroImage: 'https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?w=1200&auto=format&fit=crop',
+    costOfLiving: 'A$21,000 - A$25,000 /yr', visaRequirements: 'Subclass 500 Visa required.'
   },
   {
-    id: 'g3',
-    countryId: 'ca',
-    slug: 'canada',
-    title: 'Study in Canada',
-    content: 'Canada is known for its welcoming atmosphere, affordable quality education, and multicultural campus environments.',
-    heroImage: 'https://images.unsplash.com/photo-1503614472-8c93d56e92ce?w=1200&h=600&fit=crop',
-    costOfLiving: 'C$15,000 - C$20,000 per year',
-    visaRequirements: 'Study Permit required.'
+    id: 'g3', countryId: 'us', slug: 'usa', title: 'Study in the USA',
+    content: 'Home to some of the worlds most prestigious universities, the US offers unparalleled research opportunities.',
+    heroImage: 'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=1200&auto=format&fit=crop',
+    costOfLiving: '$15,000 - $25,000 /yr', visaRequirements: 'F-1 Student Visa required.'
   },
   {
-    id: 'g4',
-    countryId: 'us',
-    slug: 'usa',
-    title: 'Study in the USA',
-    content: 'The United States is home to some of the world’s most prestigious universities and is a global hub for innovation and research.',
-    heroImage: 'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=1200&h=600&fit=crop',
-    costOfLiving: '$15,000 - $25,000 per year',
-    visaRequirements: 'F-1 Student Visa required.'
+    id: 'g4', countryId: 'ca', slug: 'canada', title: 'Study in Canada',
+    content: 'Canada is known for its welcoming atmosphere, affordable quality education, and multicultural environment.',
+    heroImage: 'https://images.unsplash.com/photo-1503614472-8c93d56e92ce?w=1200&auto=format&fit=crop',
+    costOfLiving: 'C$15,000 - C$20,000 /yr', visaRequirements: 'Study Permit required.'
+  },
+  {
+    id: 'g5', countryId: 'nz', slug: 'new-zealand', title: 'Study in New Zealand',
+    content: 'High-quality education in a stunning natural environment with excellent post-study work rights.',
+    heroImage: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1200&auto=format&fit=crop',
+    costOfLiving: 'NZ$15,000 - NZ$18,000 /yr', visaRequirements: 'Fee-paying Student Visa.'
+  },
+  {
+    id: 'g6', countryId: 'se', slug: 'sweden', title: 'Study in Sweden',
+    content: 'Innovation, sustainability, and high-quality education system in the heart of Scandinavia.',
+    heroImage: 'https://images.unsplash.com/photo-1509339022327-1e1e25360a41?w=1200&auto=format&fit=crop',
+    costOfLiving: 'SEK 90,000 /yr', visaRequirements: 'Residence Permit for Studies.'
+  },
+  {
+    id: 'g7', countryId: 'fi', slug: 'finland', title: 'Study in Finland',
+    content: 'The happiest country in the world offers a unique education system focused on research and equality.',
+    heroImage: 'https://images.unsplash.com/photo-1529906920574-628dc1e49f9a?w=1200&auto=format&fit=crop',
+    costOfLiving: '€8,000 - €12,000 /yr', visaRequirements: 'Residence Permit (Education).'
+  },
+  {
+    id: 'g8', countryId: 'de', slug: 'germany', title: 'Study in Germany',
+    content: 'Tuition-free public universities and a powerhouse for engineering and technology.',
+    heroImage: 'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=1200&auto=format&fit=crop',
+    costOfLiving: '€11,000 /yr', visaRequirements: 'National Visa for Studies.'
+  },
+  {
+    id: 'g9', countryId: 'it', slug: 'italy', title: 'Study in Italy',
+    content: 'Rich cultural heritage combined with academic excellence in design, fashion, and history.',
+    heroImage: 'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=1200&auto=format&fit=crop',
+    costOfLiving: '€9,000 - €15,000 /yr', visaRequirements: 'Study Visa (Type D).'
+  },
+  {
+    id: 'g10', countryId: 'ie', slug: 'ireland', title: 'Study in Ireland',
+    content: 'Friendly, English-speaking hub for global tech and pharmaceuticals.',
+    heroImage: 'https://images.unsplash.com/photo-1549918838-316a78bb456c?w=1200&auto=format&fit=crop',
+    costOfLiving: '€10,000 - €15,000 /yr', visaRequirements: 'Student Visa (C or D).'
+  },
+  {
+    id: 'g11', countryId: 'cy', slug: 'cyprus', title: 'Study in Cyprus',
+    content: 'Modern education system with a Mediterranean lifestyle and strategic gateway to Europe.',
+    heroImage: 'https://images.unsplash.com/photo-1473210113314-8acc60524b12?w=1200&auto=format&fit=crop',
+    costOfLiving: '€7,000 - €10,000 /yr', visaRequirements: 'Student Permit required.'
   }
 ];
 
@@ -176,15 +222,6 @@ export const lmsModules: LMSModule[] = [
       { id: 'les-1', moduleId: 'mod-1', title: 'Personal Introduction Strategy', type: 'Video', skill: 'Speaking', content: 'https://www.youtube.com/embed/dQw4w9WgXcQ', duration: '10m', order: 1 },
       { id: 'les-2', moduleId: 'mod-1', title: 'Summarize Written Text: Essay Structure', type: 'Text', skill: 'Writing', content: '### Advanced Essay Techniques\nUse formal vocabulary and complex structures...', duration: '20m', order: 2 }
     ]
-  },
-  {
-    id: 'mod-2',
-    courseId: 'lms-1',
-    title: 'Part 2: Reading & Listening',
-    order: 2,
-    lessons: [
-      { id: 'les-3', moduleId: 'mod-2', title: 'Reading: Multiple Choice Secrets', type: 'Video', skill: 'Reading', content: 'https://www.youtube.com/embed/dQw4w9WgXcQ', duration: '15m', order: 1 }
-    ]
   }
 ];
 
@@ -195,36 +232,7 @@ export const lmsTests: LMSPracticeTest[] = [
     title: 'PTE Academic Full Length Mock #1',
     category: 'PTE',
     totalTimeLimit: 120,
-    sections: [
-      {
-        id: 'sec-reading',
-        title: 'Section A: Reading',
-        skill: 'Reading',
-        timeLimit: 30,
-        questions: [
-          { id: 'q1', skill: 'Reading', text: 'What is the main topic of the passage?', type: 'MCQ', options: ['Climate Change', 'Global Economy', 'Technological Singularity', 'Modern Art'], correctAnswer: 0, explanation: 'The passage primarily focuses on atmospheric changes and their impact.' },
-          { id: 'q2', skill: 'Reading', text: 'According to paragraph 2, why did the project fail?', type: 'MCQ', options: ['Lack of funding', 'Inclement weather', 'Lack of stakeholder interest'], correctAnswer: 2, explanation: 'Paragraph 2 specifically mentions the withdrawal of key investors due to disinterest.' }
-        ]
-      },
-      {
-        id: 'sec-writing',
-        title: 'Section B: Writing',
-        skill: 'Writing',
-        timeLimit: 40,
-        questions: [
-          { id: 'q3', skill: 'Writing', text: 'Write an essay (200-300 words) on the following topic: "The impact of social media on modern communication."', type: 'Essay' }
-        ]
-      },
-      {
-        id: 'sec-listening',
-        title: 'Section C: Listening',
-        skill: 'Listening',
-        timeLimit: 30,
-        questions: [
-          { id: 'q4', skill: 'Listening', text: 'Listen to the audio and select the correct summary.', type: 'MCQ', options: ['A description of local history.', 'A detailed scientific report on ocean life.', 'A personal anecdote about traveling.'], correctAnswer: 1, audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' }
-        ]
-      }
-    ]
+    sections: []
   }
 ];
 

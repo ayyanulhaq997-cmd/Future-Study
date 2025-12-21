@@ -14,6 +14,32 @@ export interface User {
   verified?: boolean;
 }
 
+export interface VisaPathway {
+  id: string;
+  title: string;
+  description: string;
+  requirements: string[];
+}
+
+export interface ImmigrationGuideData {
+  id: string;
+  countryId: string;
+  slug: string;
+  title: string;
+  content: string;
+  heroImage: string;
+  pathways: VisaPathway[];
+}
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  tier?: number;
+  verified?: boolean;
+}
+
 export interface PromoCode {
   code: string;
   discountPercentage: number;
@@ -328,6 +354,7 @@ export type ViewState =
   | { type: 'success'; orderId: string }
   | { type: 'university'; slug: string }
   | { type: 'country-guide'; slug: string }
+  | { type: 'immigration-guide'; slug: string }
   | { type: 'api-docs' }
   | { type: 'admin-guide' }
   | { type: 'lms-dashboard' }
