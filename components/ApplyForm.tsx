@@ -24,12 +24,13 @@ const ApplyForm: React.FC<ApplyFormProps> = ({ type, context, onSuccess }) => {
 
   if (done) return (
     <div className="glass p-12 rounded-[2.5rem] border border-emerald-500/30 text-center animate-in zoom-in">
-      <div className="w-20 h-20 bg-emerald-500/10 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6">
+      <div className="w-20 h-20 bg-emerald-500/10 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl">
         <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
       </div>
       <h3 className="text-3xl font-display font-bold mb-4">Identity Synced</h3>
-      <p className="text-slate-400 mb-8">Your request has been securely dispatched. An academic specialist will connect shortly.</p>
-      <button onClick={() => setDone(false)} className="text-primary-400 font-bold hover:underline uppercase text-[10px] tracking-widest">Open New Connection</button>
+      <p className="text-slate-400 mb-2 leading-relaxed">Your request has been securely dispatched to the central hub.</p>
+      <p className="text-primary-400 font-black text-[10px] uppercase tracking-widest mb-8">Node: connect@unicou.uk</p>
+      <button onClick={() => setDone(false)} className="text-slate-500 font-bold hover:text-white uppercase text-[10px] tracking-widest">Open New Connection</button>
     </div>
   );
 
@@ -38,9 +39,9 @@ const ApplyForm: React.FC<ApplyFormProps> = ({ type, context, onSuccess }) => {
       <div className="mb-10 text-center md:text-left">
         <span className="text-[10px] font-black text-primary-500 uppercase tracking-[0.3em] mb-2 block">{context || 'Internal Service Node'}</span>
         <h2 className="text-3xl md:text-5xl font-display font-bold tracking-tighter">
-          {type === 'membership' ? 'Partner Membership' : type === 'study-abroad' ? 'Student Application' : 'Global Enquiry'}
+          {type === 'membership' ? 'Partner Membership' : type === 'study-abroad' ? 'Student Application' : type === 'careers' ? 'Career Submission' : 'Global Enquiry'}
         </h2>
-        <p className="text-slate-500 text-sm mt-3">All transmissions are encrypted via the UNICOU Academic Nexus.</p>
+        <p className="text-slate-500 text-sm mt-3">Transmissions are routed to connect@unicou.uk for secure processing.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -57,7 +58,7 @@ const ApplyForm: React.FC<ApplyFormProps> = ({ type, context, onSuccess }) => {
         {type === 'study-abroad' && (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Select label="Target Country" options={['United Kingdom', 'Australia', 'USA', 'Canada', 'Ireland', 'Germany']} />
+              <Select label="Target Country" options={['United Kingdom', 'Australia', 'USA', 'Canada', 'Ireland', 'Germany', 'New Zealand', 'Turkey', 'Dubai', 'Malaysia']} />
               <Select label="Last Qualification" options={['O-Levels', 'A-Levels', 'Bachelor', 'Master', 'Intermediate']} />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -87,10 +88,10 @@ const ApplyForm: React.FC<ApplyFormProps> = ({ type, context, onSuccess }) => {
 
         <button 
           disabled={submitting}
-          className="w-full py-6 bg-unicou-navy hover:bg-[#003a4d] text-white rounded-2xl font-black uppercase tracking-widest transition-all shadow-xl active:scale-95 flex items-center justify-center gap-4"
+          className="w-full py-6 bg-unicou-navy hover:bg-[#003a4d] text-white rounded-2xl font-black uppercase tracking-widest transition-all shadow-xl active:scale-95 flex items-center justify-center gap-4 group/btn"
         >
-          {submitting ? 'Initializing Node Sync...' : 'Initialize Roadmap'}
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+          {submitting ? 'Routing to Hub...' : 'Dispatch Application'}
+          <svg className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
         </button>
       </form>
     </div>
