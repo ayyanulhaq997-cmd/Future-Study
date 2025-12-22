@@ -4,13 +4,17 @@ import { api } from '../services/apiService';
 import { ImmigrationGuideData } from '../types';
 import MetaTags from './MetaTags';
 
-const ImmigrationGuide: React.FC<{ slug: string }> = ({ slug }) => {
+interface ImmigrationGuideProps {
+  slug: string;
+  onConsult: () => void;
+}
+
+const ImmigrationGuide: React.FC<ImmigrationGuideProps> = ({ slug, onConsult }) => {
   const [guide, setGuide] = useState<ImmigrationGuideData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetch = async () => {
-      // Re-using common logic: if db doesn't have specific immig guide, it falls back
       const data = (await api.getImmigrationGuides()).find(g => g.slug === slug);
       setGuide(data || null);
       setLoading(false);
@@ -52,7 +56,10 @@ const ImmigrationGuide: React.FC<{ slug: string }> = ({ slug }) => {
               </div>
             </div>
 
-            <button className="w-full mt-10 py-5 bg-primary-600 hover:bg-primary-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-primary-500/20 transition-all active:scale-95">
+            <button 
+              onClick={onConsult}
+              className="w-full mt-10 py-5 bg-primary-600 hover:bg-primary-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-primary-500/20 transition-all active:scale-95"
+            >
               Consult with Settlement Expert
             </button>
           </div>

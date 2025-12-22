@@ -109,7 +109,10 @@ const App: React.FC = () => {
       case 'immigration-guide':
         return (
           <div className="animate-in fade-in">
-            <ImmigrationGuide slug={view.slug} />
+            <ImmigrationGuide 
+              slug={view.slug} 
+              onConsult={() => navigateTo({ type: 'apply', formType: 'immigration', context: `Consult: ${view.slug.replace('-', ' ').toUpperCase()}` })}
+            />
             <div className="max-w-4xl mx-auto py-20 px-4"><ApplyForm type="immigration" context={`Eligibility Check: ${view.slug}`} /></div>
           </div>
         );
@@ -229,7 +232,7 @@ const App: React.FC = () => {
         onLogout={handleLogout} 
         onOpenSearch={() => setSearchOpen(true)} 
       />
-      <main className="pt-[72px] min-h-screen relative z-0">
+      <main className="pt-[var(--nav-height)] min-h-screen relative z-0">
         {renderContent()}
       </main>
 
