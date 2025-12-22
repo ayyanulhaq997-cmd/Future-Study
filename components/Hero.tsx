@@ -1,47 +1,77 @@
+
 import React from 'react';
 
-const Hero: React.FC<{ onStart: () => void }> = ({ onStart }) => {
+interface HeroProps {
+  onStart: () => void;
+  onResellerClick: () => void;
+}
+
+const Hero: React.FC<HeroProps> = ({ onStart, onResellerClick }) => {
+  const partners = [
+    "PEARSON PTE", "BRITISH COUNCIL", "IDP IELTS", "OTHM UK", "OXFORD ELLT", 
+    "CAMBRIDGE", "ETS TOEFL", "DUOLINGO", "VFS GLOBAL", "GTEC"
+  ];
+
   return (
-    <section className="pt-24 pb-36 px-4 relative overflow-hidden">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1200px] h-[1200px] bg-primary-500/5 blur-[200px] rounded-full -z-10 animate-pulse-slow" />
+    <section className="pt-24 pb-36 px-4 relative overflow-hidden bg-slate-950">
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-primary-600/10 blur-[180px] rounded-full -z-10" />
       
       <div className="max-w-7xl mx-auto text-center relative z-10">
-        <div className="inline-flex items-center gap-3 px-6 py-2.5 rounded-full glass border border-primary-500/30 text-primary-400 text-[10px] font-black uppercase tracking-widest mb-12 shadow-xl shadow-primary-500/5">
+        <div className="inline-flex items-center gap-3 px-6 py-2.5 rounded-full glass border border-primary-500/30 text-primary-400 text-[10px] font-black uppercase tracking-[0.3em] mb-12 shadow-xl">
           <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-          Direct API Inventory Access • Live Nodes Active
+          UNICOU UNIFIED INFRASTRUCTURE • STUDY | IMMIGRATION | ACADEMY
         </div>
         
-        <h1 className="text-7xl md:text-[10rem] font-display font-bold tracking-tighter mb-12 leading-[0.85] animate-in slide-in-from-bottom duration-700">
-          EXAM <span className="gradient-text">VOUCHERS.</span> <br />
-          <span className="text-slate-100">PROCURED.</span>
+        <h1 className="text-6xl md:text-[9rem] font-display font-bold tracking-tighter mb-12 leading-[0.9] animate-in slide-in-from-bottom duration-700">
+          GLOBAL <span className="gradient-text">MOBILITY.</span> <br />
+          <span className="text-slate-100 uppercase">Simplified.</span>
         </h1>
         
-        <p className="text-xl md:text-2xl text-slate-500 max-w-3xl mx-auto mb-16 leading-relaxed font-medium animate-in slide-in-from-bottom delay-100 duration-700">
-          Nexus provides high-performance infrastructure for <span className="text-slate-200">PTE, IELTS, and TOEFL</span> procurement. Instant fulfillment via secure automated vault sync.
+        <p className="text-lg md:text-2xl text-slate-400 max-w-4xl mx-auto mb-16 leading-relaxed font-medium">
+          UNICOU unifies <span className="text-slate-200">Study Abroad</span>, <span className="text-slate-200">Immigration Paths</span>, and <span className="text-slate-200">Academy Training</span> into a single ecosystem.
         </p>
         
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-6 animate-in slide-in-from-bottom delay-200 duration-700">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
           <button 
             onClick={onStart} 
-            className="group relative w-full sm:w-auto px-12 py-6 bg-white text-slate-950 rounded-2xl font-black text-lg transition-all hover:scale-105 active:scale-95 shadow-[0_20px_50px_rgba(255,255,255,0.15)] overflow-hidden"
+            className="w-full sm:w-auto px-12 py-6 bg-unicou-navy text-white rounded-2xl font-black text-lg transition-all hover:scale-105 active:scale-95 shadow-2xl"
           >
-            <span className="relative z-10 flex items-center justify-center gap-3">
-              Explore Vault
-              <svg className="w-6 h-6 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-            </span>
+            LAUNCH PORTAL
           </button>
-          <button className="w-full sm:w-auto px-12 py-6 glass text-white rounded-2xl font-bold text-lg transition-all hover:bg-slate-800/80 border border-slate-700/50 hover:border-slate-500">
-            Reseller Portal
+          <button 
+            onClick={onResellerClick}
+            className="w-full sm:w-auto px-12 py-6 glass text-white rounded-2xl font-bold text-lg transition-all hover:bg-white/5 active:scale-95 uppercase tracking-widest"
+          >
+            CONNECT PARTNERS
           </button>
         </div>
 
-        <div className="mt-32 pt-20 border-t border-slate-900/50 grid grid-cols-2 md:grid-cols-4 gap-12 opacity-30 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-1000">
-           <div className="text-2xl font-black tracking-tighter">PEARSON</div>
-           <div className="text-2xl font-black tracking-tighter">IDP IELTS</div>
-           <div className="text-2xl font-black tracking-tighter">DUOLINGO</div>
-           <div className="text-2xl font-black tracking-tighter">BRITISH COUNCIL</div>
+        {/* PARTNER MARQUEE */}
+        <div className="mt-32 pt-20 border-t border-slate-900/50 overflow-hidden relative">
+          <h4 className="text-[9px] font-black text-slate-600 uppercase tracking-[0.4em] mb-12">Accredited Academic Nodes & Certifications</h4>
+          <div className="flex gap-16 animate-marquee whitespace-nowrap opacity-40 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-1000">
+            {[...partners, ...partners].map((p, i) => (
+              <div key={i} className="text-xl font-black tracking-tighter inline-block text-slate-300">
+                {p}
+              </div>
+            ))}
+          </div>
+          <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-slate-950 to-transparent" />
+          <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-slate-950 to-transparent" />
         </div>
       </div>
+
+      <style>{`
+        @keyframes marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .animate-marquee {
+          animation: marquee 30s linear infinite;
+          display: flex;
+          width: max-content;
+        }
+      `}</style>
     </section>
   );
 };

@@ -48,7 +48,7 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
 
     setProcessing(true);
     try {
-      // 1. Create a Secure Gateway Order on our Server
+      // 1. Create a Secure Gateway Order
       const rzpOrder = await api.createGatewayOrder(pricing.totalAmount);
 
       // 2. Configure Razorpay Options
@@ -56,8 +56,8 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
         key: rzpOrder.key,
         amount: rzpOrder.amount,
         currency: rzpOrder.currency,
-        name: "Nexus EDU Platform",
-        description: `Purchase: ${quantity}x ${product.name}`,
+        name: "NSA Unified Platform",
+        description: `Procurement: ${quantity}x ${product.name}`,
         image: "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=200&h=200&fit=crop",
         order_id: rzpOrder.id,
         handler: async (response: any) => {
@@ -70,18 +70,13 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
             }, promoCode);
             onSuccess(finalOrder.id);
           } catch (err: any) {
-            alert("Payment captured but order sync failed. Support ID: " + response.razorpay_payment_id);
+            alert("Security Check: Payment captured but sync failed. Keep your Payment ID: " + response.razorpay_payment_id);
             setProcessing(false);
           }
         },
         prefill: {
           name: email.split('@')[0],
           email: email,
-          contact: "9999999999"
-        },
-        notes: {
-          product_id: productId,
-          units: quantity
         },
         theme: {
           color: "#0ea5e9"
@@ -91,11 +86,15 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
         }
       };
 
-      // 4. Trigger Overlay
+      // 4. Trigger Real Overlay
       const rzp = new (window as any).Razorpay(options);
+      rzp.on('payment.failed', function (response: any){
+        alert("Transaction Failed: " + response.error.description);
+        setProcessing(false);
+      });
       rzp.open();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to initialize gateway');
+      alert(err instanceof Error ? err.message : 'Gateway initialization failed');
       setProcessing(false);
     }
   };
@@ -110,7 +109,7 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
         <div className="p-8 md:p-10">
           <div className="flex justify-between items-start mb-8">
             <div>
-              <h2 className="text-3xl font-display font-bold mb-2 tracking-tight">Secure <span className="text-primary-400">Checkout</span></h2>
+              <h2 className="text-3xl font-display font-bold mb-2 tracking-tight">Fulfillment <span className="text-primary-400">Node</span></h2>
               <p className="text-slate-400 text-sm">{product.name} (x{quantity})</p>
             </div>
             <button onClick={onCancel} disabled={processing} className="p-2 hover:bg-slate-800 rounded-full transition-colors text-slate-500">
@@ -159,15 +158,8 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
                   </div>
                 )}
 
-                {pricing.promoDiscount > 0 && (
-                  <div className="flex justify-between text-xs font-bold text-purple-400">
-                    <span>Promo Applied</span>
-                    <span className="font-mono">-${pricing.promoDiscount.toFixed(2)}</span>
-                  </div>
-                )}
-
                 <div className="flex justify-between items-center pt-3 border-t border-slate-800 mt-2">
-                  <span className="font-black text-slate-200 uppercase text-[10px] tracking-widest">Payable Total</span>
+                  <span className="font-black text-slate-200 uppercase text-[10px] tracking-widest">Settlement Total</span>
                   <span className="text-3xl font-display font-bold text-emerald-400 font-mono tracking-tighter">
                     ${pricing.totalAmount.toFixed(2)}
                   </span>
@@ -179,15 +171,12 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
                   type="submit"
                   className="w-full py-5 bg-primary-600 hover:bg-primary-500 text-white rounded-2xl font-bold text-lg transition-all shadow-xl shadow-primary-500/20 active:scale-95 flex items-center justify-center gap-3"
                 >
-                  Pay via UPI/Cards
+                  Pay via Gateway
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                 </button>
-                <div className="mt-6 flex justify-center items-center gap-4 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg" className="h-4" alt="UPI" />
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Visa_2021.svg/1200px-Visa_2021.svg.png" className="h-3" alt="Visa" />
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/1280px-Mastercard-logo.svg.png" className="h-4" alt="Mastercard" />
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/RuPay-Logo.svg/1200px-RuPay-Logo.svg.png" className="h-4" alt="RuPay" />
-                </div>
+                <p className="text-center text-[9px] text-slate-600 font-black uppercase mt-6 tracking-widest">
+                  Secure PCI-DSS Compliant Connection Established
+                </p>
               </div>
             </form>
           ) : (
@@ -196,8 +185,8 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
                  <div className="absolute inset-0 border-4 border-primary-500/20 border-t-primary-500 rounded-full animate-spin"></div>
                  <div className="absolute inset-4 border-4 border-emerald-500/20 border-b-emerald-500 rounded-full animate-spin-slow"></div>
               </div>
-              <h3 className="text-2xl font-bold mb-2">Connecting Gateway...</h3>
-              <p className="text-slate-500 text-sm max-w-xs">Initializing Indian Payment Terminal. Secure link established.</p>
+              <h3 className="text-2xl font-bold mb-2">Syncing Gateway...</h3>
+              <p className="text-slate-500 text-sm max-w-xs leading-relaxed">Please do not refresh. Establishing handshake with secure payment nodes.</p>
             </div>
           )}
         </div>

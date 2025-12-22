@@ -1,8 +1,9 @@
 {
-  "name": "study Abroad",
-  "description": "A cutting-edge, world-class AI-powered creative platform showcasing Gemini integration, image generation, and intelligent chat.",
+  "name": "UNICOU Study Abroad",
+  "description": "UNICOU is a cutting-edge, global academic mobility platform for international education, exam procurement, and visa consultations.",
   "requestFramePermissions": [
     "camera",
-    "microphone"
+    "microphone",
+    "geolocation"
   ]
 }

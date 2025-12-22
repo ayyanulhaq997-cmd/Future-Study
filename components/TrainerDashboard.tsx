@@ -99,23 +99,31 @@ const TrainerDashboard: React.FC<{ user: User }> = ({ user }) => {
             </div>
             
             <div className="overflow-y-auto flex-grow no-scrollbar divide-y divide-slate-800/50">
-              {pendingSubmissions.map(s => (
-                <button 
-                  key={s.id} 
-                  onClick={() => { setSelectedItem(s); setScore(0); setFeedback(''); }}
-                  className={`w-full text-left p-8 transition-all hover:bg-slate-800/30 group relative ${selectedItem?.id === s.id ? 'bg-primary-600/5' : ''}`}
-                >
-                  {selectedItem?.id === s.id && (
-                    <div className="absolute top-0 left-0 w-1 h-full bg-primary-500" />
-                  )}
-                  <div className="flex justify-between items-start mb-3">
-                    <span className={`px-2.5 py-1 rounded text-[9px] font-black uppercase tracking-widest border ${s.skill === 'Writing' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' : 'bg-purple-500/10 text-purple-500 border-purple-500/20'}`}>{s.skill}</span>
-                    <span className="text-[9px] text-slate-600 font-mono font-bold">{new Date(s.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                  </div>
-                  <h4 className="font-bold text-slate-100 text-base mb-1 group-hover:text-primary-400 transition-colors truncate">{s.userEmail}</h4>
-                  <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest">{s.testTitle}</p>
-                </button>
-              ))}
+              {pendingSubmissions.map(s => {
+                const isSelected = selectedItem?.id === s.id;
+                return (
+                  <button 
+                    key={s.id} 
+                    onClick={() => { setSelectedItem(s); setScore(0); setFeedback(''); }}
+                    className={`w-full text-left p-8 transition-all hover:bg-slate-800/30 group relative ${isSelected ? 'bg-primary-600/5' : ''}`}
+                  >
+                    {isSelected && (
+                      <div className="absolute top-0 left-0 w-1 h-full bg-primary-500" />
+                    )}
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex gap-2">
+                        <span className={`px-2.5 py-1 rounded text-[9px] font-black uppercase tracking-widest border ${s.skill === 'Writing' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' : 'bg-purple-500/10 text-purple-500 border-purple-500/20'}`}>{s.skill}</span>
+                        <span className={`px-2.5 py-1 rounded text-[9px] font-black uppercase tracking-widest border ${isSelected ? 'bg-orange-500/10 text-orange-400 border-orange-500/20 animate-pulse' : 'bg-slate-800/50 text-slate-500 border-slate-700'}`}>
+                          {isSelected ? 'Grading' : 'Pending'}
+                        </span>
+                      </div>
+                      <span className="text-[9px] text-slate-600 font-mono font-bold">{new Date(s.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
+                    <h4 className="font-bold text-slate-100 text-base mb-1 group-hover:text-primary-400 transition-colors truncate">{s.userName}</h4>
+                    <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest">{s.userEmail}</p>
+                  </button>
+                );
+              })}
               {pendingSubmissions.length === 0 && (
                 <div className="p-20 text-center flex flex-col items-center">
                   <div className="w-16 h-16 bg-slate-900 rounded-full flex items-center justify-center mb-4 border border-slate-800 text-slate-700">
@@ -143,7 +151,11 @@ const TrainerDashboard: React.FC<{ user: User }> = ({ user }) => {
                     <span className="text-slate-600 text-[10px] font-mono font-bold uppercase">{selectedItem.id}</span>
                   </div>
                   <h2 className="text-4xl font-display font-bold tracking-tight">Assessing <span className="text-primary-400">{selectedItem.skill} Task</span></h2>
-                  <p className="text-slate-500 text-sm mt-3 font-medium">Student: <span className="text-slate-300">{selectedItem.userEmail}</span> • Exam Type: <span className="text-slate-300">{selectedItem.testTitle}</span></p>
+                  <p className="text-slate-500 text-sm mt-3 font-medium">Student: <span className="text-slate-300">{selectedItem.userName}</span> (<span className="text-slate-400">{selectedItem.userEmail}</span>) • Exam Type: <span className="text-slate-300">{selectedItem.testTitle}</span></p>
+                  <p className="text-slate-500 text-xs mt-2 font-mono flex items-center gap-2">
+                    <svg className="w-3 h-3 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    Submitted: <span className="text-slate-300">{new Date(selectedItem.timestamp).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}</span>
+                  </p>
                 </div>
                 <button onClick={() => setSelectedItem(null)} className="p-3 bg-slate-900 hover:bg-slate-800 rounded-2xl border border-slate-800 text-slate-500 hover:text-white transition-all">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>

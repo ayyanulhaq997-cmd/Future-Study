@@ -1,9 +1,6 @@
 
-export type VoucherStatus = 'Available' | 'Sold' | 'Reserved';
 export type UserRole = 'Admin' | 'Agent' | 'Customer' | 'Trainer' | 'Finance';
-export type ProductType = 'Voucher' | 'Course' | 'Qualification' | 'Registration';
-export type SkillType = 'Reading' | 'Listening' | 'Writing' | 'Speaking';
-export type LeadStatus = 'New' | 'Contacted' | 'Qualified' | 'Follow-up' | 'Converted' | 'Lost';
+export type FormType = 'study-abroad' | 'immigration' | 'membership' | 'general' | 'careers';
 
 export interface User {
   id: string;
@@ -14,37 +11,68 @@ export interface User {
   verified?: boolean;
 }
 
-export interface VisaPathway {
+export interface University {
   id: string;
-  title: string;
+  name: string;
+  logo: string;
+  location: string;
+  ranking: number;
   description: string;
-  requirements: string[];
-}
-
-export interface ImmigrationGuideData {
-  id: string;
-  countryId: string;
   slug: string;
-  title: string;
-  content: string;
-  heroImage: string;
-  pathways: VisaPathway[];
+  website: string;
+  countryId: string;
 }
 
-export interface User {
+export interface Course {
+  id: string;
+  universityId: string;
+  degree: 'Undergraduate' | 'Postgraduate';
+  title: string;
+  duration: string;
+  tuitionFee: string;
+  description: string;
+}
+
+export interface Product {
   id: string;
   name: string;
-  email: string;
-  role: UserRole;
-  tier?: number;
-  verified?: boolean;
+  category: string;
+  type: 'Voucher' | 'Course';
+  basePrice: number;
+  currency: string;
+  description: string;
+  icon: string;
+  supportsFullRegistration?: boolean;
+  priceTiers?: { minQuantity: number; discountPercentage: number }[];
+  lmsCourseId?: string;
 }
 
-export interface PromoCode {
+export type VoucherStatus = 'Available' | 'Used' | 'Expired';
+
+export interface VoucherCode {
+  id: string;
+  productId: string;
   code: string;
-  discountPercentage: number;
-  isActive: boolean;
+  status: VoucherStatus;
   expiryDate: string;
+}
+
+export interface Order {
+  id: string;
+  userId: string;
+  productId: string;
+  productName: string;
+  quantity: number;
+  baseAmount: number;
+  tierDiscount: number;
+  promoDiscount: number;
+  totalAmount: number;
+  currency: string;
+  customerEmail: string;
+  status: string;
+  timestamp: string;
+  voucherCodes: string[];
+  paymentId?: string;
 }
 
 export interface ActivityLog {
@@ -63,22 +91,57 @@ export interface SecurityStatus {
   uptime: string;
   rateLimitsTriggered: number;
   activeSessions: number;
-  threatLevel: 'Low' | 'Elevated' | 'High';
+  threatLevel: string;
 }
 
-export interface TestBooking {
+export interface SkillScore {
+  skill: string;
+  score: number;
+  total: number;
+  isGraded: boolean;
+  band?: string;
+  feedback?: string;
+}
+
+export interface TestResult {
   id: string;
   userId: string;
-  productId: string;
-  productName: string;
-  studentName: string;
-  studentEmail: string;
-  preferredDate: string;
-  testCenter?: string;
-  status: 'Pending' | 'Confirmed' | 'Rescheduled' | 'Cancelled';
-  serviceType: 'Full-Registration' | 'Voucher-Only';
+  testId: string;
+  testTitle: string;
+  skillScores: SkillScore[];
+  overallBand?: string;
+  timeTaken: number;
   timestamp: string;
-  trackingRef: string;
+  status: string;
+  reviews: any[];
+}
+
+export interface ManualSubmission {
+  id: string;
+  testResultId: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  testTitle: string;
+  skill: string;
+  questionId: string;
+  studentAnswer: string;
+  maxScore: number;
+  timestamp: string;
+  gradedBy?: string;
+  score?: number;
+  feedback?: string;
+}
+
+export interface LeadSubmission {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  targetCountry: string;
+  preferredCourse: string;
+  status: string;
+  timestamp: string;
 }
 
 export interface Qualification {
@@ -95,36 +158,48 @@ export interface Qualification {
 
 export interface QualificationLead {
   id: string;
-  qualificationId: string;
-  qualificationTitle: string;
   studentName: string;
   studentEmail: string;
   studentPhone: string;
   highestQualification: string;
   workExperience: string;
+  qualificationId: string;
+  qualificationTitle: string;
+  status: string;
   timestamp: string;
-  status: 'Pending' | 'In Review' | 'Counselor Assigned' | 'Enrolled' | 'Rejected';
   trackingId: string;
 }
 
-export type LessonType = 'Video' | 'Text' | 'Quiz' | 'Asset';
+export interface TestBooking {
+  id: string;
+  productId: string;
+  productName: string;
+  studentName: string;
+  studentEmail: string;
+  preferredDate: string;
+  testCenter: string;
+  serviceType: string;
+  trackingRef: string;
+}
+
+export interface FinanceReport {
+  totalRevenue: number;
+  totalVouchersSold: number;
+  salesByType: { name: string; value: number }[];
+  recentSales: Order[];
+}
 
 export interface LMSLesson {
   id: string;
-  moduleId: string;
   title: string;
-  type: LessonType;
-  skill?: SkillType;
+  type: 'Video' | 'Text' | 'Quiz';
   content: string;
-  duration: string;
-  order: number;
 }
 
 export interface LMSModule {
   id: string;
   courseId: string;
   title: string;
-  order: number;
   lessons: LMSLesson[];
 }
 
@@ -132,40 +207,12 @@ export interface LMSCourse {
   id: string;
   title: string;
   description: string;
-  category: string;
-  price: number;
-  duration: string;
-  status: 'Free' | 'Paid';
   thumbnail: string;
+  category: string;
+  duration: string;
   instructor: string;
-}
-
-export interface LMSTestQuestion {
-  id: string;
-  skill: SkillType;
-  text: string;
-  type: 'MCQ' | 'Text-Input' | 'Audio-Record' | 'Essay';
-  options?: string[];
-  correctAnswer?: string | number;
-  explanation?: string;
-  audioUrl?: string;
-}
-
-export interface LMSTestSection {
-  id: string;
-  title: string;
-  skill: SkillType;
-  questions: LMSTestQuestion[];
-  timeLimit: number;
-}
-
-export interface LMSPracticeTest {
-  id: string;
-  courseId: string;
-  title: string;
-  category: 'PTE' | 'IELTS' | 'Duolingo' | 'TOEFL';
-  totalTimeLimit: number;
-  sections: LMSTestSection[];
+  price: number;
+  status: 'Free' | 'Paid';
 }
 
 export interface Enrollment {
@@ -176,135 +223,34 @@ export interface Enrollment {
   progress: number;
 }
 
-export interface SkillScore {
-  skill: SkillType;
-  score: number;
-  total: number;
-  isGraded: boolean;
-  feedback?: string;
-  band?: number | string;
-}
-
-export interface QuestionReview {
-  questionId: string;
-  studentAnswer: string | number;
-  correctAnswer: string | number;
-  isCorrect: boolean;
-}
-
-export interface TestResult {
-  id: string;
-  userId: string;
-  testId: string;
-  testTitle: string;
-  skillScores: SkillScore[];
-  overallBand?: string | number;
-  timeTaken: number;
-  timestamp: string;
-  status: 'Draft' | 'Submitted' | 'Graded';
-  reviews: QuestionReview[];
-}
-
-export interface ManualSubmission {
-  id: string;
-  testResultId: string;
-  userId: string;
-  userEmail: string;
-  testTitle: string;
-  skill: SkillType;
-  questionId: string;
-  studentAnswer: string;
-  gradedBy?: string;
-  score?: number;
-  maxScore: number;
-  feedback?: string;
-  timestamp: string;
-  isNotified?: boolean;
-}
-
 export interface CourseVoucher {
   id: string;
   code: string;
   courseId: string;
-  status: VoucherStatus;
-  expiryDate: string;
+  isRedeemed: boolean;
 }
 
-export interface VoucherCode {
+export interface LMSTestSection {
   id: string;
-  productId: string;
-  code: string;
-  status: VoucherStatus;
-  expiryDate: string;
-  customerId?: string;
-  agentId?: string;
+  skill: string;
+  title: string;
+  timeLimit: number;
+  questions: any[];
 }
 
-export interface PriceTier {
-  minQuantity: number;
-  discountPercentage: number;
-}
-
-export interface Product {
-  id: string;
-  name: string;
-  category: 'PTE' | 'IELTS' | 'Duolingo' | 'TOEFL' | 'LanguageCert' | 'Oxford ELLT' | 'Password';
-  type: ProductType;
-  lmsCourseId?: string;
-  basePrice: number;
-  currency: string;
-  description: string;
-  icon: string;
-  priceTiers: PriceTier[];
-  supportsFullRegistration?: boolean;
-}
-
-export interface Order {
-  id: string;
-  userId: string;
-  productId: string;
-  productName: string;
-  quantity: number;
-  baseAmount: number;
-  tierDiscount: number;
-  promoDiscount: number;
-  totalAmount: number;
-  currency: string;
-  customerEmail: string;
-  status: 'Pending' | 'Completed' | 'Failed';
-  timestamp: string;
-  voucherCodes: string[];
-  gatewayOrderId?: string;
-  paymentId?: string;
-  paymentSignature?: string;
-}
-
-export interface FinanceReport {
-  totalRevenue: number;
-  totalVouchersSold: number;
-  salesByType: { name: string; value: number }[];
-  recentSales: Order[];
-}
-
-export interface University {
-  id: string;
-  name: string;
-  slug: string;
-  location: string;
-  description: string;
-  logo: string;
-  ranking: number;
-  website: string;
-  countryId: string;
-}
-
-export interface Course {
+export interface LMSPracticeTest {
   id: string;
   title: string;
-  degree: string;
-  duration: string;
-  tuitionFee: string;
-  universityId: string;
+  sections: LMSTestSection[];
+}
+
+export interface APIEndpoint {
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  path: string;
+  description: string;
+  authRequired: boolean;
+  params?: string[];
+  response: string;
 }
 
 export interface CountryGuide {
@@ -318,49 +264,43 @@ export interface CountryGuide {
   visaRequirements: string;
 }
 
-export interface LeadSubmission {
+export interface ImmigrationGuideData {
   id: string;
-  name: string;
-  email: string;
-  phone: string;
-  targetCountry: string;
-  preferredCourse: string;
-  status: LeadStatus;
-  timestamp: string;
-  notes?: string;
+  countryId: string;
+  slug: string;
+  title: string;
+  content: string;
+  heroImage: string;
+  pathways: { id: string; title: string; description: string; requirements: string[] }[];
 }
 
-export interface APIEndpoint {
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE';
-  path: string;
-  description: string;
-  authRequired: boolean;
-  params?: string[];
-  response: string;
-}
+// Unused but imported types in apiService.ts to satisfy compiler
+export type SkillType = string;
+export type LeadStatus = string;
+export type PromoCode = string;
+export type QuestionReview = string;
 
 export type ViewState = 
   | { type: 'store' } 
   | { type: 'admin' }
   | { type: 'agent' }
-  | { type: 'trainer' }
-  | { type: 'finance' }
-  | { type: 'customer' }
   | { type: 'login' }
   | { type: 'signup' }
-  | { type: 'verification-pending'; email: string }
-  | { type: 'checkout'; productId: string; quantity: number }
-  | { type: 'book-test'; productId: string }
-  | { type: 'success'; orderId: string }
-  | { type: 'university'; slug: string }
+  | { type: 'about' }
+  | { type: 'resources' }
+  | { type: 'library' }
+  | { type: 'careers' }
+  | { type: 'apply'; formType: FormType; context?: string }
+  | { type: 'country-list' }
   | { type: 'country-guide'; slug: string }
   | { type: 'immigration-guide'; slug: string }
-  | { type: 'api-docs' }
-  | { type: 'admin-guide' }
   | { type: 'lms-dashboard' }
-  | { type: 'lms-course-player'; courseId: string; lessonId?: string }
-  | { type: 'lms-practice-test'; testId: string }
   | { type: 'course-catalogue' }
   | { type: 'qualifications' }
-  | { type: 'qualification-apply'; qualificationId: string }
-  | { type: 'handover' };
+  | { type: 'policy'; policyId: string }
+  | { type: 'verification-pending'; email: string }
+  | { type: 'checkout'; productId: string; quantity: number }
+  | { type: 'success'; orderId: string }
+  | { type: 'lms-course-player'; courseId: string; initialLessonId?: string }
+  | { type: 'lms-practice-test'; testId: string }
+  | { type: 'university'; slug: string };

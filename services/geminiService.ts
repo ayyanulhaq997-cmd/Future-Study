@@ -1,26 +1,22 @@
 
 import { GoogleGenAI, GenerateContentResponse, Type } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const SYSTEM_INSTRUCTION = `You are the UNICOU Assistant, a highly sophisticated AI consultant for the UNICOU Immigration and Academic Mobility platform.
+Your goal is to help users navigate our three main verticals:
+1. UNICOU Immigration: Settlement, PR pathways, and Visa consultation (uk, canada, australia).
+2. UNICOU Shop: Official Exam Vouchers (PTE, IELTS, TOEFL) and learning materials.
+3. UNICOU Academy: Mastery Courses, Mock Tests, and Academic Qualifications (OTHM).
 
-const SYSTEM_INSTRUCTION = `You are the Nexus EDU Assistant, a highly sophisticated AI consultant for the Nexus EDU platform.
-Your goal is to help students, agents, and trainers navigate the platform.
-
-Key Platform Information:
-1. Exam Vouchers: We sell vouchers for PTE Academic, IELTS, TOEFL iBT, Duolingo, LanguageCert, Oxford ELLT, and Password Skills Plus.
-2. Full Registration: For PTE and others, we offer a full-service registration where we handle the booking for the student.
-3. LMS Academy: We provide Mastery Courses and Mock Tests. Students get instant results for Reading/Listening and human grading for Writing/Speaking.
-4. Qualifications: We offer OTHM Level 3 Diplomas and other professional certifications.
-5. Roles: Students (customers), Agents (resellers with tiered discounts), and Trainers (graders).
-
-Be professional, concise, and helpful. Use a polite and encouraging tone.`;
+Be professional, concise, and helpful. Use a polite and encouraging tone. Always refer to the platform as UNICOU.`;
 
 export class GeminiService {
   /**
-   * Generates a text response using the gemini-3-flash-preview model.
+   * Strictly follows the requirement to use process.env.API_KEY directly.
+   * Build tools like Vite will replace this literal string during deployment.
    */
   static async generateText(prompt: string) {
     try {
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       const response: GenerateContentResponse = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
         contents: prompt,
@@ -30,16 +26,14 @@ export class GeminiService {
       });
       return response.text;
     } catch (error) {
-      console.error("Error generating text:", error);
-      throw error;
+      console.error("Gemini Text Error:", error);
+      return "The UNICOU AI node is temporarily offline. Please verify the environment configuration.";
     }
   }
 
-  /**
-   * Starts a streaming content generation for the chat interface.
-   */
   static async *chatStream(message: string, history: { role: 'user' | 'model', parts: { text: string }[] }[] = []) {
     try {
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       const response = await ai.models.generateContentStream({
         model: 'gemini-3-flash-preview',
         contents: [...history, { role: 'user', parts: [{ text: message }] }],
@@ -52,21 +46,19 @@ export class GeminiService {
         yield chunk.text;
       }
     } catch (error) {
-      console.error("Error in chat stream:", error);
-      throw error;
+      console.error("Gemini Stream Error:", error);
+      yield "Connection to the UNICOU nexus was interrupted. Please check your API key deployment.";
     }
   }
 
-  /**
-   * Performs an intelligent search across platform resources.
-   */
   static async platformSearch(query: string) {
     try {
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
-        contents: `Search the Nexus platform for: "${query}". Return relevant categories and specific items available.`,
+        contents: `Search the UNICOU platform for: "${query}". Return relevant categories and specific items available.`,
         config: {
-          systemInstruction: "You are the platform's search engine. Analyze user queries and map them to: 'Vouchers', 'Academy', 'Universities', or 'Qualifications'. Be precise.",
+          systemInstruction: "You are the platform's search engine. Analyze user queries and map them to: 'Vouchers', 'Academy', 'Immigration', or 'Qualifications'. Be precise.",
           responseMimeType: "application/json",
           responseSchema: {
             type: Type.OBJECT,
@@ -79,7 +71,7 @@ export class GeminiService {
                     title: { type: Type.STRING },
                     description: { type: Type.STRING },
                     category: { type: Type.STRING },
-                    linkType: { type: Type.STRING, description: "One of: store, academy, degree, global" }
+                    linkType: { type: Type.STRING, description: "One of: store, academy, degree, global, immigration" }
                   },
                   required: ["title", "description", "category", "linkType"]
                 }
@@ -90,7 +82,7 @@ export class GeminiService {
       });
       return JSON.parse(response.text || '{"results":[]}');
     } catch (e) {
-      console.error("Search error:", e);
+      console.error("Gemini Search Error:", e);
       return { results: [] };
     }
   }

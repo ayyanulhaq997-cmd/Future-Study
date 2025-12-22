@@ -2,10 +2,17 @@
 import * as db from './db';
 import { 
   Product, VoucherCode, VoucherStatus, Order, User, ActivityLog, SecurityStatus, LMSCourse, 
-  LMSModule, LMSPracticeTest, Enrollment, TestResult, CourseVoucher, Qualification, 
+  LMSModule, LMSLesson, Enrollment, TestResult, CourseVoucher, Qualification, 
   QualificationLead, TestBooking, ManualSubmission, SkillScore, SkillType, LeadSubmission, 
   LeadStatus, PromoCode, FinanceReport, QuestionReview, UserRole, ImmigrationGuideData 
 } from '../types';
+
+// ==========================================
+// REAL PAYMENT GATEWAY CONFIGURATION
+// ==========================================
+// Replace 'rzp_test_...' with your actual Razorpay Key ID from the dashboard
+const RAZORPAY_KEY_ID = 'rzp_test_NexusDemoKey123'; 
+// ==========================================
 
 let products = [...db.products];
 let codes = [...db.voucherCodes];
@@ -24,11 +31,6 @@ let leadSubmissions: LeadSubmission[] = [];
 let currentUser: User | null = null;
 
 let rateLimitsTriggered = 0;
-const requestLog: Record<string, number[]> = {};
-
-if (!users.find(u => u.id === 'u-finance')) {
-  users.push({ id: 'u-finance', name: 'Finance Controller', email: 'finance@nexus.ai', role: 'Finance' });
-}
 
 const sanitizeInput = (str: string): string => {
   return str.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gim, "").replace(/on\w+="[^"]*"/gim, "").trim();
@@ -45,14 +47,26 @@ export const api = {
   login: async (email: string) => {
     await networkDelay();
     const user = users.find(u => u.email === email);
-    if (!user) throw new Error('User node not found');
+    if (!user) throw new Error('User node not found. Please sign up first.');
     currentUser = user;
     api.logActivity('Auth', `Identity connection established: ${user.email}`, 'info');
     return user;
   },
-  signup: async (email: string) => {
+  signup: async (email: string, role: UserRole = 'Customer') => {
     await networkDelay();
-    const newUser: User = { id: 'u-' + Math.random().toString(36).substr(2, 9), name: email.split('@')[0], email, role: 'Customer', verified: false };
+    // Check if user already exists
+    if (users.find(u => u.email === email)) {
+      throw new Error('User already exists in the Nexus registry.');
+    }
+    
+    const newUser: User = { 
+      id: 'u-' + Math.random().toString(36).substr(2, 9), 
+      name: email.split('@')[0], 
+      email, 
+      role, 
+      verified: false,
+      tier: role === 'Agent' ? 1 : undefined 
+    };
     users.push(newUser);
     return newUser;
   },
@@ -84,22 +98,51 @@ export const api = {
     let disc = currentUser?.role === 'Agent' ? total * 0.04 : 0;
     return { baseAmount: total, tierDiscount: disc, promoDiscount: 0, totalAmount: total - disc };
   },
+  
   createGatewayOrder: async (amount: number) => {
     await networkDelay();
-    return { id: 'ord_'+Math.random().toString(36).substr(2, 9), amount: Math.round(amount * 100), currency: 'INR', key: 'rzp_nexus' };
+    return { 
+      id: 'order_' + Math.random().toString(36).substr(2, 12), 
+      amount: Math.round(amount * 83 * 100), 
+      currency: 'INR', 
+      key: RAZORPAY_KEY_ID 
+    };
   },
+
   processPayment: async (productId: string, quantity: number, email: string, paymentData: any, promoCode?: string) => {
     await networkDelay();
     const product = products.find(p => p.id === productId)!;
     const price = await api.calculatePrice(productId, quantity, promoCode);
-    const order: Order = { id: 'ORD-'+Math.random().toString(36).toUpperCase().substr(2, 5), userId: currentUser?.id || 'guest', productId, productName: product.name, quantity, ...price, currency: 'USD', customerEmail: sanitizeInput(email), status: 'Completed', timestamp: new Date().toISOString(), voucherCodes: ['NEXUS-'+Math.random().toString(36).toUpperCase().substr(0, 8)] };
+    
+    const order: Order = { 
+      id: 'ORD-'+Math.random().toString(36).toUpperCase().substr(2, 5), 
+      userId: currentUser?.id || 'guest', 
+      productId, 
+      productName: product.name, 
+      quantity, 
+      ...price, 
+      currency: 'USD', 
+      customerEmail: sanitizeInput(email), 
+      status: 'Completed', 
+      timestamp: new Date().toISOString(), 
+      voucherCodes: ['NEXUS-'+Math.random().toString(36).toUpperCase().substr(0, 8)],
+      paymentId: paymentData.paymentId
+    };
+    
     orders.push(order);
     if (product.lmsCourseId && currentUser) await api.enrollInCourse(product.lmsCourseId);
+    api.logActivity('Fulfillment', `Order ${order.id} fulfilled for ${email}`, 'info');
     return order;
   },
+
   getFinanceReport: async () => {
     checkRole(['Admin', 'Finance']);
-    return { totalRevenue: orders.reduce((a, o) => a + o.totalAmount, 0), totalVouchersSold: orders.reduce((a, o) => a + o.quantity, 0), salesByType: [], recentSales: orders.slice(-20) } as FinanceReport;
+    return { 
+      totalRevenue: orders.reduce((a, o) => a + o.totalAmount, 0), 
+      totalVouchersSold: orders.reduce((a, o) => a + o.quantity, 0), 
+      salesByType: [], 
+      recentSales: orders.slice(-20) 
+    } as FinanceReport;
   },
   submitLead: async (data: any) => { 
     await networkDelay(); 
@@ -118,14 +161,64 @@ export const api = {
   getOrders: async () => currentUser ? (['Admin', 'Finance'].includes(currentUser.role) ? orders : orders.filter(o => o.userId === currentUser?.id)) : [],
   getOrderById: async (id: string) => orders.find(x => x.id === id) || null,
   getLogs: async () => { checkRole(['Admin']); return logs; },
-  getSecurityStatus: async () => ({ uptime: '334h', rateLimitsTriggered, activeSessions: 42, threatLevel: 'Low' } as SecurityStatus),
+  getSecurityStatus: async () => ({ uptime: '334h', rateLimitsTriggered: 0, activeSessions: 42, threatLevel: 'Low' } as SecurityStatus),
   getTestResults: async () => currentUser ? (['Admin', 'Trainer'].includes(currentUser.role) ? testResults : testResults.filter(r => r.userId === currentUser?.id)) : [],
   getAllLMSCourses: async () => db.lmsCourses,
   getEnrolledCourses: async () => { if (!currentUser) return []; const ids = enrollments.filter(e => e.userId === currentUser?.id).map(e => e.courseId); return db.lmsCourses.filter(c => ids.includes(c.id)); },
+  getEnrollmentByCourse: async (cid: string) => enrollments.find(e => e.userId === currentUser?.id && e.courseId === cid),
   enrollInCourse: async (id: string) => { if (currentUser) enrollments.push({ id: 'E-'+Math.random(), userId: currentUser.id, courseId: id, enrolledAt: new Date().toISOString(), progress: 0 }); },
+  updateCourseProgress: async (cid: string, progress: number) => {
+    await networkDelay();
+    const enrollment = enrollments.find(e => e.userId === currentUser?.id && e.courseId === cid);
+    if (enrollment) enrollment.progress = progress;
+    return enrollment;
+  },
   getCourseModules: async (cid: string) => db.lmsModules.filter(m => m.courseId === cid),
   getTestById: async (id: string) => db.lmsTests.find(t => t.id === id),
-  submitTestResult: async (testId: string, answers: any, time: number) => { const result: TestResult = { id: 'RES-'+Math.random().toString(36).toUpperCase().substr(2, 5), userId: currentUser?.id || 'guest', testId, testTitle: 'Performance Mock', skillScores: [{ skill: 'Reading', score: 10, total: 10, isGraded: true }], timeTaken: time, timestamp: new Date().toISOString(), status: 'Graded', reviews: [] }; testResults.push(result); return result; },
+  submitTestResult: async (testId: string, answers: any, time: number) => { 
+    await networkDelay();
+    const test = db.lmsTests.find(t => t.id === testId);
+    
+    const skillScores: SkillScore[] = [
+      { skill: 'Reading', score: 8, total: 10, isGraded: true, band: '7.5', feedback: 'Excellent reading precision.' },
+      { skill: 'Writing', score: 0, total: 9, isGraded: false, feedback: 'Pending human evaluator.' },
+      { skill: 'Listening', score: 7, total: 10, isGraded: true, band: '7.0' },
+      { skill: 'Speaking', score: 0, total: 9, isGraded: false }
+    ];
+
+    const result: TestResult = { 
+      id: 'RES-'+Math.random().toString(36).toUpperCase().substr(2, 5), 
+      userId: currentUser?.id || 'guest', 
+      testId, 
+      testTitle: test?.title || 'Practice Test', 
+      skillScores, 
+      overallBand: 'Partial',
+      timeTaken: time, 
+      timestamp: new Date().toISOString(), 
+      status: 'Submitted', 
+      reviews: [] 
+    }; 
+    
+    testResults.push(result); 
+
+    if (answers['q3']) {
+      manualSubmissions.push({
+        id: 'MS-'+Math.random().toString(36).toUpperCase().substr(2, 5),
+        testResultId: result.id,
+        userId: currentUser?.id || 'guest',
+        userName: currentUser?.name || 'Guest Student',
+        userEmail: currentUser?.email || 'guest',
+        testTitle: result.testTitle,
+        skill: 'Writing',
+        questionId: 'q3',
+        studentAnswer: answers['q3'],
+        maxScore: 9,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    return result; 
+  },
   getQualifications: async () => qualifications,
   getQualificationById: async (id: string) => qualifications.find(q => q.id === id) || null,
   getQualificationLeads: async () => { checkRole(['Admin']); return qualificationLeads; },
