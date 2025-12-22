@@ -209,7 +209,7 @@ const LMSPracticeTest: React.FC<LMSPracticeTestProps> = ({ testId, onNavigate })
                    
                    {q.type === 'MCQ' && q.options && (
                      <div className="grid grid-cols-1 gap-4">
-                       {q.options.map((opt, oIdx) => (
+                       {q.options.map((opt: string, oIdx: number) => (
                          <button 
                            key={oIdx}
                            onClick={() => setAnswers({...answers, [q.id]: oIdx})}

@@ -113,4 +113,4 @@ export const lmsModules: LMSModule[] = [];
 export const lmsTests: LMSPracticeTest[] = [];
 export const initialEnrollments: Enrollment[] = [];
 export const courseVouchers: CourseVoucher[] = [];
-export const universityBySlug = (slug: string) => null;
+export const universityBySlug = (slug: string): University | null => null;
