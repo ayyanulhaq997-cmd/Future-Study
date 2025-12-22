@@ -51,8 +51,32 @@ export const qualifications: Qualification[] = [
 ];
 
 export const voucherCodes: VoucherCode[] = [];
-export const universities: University[] = [];
-export const courses: Course[] = [];
+
+export const universities: University[] = [
+  {
+    id: 'uni-manchester',
+    name: 'University of Manchester',
+    slug: 'manchester',
+    location: 'Manchester, UK',
+    ranking: 32,
+    description: 'A world-class research institution located in the heart of Manchester.',
+    logo: 'https://images.unsplash.com/photo-1541339907198-e08756ebafe3?w=200&h=200&fit=crop',
+    countryId: 'uk',
+    website: 'https://www.manchester.ac.uk'
+  }
+];
+
+export const courses: Course[] = [
+  {
+    id: 'c-cs-man',
+    universityId: 'uni-manchester',
+    title: 'MSc Computer Science',
+    degree: 'Postgraduate',
+    duration: '1 Year',
+    tuitionFee: '£28,000',
+    description: 'Advanced computing course focusing on AI and software engineering.'
+  }
+];
 
 export const immigrationGuides: ImmigrationGuideData[] = [
   {
@@ -113,4 +137,6 @@ export const lmsModules: LMSModule[] = [];
 export const lmsTests: LMSPracticeTest[] = [];
 export const initialEnrollments: Enrollment[] = [];
 export const courseVouchers: CourseVoucher[] = [];
-export const universityBySlug = (slug: string): University | null => null;
+export const universityBySlug = (slug: string): University | null => {
+  return universities.find(u => u.slug === slug) || null;
+};

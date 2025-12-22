@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/apiService';
-import { LMSPracticeTest as ITest, TestResult, ViewState, LMSTestSection } from '../types';
+import { LMSPracticeTest as ITest, TestResult, ViewState, LMSTestQuestion } from '../types';
 
 interface LMSPracticeTestProps {
   testId: string;
@@ -49,7 +49,7 @@ const LMSPracticeTest: React.FC<LMSPracticeTestProps> = ({ testId, onNavigate })
         handleSubmit();
       }
     }
-  }, [sectionTimeLeft, isFinished]);
+  }, [sectionTimeLeft, isFinished, test, currentSectionIdx]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -187,7 +187,7 @@ const LMSPracticeTest: React.FC<LMSPracticeTestProps> = ({ testId, onNavigate })
         </div>
 
         <div className="space-y-12 pb-48">
-          {currentSection.questions.map((q, idx) => (
+          {currentSection.questions.map((q: LMSTestQuestion, idx: number) => (
             <div key={q.id} className="glass p-8 md:p-12 rounded-[3rem] border border-slate-800 shadow-2xl relative overflow-hidden group hover:border-slate-700 transition-all">
                <div className="absolute top-0 left-0 w-1 h-full bg-primary-500 opacity-20 group-hover:opacity-100 transition-opacity" />
                

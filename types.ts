@@ -19,8 +19,8 @@ export interface University {
   ranking: number;
   description: string;
   slug: string;
-  website: string;
   countryId: string;
+  website: string;
 }
 
 export interface Course {
@@ -230,12 +230,23 @@ export interface CourseVoucher {
   isRedeemed: boolean;
 }
 
+export interface LMSTestQuestion {
+  id: string;
+  text: string;
+  type: 'MCQ' | 'Essay' | 'Audio-Record';
+  skill: string;
+  options?: string[];
+  correctOption?: number;
+  audioUrl?: string;
+  maxScore: number;
+}
+
 export interface LMSTestSection {
   id: string;
   skill: string;
   title: string;
   timeLimit: number;
-  questions: any[];
+  questions: LMSTestQuestion[];
 }
 
 export interface LMSPracticeTest {
@@ -244,14 +255,7 @@ export interface LMSPracticeTest {
   sections: LMSTestSection[];
 }
 
-export interface APIEndpoint {
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE';
-  path: string;
-  description: string;
-  authRequired: boolean;
-  params?: string[];
-  response: string;
-}
+// Added missing interfaces to resolve compilation errors in multiple components and services.
 
 export interface CountryGuide {
   id: string;
@@ -264,6 +268,13 @@ export interface CountryGuide {
   visaRequirements: string;
 }
 
+export interface ImmigrationPathway {
+  id: string;
+  title: string;
+  description: string;
+  requirements: string[];
+}
+
 export interface ImmigrationGuideData {
   id: string;
   countryId: string;
@@ -271,10 +282,18 @@ export interface ImmigrationGuideData {
   title: string;
   content: string;
   heroImage: string;
-  pathways: { id: string; title: string; description: string; requirements: string[] }[];
+  pathways: ImmigrationPathway[];
 }
 
-// Unused but imported types in apiService.ts to satisfy compiler
+export interface APIEndpoint {
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  path: string;
+  description: string;
+  authRequired: boolean;
+  params?: string[];
+  response: string;
+}
+
 export type SkillType = string;
 export type LeadStatus = string;
 export type PromoCode = string;
