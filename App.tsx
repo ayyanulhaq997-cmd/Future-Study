@@ -180,24 +180,120 @@ const App: React.FC = () => {
         );
       case 'about':
         return (
-          <div className="max-w-4xl mx-auto py-32 px-4 text-center">
-            <h1 className="text-6xl font-display font-bold mb-8 tracking-tighter text-unicou-navy">About <span className="text-unicou-orange">UNICOU</span></h1>
-            <p className="text-xl text-slate-400 leading-relaxed mb-12 font-medium">UNICOU is a unified academic mobility infrastructure bridging education and global opportunity.</p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
-              <div className="glass p-8 rounded-3xl border-slate-800 shadow-xl">
-                <h4 className="text-3xl font-bold text-primary-400 mb-2">120+</h4>
-                <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Global Partners</p>
-              </div>
-              <div className="glass p-8 rounded-3xl border-slate-800 shadow-xl">
-                <h4 className="text-3xl font-bold text-unicou-orange mb-2">15k+</h4>
-                <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Students Synced</p>
-              </div>
-              <div className="glass p-8 rounded-3xl border-slate-800 shadow-xl">
-                <h4 className="text-3xl font-bold text-emerald-500 mb-2">98%</h4>
-                <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Visa Success Rate</p>
-              </div>
+          <div className="max-w-5xl mx-auto py-24 px-6 animate-in fade-in duration-1000">
+            <div className="text-center mb-20">
+              <h1 className="text-6xl md:text-8xl font-display font-bold mb-8 tracking-tighter text-white">
+                About <span className="text-unicou-orange">UniCou</span>
+              </h1>
+              <p className="text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed font-medium">
+                Established in 2009, UniCou Ltd is a premier international education and immigration consultancy bridging the gap between talent and global opportunity.
+              </p>
             </div>
-            <ApplyForm type="general" context="Corporate Enquiries" />
+
+            <div className="grid grid-cols-1 gap-16 text-slate-300">
+              <section className="glass p-10 md:p-14 rounded-[3.5rem] border-slate-800">
+                <h2 className="text-3xl font-display font-bold mb-8 text-white tracking-tight">Our Legacy & Global Footprint</h2>
+                <div className="prose prose-invert max-w-none space-y-6 text-lg leading-relaxed italic">
+                  <p>
+                    Founded with a passion for global education and international opportunity, we are a leading international education and immigration consultancy with deep roots and a growing global footprint. Our journey began in 2009 in Pakistan, where we first opened our doors to support ambitious students and professionals in navigating the complexities of studying, living, and working abroad. Over the years, we have built a reputation rooted in transparency, integrity, and long-term success.
+                  </p>
+                  <p>
+                    As of 2023, we expanded our operations to include offices in the United Kingdom and Dubai, enhancing our ability to serve clients with localized expertise in two of the world’s most competitive education and migration markets. Our founder’s extensive professional training—including certifications from British Council UK agent training, ICEF Trained Agent Counsellor, AIRC enrollment management for U.S. education, and regional credentials such as Ireland Certified Counsellor—ensures that our guidance is both expert and trustworthy.
+                  </p>
+                  <p>
+                    We are also proud to be linked with globally recognized testing and recruitment partners including LanguageCert, Skills for English, TOEFL, Oxford ELLT, and Duolingo, and to operate as UKVI and Pearson approved test centers, reinforcing our leadership in secure English language testing and preparation.
+                  </p>
+                </div>
+              </section>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="glass p-10 rounded-[3rem] border-primary-500/20">
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary-500 mb-4">Vision</h3>
+                  <p className="text-xl font-medium leading-relaxed text-slate-100">
+                    To become the most trusted gateway for students, professionals, and institutions seeking global mobility solutions, empowering every client with informed choices across continents.
+                  </p>
+                </div>
+                <div className="glass p-10 rounded-[3rem] border-unicou-orange/20">
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-unicou-orange mb-4">Mission</h3>
+                  <p className="text-xl font-medium leading-relaxed text-slate-100">
+                    To streamline study abroad journeys and immigration pathways through ethics, expertise, and personalized support, fostering strong partnerships with industry networks worldwide.
+                  </p>
+                </div>
+              </div>
+
+              <section className="space-y-12">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+                  <div className="lg:col-span-4">
+                    <h2 className="text-3xl font-display font-bold text-white tracking-tight sticky top-24">What We Do</h2>
+                  </div>
+                  <div className="lg:col-span-8 space-y-8">
+                    <div className="glass p-8 rounded-[2.5rem] border-slate-800">
+                      <h4 className="text-primary-400 font-black text-xs uppercase tracking-widest mb-4">Study Abroad Guidance</h4>
+                      <p className="leading-relaxed">
+                        We provide comprehensive study abroad guidance for destinations including the UK, USA, Canada, Australia, NZ, Ireland, Europe, Dubai, Malaysia, and Turkey. From tailored counseling to admissions and visa support, we manage every step with meticulous care.
+                      </p>
+                    </div>
+                    <div className="glass p-8 rounded-[2.5rem] border-slate-800">
+                      <h4 className="text-primary-400 font-black text-xs uppercase tracking-widest mb-4">Immigration Services</h4>
+                      <p className="leading-relaxed">
+                        Supporting skilled individuals, entrepreneurs, and remote professionals seeking new beginnings. Whether it’s skilled migration, business immigration, citizenship by investment, or digital nomad visas, we offer strategic advice aligned with long-term goals.
+                      </p>
+                    </div>
+                    <div className="glass p-8 rounded-[2.5rem] border-slate-800">
+                      <h4 className="text-primary-400 font-black text-xs uppercase tracking-widest mb-4">Exam & E-Learning</h4>
+                      <p className="leading-relaxed">
+                        Official vouchers and preparation tools for IELTS, PTE, TOEFL iBT, Duolingo, GRE, SAT, and GMAT. Our e-learning resources help candidates enhance their skills with flexible, effective study tools.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section className="glass p-10 md:p-14 rounded-[3.5rem] border-slate-800 bg-slate-900/20">
+                <h2 className="text-3xl font-display font-bold mb-8 text-white tracking-tight">Why Work With Us</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                  <p className="leading-relaxed text-lg">
+                    Choosing us means choosing over a decade of trusted service, a global perspective, and expert guidance. Our advisors are certified by leading global organizations, ensuring high-quality counseling that is both ethical and effective.
+                  </p>
+                  <p className="leading-relaxed text-lg">
+                    We pride ourselves on building long-term relationships with students, professionals, and institutions, offering clarity and support at every stage of the international lifecycle.
+                  </p>
+                </div>
+              </section>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="glass p-10 rounded-[3rem] border-slate-800">
+                  <h3 className="text-lg font-bold text-white mb-4">Corporate Solutions</h3>
+                  <p className="text-sm leading-relaxed text-slate-400">
+                    We match international talent with strategic opportunities, helping organizations navigate compliance, workforce planning, and global talent acquisition with precision.
+                  </p>
+                </div>
+                <div className="glass p-10 rounded-[3rem] border-slate-800">
+                  <h3 className="text-lg font-bold text-white mb-4">Institution Partnership</h3>
+                  <p className="text-sm leading-relaxed text-slate-400">
+                    Collaborating with universities and training providers to support student recruitment, brand visibility, and international program success across key global regions.
+                  </p>
+                </div>
+              </div>
+
+              <section className="text-center py-20 bg-gradient-to-b from-transparent to-primary-600/5 rounded-[4rem]">
+                <h2 className="text-4xl font-display font-bold text-white mb-6">Looking Ahead</h2>
+                <p className="text-lg text-slate-400 max-w-3xl mx-auto leading-relaxed mb-12">
+                  Building on our strong legacy in Pakistan, the UK, and Dubai, we are actively planning expansion into the Middle East, India, China, Nepal, Bangladesh, Nigeria, and Ghana to deepen our global network.
+                </p>
+                <div className="flex flex-wrap justify-center gap-4">
+                   {['Middle East', 'India', 'China', 'Nigeria', 'Ghana', 'Bangladesh'].map(region => (
+                     <span key={region} className="px-6 py-2 glass border-slate-800 rounded-full text-[10px] font-black uppercase tracking-widest text-slate-500">
+                       {region}
+                     </span>
+                   ))}
+                </div>
+              </section>
+            </div>
+
+            <section className="mt-32 max-w-4xl mx-auto">
+              <ApplyForm type="general" context="Corporate Enquiries & Partnerships" />
+            </section>
           </div>
         );
       case 'login': 
