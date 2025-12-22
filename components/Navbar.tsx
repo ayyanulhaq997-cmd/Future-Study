@@ -49,7 +49,7 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
       ]
     },
     { 
-      id: 'vouchers', 
+      id: 'store', 
       label: 'Vouchers', 
       action: () => onNavigate({ type: 'store' }) 
     },
@@ -89,8 +89,8 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
       }}
     >
       <div className="max-w-[1600px] mx-auto px-4 h-full flex items-center justify-between">
-        <div className="flex items-center cursor-pointer" onClick={() => onNavigate({ type: 'store' })}>
-          <div className="text-xl font-display font-bold text-white uppercase tracking-tighter">
+        <div className="flex items-center cursor-pointer" onClick={() => onNavigate({ type: 'home' })}>
+          <div className="text-xl md:text-2xl font-display font-bold text-white uppercase tracking-tighter">
             UNI<span className="text-unicou-orange">COU</span>
           </div>
         </div>
@@ -128,13 +128,15 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
         </div>
 
         <div className="flex items-center gap-4">
-          <button onClick={onOpenSearch} className="p-2 text-slate-400 hover:text-white"><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg></button>
+          <button onClick={onOpenSearch} className="p-2 text-slate-400 hover:text-white transition-colors">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+          </button>
           {!user ? (
-            <button onClick={() => onNavigate({ type: 'login' })} className="px-5 py-2 bg-unicou-orange text-white rounded-lg text-[9px] font-black uppercase tracking-widest active:scale-95 shadow-lg">Login</button>
+            <button onClick={() => onNavigate({ type: 'login' })} className="px-5 py-2.5 bg-unicou-orange text-white rounded-lg text-[9px] font-black uppercase tracking-widest active:scale-95 shadow-lg shadow-unicou-orange/20 hover:bg-orange-600 transition-all">Login</button>
           ) : (
             <div className="flex items-center gap-4">
-               <button onClick={() => onNavigate(user.role === 'Admin' ? { type: 'admin' } : { type: 'store' })} className="text-[9px] font-black uppercase text-primary-400 underline">{user.name}</button>
-               <button onClick={onLogout} className="text-[9px] font-black uppercase text-slate-500 hover:text-red-400">Logout</button>
+               <button onClick={() => onNavigate(user.role === 'Admin' ? { type: 'admin' } : { type: 'home' })} className="text-[9px] font-black uppercase text-primary-400 hover:text-primary-300 underline">{user.name}</button>
+               <button onClick={onLogout} className="text-[9px] font-black uppercase text-slate-500 hover:text-red-400 transition-colors">Logout</button>
             </div>
           )}
         </div>

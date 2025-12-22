@@ -17,32 +17,33 @@ const Hero: React.FC<HeroProps> = ({ onStart, onResellerClick }) => {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-primary-600/10 blur-[180px] rounded-full -z-10" />
       
       <div className="max-w-7xl mx-auto text-center relative z-10">
-        <div className="inline-flex items-center gap-3 px-6 py-2.5 rounded-full glass border border-primary-500/30 text-primary-400 text-[10px] font-black uppercase tracking-[0.3em] mb-12 shadow-xl">
+        <div className="inline-flex items-center gap-3 px-6 py-2.5 rounded-full glass border border-primary-500/30 text-primary-400 text-[10px] font-black uppercase tracking-[0.3em] mb-12 shadow-xl animate-in slide-in-from-top-4 duration-1000">
           <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
           UNICOU UNIFIED INFRASTRUCTURE • STUDY | IMMIGRATION | ACADEMY
         </div>
         
-        <h1 className="text-6xl md:text-[9rem] font-display font-bold tracking-tighter mb-12 leading-[0.9] animate-in slide-in-from-bottom duration-700">
+        <h1 className="text-6xl md:text-[9.5rem] font-display font-bold tracking-tighter mb-12 leading-[0.85] animate-in slide-in-from-bottom duration-700">
           GLOBAL <span className="gradient-text">MOBILITY.</span> <br />
           <span className="text-slate-100 uppercase">Simplified.</span>
         </h1>
         
-        <p className="text-lg md:text-2xl text-slate-400 max-w-4xl mx-auto mb-16 leading-relaxed font-medium">
-          UNICOU unifies <span className="text-slate-200">Study Abroad</span>, <span className="text-slate-200">Immigration Paths</span>, and <span className="text-slate-200">Academy Training</span> into a single ecosystem.
+        <p className="text-lg md:text-2xl text-slate-400 max-w-4xl mx-auto mb-16 leading-relaxed font-medium px-4">
+          UNICOU unifies <span className="text-slate-200">Study Abroad</span>, <span className="text-slate-200">Immigration Paths</span>, and <span className="text-slate-200">Academy Training</span> into a single, high-performance ecosystem.
         </p>
         
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-6 px-4">
           <button 
             onClick={onStart} 
-            className="w-full sm:w-auto px-12 py-6 bg-unicou-navy text-white rounded-2xl font-black text-lg transition-all hover:scale-105 active:scale-95 shadow-2xl"
+            className="w-full sm:w-auto px-12 py-7 bg-unicou-orange text-white rounded-2xl font-black text-xl transition-all hover:scale-105 hover:bg-orange-600 active:scale-95 shadow-2xl flex items-center justify-center gap-4"
           >
-            LAUNCH PORTAL
+            VOUCHER SALE
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
           </button>
           <button 
-            onClick={onResellerClick}
-            className="w-full sm:w-auto px-12 py-6 glass text-white rounded-2xl font-bold text-lg transition-all hover:bg-white/5 active:scale-95 uppercase tracking-widest"
+            onClick={() => window.scrollTo({ top: 1200, behavior: 'smooth' })}
+            className="w-full sm:w-auto px-12 py-7 glass text-white rounded-2xl font-bold text-xl transition-all hover:bg-white/5 active:scale-95 uppercase tracking-widest border-slate-800"
           >
-            CONNECT PARTNERS
+            STUDY ABROAD
           </button>
         </div>
 

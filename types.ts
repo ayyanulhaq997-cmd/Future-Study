@@ -300,6 +300,7 @@ export type PromoCode = string;
 export type QuestionReview = string;
 
 export type ViewState = 
+  | { type: 'home' }
   | { type: 'store' } 
   | { type: 'admin' }
   | { type: 'agent' }
