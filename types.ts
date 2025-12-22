@@ -1,5 +1,5 @@
 
-export type UserRole = 'Admin' | 'Agent' | 'Customer' | 'Trainer' | 'Finance';
+export type UserRole = 'Admin' | 'Agent' | 'Customer' | 'Trainer' | 'Finance' | 'Teller';
 export type FormType = 'study-abroad' | 'immigration' | 'membership' | 'general' | 'careers';
 
 export interface User {
@@ -69,10 +69,12 @@ export interface Order {
   totalAmount: number;
   currency: string;
   customerEmail: string;
-  status: string;
+  status: 'Pending' | 'Completed' | 'Cancelled';
+  paymentMethod: 'Gateway' | 'BankTransfer';
   timestamp: string;
   voucherCodes: string[];
   paymentId?: string;
+  bankRef?: string;
 }
 
 export interface ActivityLog {
@@ -254,8 +256,6 @@ export interface LMSPracticeTest {
   title: string;
   sections: LMSTestSection[];
 }
-
-// Added missing interfaces to resolve compilation errors in multiple components and services.
 
 export interface CountryGuide {
   id: string;

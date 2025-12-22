@@ -63,7 +63,16 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
         { name: 'Regional Mobility', slug: 'regional' },
       ]
     },
-    { id: 'vouchers', label: 'Vouchers', action: () => onNavigate({ type: 'store' }) },
+    { 
+      id: 'vouchers', 
+      label: 'Vouchers', 
+      action: () => {
+        onNavigate({ type: 'store' });
+        setTimeout(() => {
+          document.getElementById('voucher-sale-node')?.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      } 
+    },
     { id: 'elearning', label: 'E-Learning', action: () => onNavigate({ type: 'lms-dashboard' }) },
     { id: 'library', label: 'Library', action: () => onNavigate({ type: 'library' }) },
     { 
@@ -118,17 +127,19 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
         
         {/* LOGO */}
         <div 
-          className="flex items-center gap-2 cursor-pointer group shrink-0" 
+          className="flex items-center cursor-pointer group shrink-0" 
           onClick={() => { onNavigate({ type: 'store' }); setActiveMenu(null); }}
         >
-          <div className="w-8 h-8 bg-unicou-navy rounded-lg flex items-center justify-center border border-white/10 shadow-lg group-hover:scale-105 transition-transform">
-            <svg className="w-5 h-5 text-unicou-orange" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9l-2.5-1.5L14 11V4h5v7z" />
-            </svg>
-          </div>
-          <div className="text-lg font-display font-bold flex tracking-tighter whitespace-nowrap hidden lg:flex">
-            <span className="text-white uppercase">Uni</span><span className="text-unicou-orange uppercase">cou</span>
-          </div>
+          <img 
+            src="logo.png" 
+            alt="UNICOU" 
+            className="h-8 md:h-10 w-auto object-contain transition-transform group-hover:scale-105"
+            onError={(e) => {
+               // Fallback if logo.png is missing
+               e.currentTarget.style.display = 'none';
+               e.currentTarget.parentElement!.innerHTML = `<div class="text-xl font-display font-bold"><span class="text-white">UNI</span><span class="text-unicou-orange">COU</span></div>`;
+            }}
+          />
         </div>
 
         {/* MAIN TABS */}

@@ -89,6 +89,7 @@ const App: React.FC = () => {
               <VoucherStore 
                 onCheckout={(p, q) => navigateTo({ type: 'checkout', productId: p, quantity: q })} 
                 onBook={(p) => navigateTo({ type: 'apply', formType: 'study-abroad', context: `Booking: ${p}` })} 
+                onNavigateToAgent={() => navigateTo({ type: 'signup' })}
               />
             </div>
             <Features />
@@ -263,9 +264,9 @@ const App: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="glass p-10 rounded-[3rem] border-slate-800">
-                  <h3 className="text-lg font-bold text-white mb-4">Corporate Solutions</h3>
+                  <h3 className="text-lg font-bold text-white mb-4">Corporate Placement & Sponsor Solutions</h3>
                   <p className="text-sm leading-relaxed text-slate-400">
-                    We match international talent with strategic opportunities, helping organizations navigate compliance, workforce planning, and global talent acquisition with precision.
+                    We match international talent with strategic opportunities, helping organizations navigate compliance, workforce planning, and global talent acquisition with confidence.
                   </p>
                 </div>
                 <div className="glass p-10 rounded-[3rem] border-slate-800">
@@ -302,7 +303,7 @@ const App: React.FC = () => {
             <Login 
               onLogin={(u) => { 
                 setUser(u); 
-                if (u.role === 'Admin') navigateTo({ type: 'admin' });
+                if (['Admin', 'Teller', 'Finance'].includes(u.role)) navigateTo({ type: 'admin' });
                 else if (u.role === 'Agent') navigateTo({ type: 'agent' });
                 else navigateTo({ type: 'store' });
               }} 
@@ -337,9 +338,8 @@ const App: React.FC = () => {
       <footer className="bg-slate-950 border-t border-slate-900 py-24 mt-24 relative z-10">
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-16">
           <div className="lg:col-span-4">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="w-9 h-9 bg-unicou-navy rounded-lg flex items-center justify-center shadow-lg shadow-primary-500/10"><svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9l-2.5-1.5L14 11V4h5v7z" /></svg></div>
-              <h3 className="text-3xl font-display font-bold uppercase tracking-tighter"><span className="text-white uppercase">Uni</span><span className="text-unicou-orange uppercase">cou</span></h3>
+            <div className="flex items-center gap-3 mb-8 cursor-pointer" onClick={() => navigateTo({ type: 'store' })}>
+              <img src="logo.png" alt="UNICOU" className="h-12 w-auto object-contain" />
             </div>
             <div className="space-y-6 text-[11px] text-slate-500 font-bold uppercase tracking-widest">
               <div><p className="text-slate-200 mb-1">United Kingdom</p><p>Manchester Business Park, Manchester, UK</p></div>
