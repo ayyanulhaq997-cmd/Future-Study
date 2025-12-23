@@ -57,6 +57,10 @@ export const api = {
     users.push(newUser);
     return newUser;
   },
+  getUsers: async () => {
+    checkRole(['Admin']);
+    return users;
+  },
   verifyEmail: async (email: string) => {
     await networkDelay();
     const user = users.find(u => u.email === email);

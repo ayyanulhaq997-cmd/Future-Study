@@ -12,18 +12,19 @@ const AdminDashboard: React.FC = () => {
     qLeads: QualificationLead[],
     leads: LeadSubmission[],
     security: SecurityStatus | null,
-    finance: FinanceReport | null
+    finance: FinanceReport | null,
+    users: User[]
   }>({
-    products: [], codes: [], orders: [], logs: [], qLeads: [], leads: [], security: null, finance: null
+    products: [], codes: [], orders: [], logs: [], qLeads: [], leads: [], security: null, finance: null, users: []
   });
   
-  const [activeTab, setActiveTab] = useState<'inventory' | 'verification' | 'leads' | 'qualifications' | 'security'>('verification');
+  const [activeTab, setActiveTab] = useState<'inventory' | 'verification' | 'leads' | 'users' | 'security'>('verification');
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   
   const fetchData = async () => {
     try {
-      const [p, c, o, l, ql, ls, s, f] = await Promise.all([
+      const [p, c, o, l, ql, ls, s, f, u] = await Promise.all([
         api.getProducts(), 
         api.getCodes().catch(() => []), 
         api.getOrders(), 
@@ -31,9 +32,10 @@ const AdminDashboard: React.FC = () => {
         api.getQualificationLeads(), 
         api.getLeads(), 
         api.getSecurityStatus(), 
-        api.getFinanceReport()
+        api.getFinanceReport(),
+        api.getUsers().catch(() => [])
       ]);
-      setData({ products: p, codes: c, orders: o, logs: l, qLeads: ql, leads: ls, security: s, finance: f });
+      setData({ products: p, codes: c, orders: o, logs: l, qLeads: ql, leads: ls, security: s, finance: f, users: u });
       setUser(api.getCurrentUser());
       
       const role = api.getCurrentUser()?.role;
@@ -64,7 +66,6 @@ const AdminDashboard: React.FC = () => {
   };
 
   const filteredPending = useMemo(() => {
-    // UPDATED: Show all pending orders, not just bank transfers
     return data.orders.filter(o => o.status === 'Pending');
   }, [data.orders]);
 
@@ -92,6 +93,11 @@ const AdminDashboard: React.FC = () => {
           <button onClick={() => setActiveTab('leads')} className={`px-6 py-2.5 rounded-xl text-[10px] font-black tracking-widest transition-all whitespace-nowrap ${activeTab === 'leads' ? 'bg-primary-600 text-white' : 'text-slate-500'}`}>
             ENQUIRIES
           </button>
+          {isAdmin && (
+            <button onClick={() => setActiveTab('users')} className={`px-6 py-2.5 rounded-xl text-[10px] font-black tracking-widest transition-all whitespace-nowrap ${activeTab === 'users' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500'}`}>
+              USERS
+            </button>
+          )}
         </div>
       </div>
 
@@ -175,6 +181,39 @@ const AdminDashboard: React.FC = () => {
                   ))}
                 </tbody>
               </table>
+          </div>
+        )}
+
+        {activeTab === 'users' && isAdmin && (
+          <div className="glass rounded-[2.5rem] border border-slate-800 overflow-hidden shadow-2xl">
+            <div className="px-10 py-6 border-b border-slate-800 bg-slate-900/50">
+              <h3 className="text-xl font-bold">Identity Registry</h3>
+              <p className="text-slate-500 text-xs mt-1">Full list of signed-up user nodes and their unique IDs.</p>
+            </div>
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-900/80 text-[10px] font-black uppercase text-slate-500 tracking-widest">
+                <tr>
+                  <th className="px-8 py-5">User ID</th>
+                  <th className="px-8 py-5">Email Node</th>
+                  <th className="px-8 py-5">Assigned Role</th>
+                  <th className="px-8 py-5 text-right">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800/50">
+                {data.users.map(u => (
+                  <tr key={u.id} className="hover:bg-slate-800/20 transition-colors">
+                    <td className="px-8 py-5 font-mono text-indigo-400 font-bold">{u.id}</td>
+                    <td className="px-8 py-5 text-slate-300">{u.email}</td>
+                    <td className="px-8 py-5">
+                      <span className="text-[10px] font-black px-3 py-1 bg-slate-900 rounded-full border border-slate-800 text-slate-400 uppercase tracking-widest">{u.role}</span>
+                    </td>
+                    <td className="px-8 py-5 text-right">
+                      <span className="text-[9px] font-bold text-emerald-500 uppercase bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Synced</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
 
