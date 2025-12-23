@@ -36,7 +36,6 @@ const AdminDashboard: React.FC = () => {
       setData({ products: p, codes: c, orders: o, logs: l, qLeads: ql, leads: ls, security: s, finance: f });
       setUser(api.getCurrentUser());
       
-      // Auto-set tab based on role
       const role = api.getCurrentUser()?.role;
       if (role === 'Teller' || role === 'Finance') setActiveTab('verification');
       else if (role === 'Trainer') setActiveTab('leads');
@@ -65,7 +64,8 @@ const AdminDashboard: React.FC = () => {
   };
 
   const filteredPending = useMemo(() => {
-    return data.orders.filter(o => o.status === 'Pending' && o.paymentMethod === 'BankTransfer');
+    // UPDATED: Show all pending orders, not just bank transfers
+    return data.orders.filter(o => o.status === 'Pending');
   }, [data.orders]);
 
   if (loading) return <div className="p-20 text-center animate-pulse text-unicou-orange">Establishing Connection to UNICOU Admin Hub...</div>;
@@ -103,7 +103,7 @@ const AdminDashboard: React.FC = () => {
                <div className="flex justify-between items-start mb-10">
                  <div>
                     <h2 className="text-2xl font-bold mb-2">Pending Settlement Verifications</h2>
-                    <p className="text-slate-500 text-sm">Review bank transfer references and release digital assets.</p>
+                    <p className="text-slate-500 text-sm">Review incoming payments and release digital assets.</p>
                  </div>
                  {isSupportRole && (
                     <div className="bg-red-500/10 border border-red-500/20 px-4 py-2 rounded-xl text-[9px] font-bold text-red-400 uppercase tracking-widest">
@@ -117,18 +117,29 @@ const AdminDashboard: React.FC = () => {
                    <thead className="bg-slate-900/80 text-[10px] font-black uppercase text-slate-500 tracking-widest">
                      <tr>
                        <th className="px-8 py-5">Order ID</th>
-                       <th className="px-8 py-5">Client Identity</th>
-                       <th className="px-8 py-5">Bank Reference</th>
-                       <th className="px-8 py-5">Total Amount</th>
-                       <th className="px-8 py-5 text-right">Verification</th>
+                       <th className="px-8 py-5">Method</th>
+                       <th className="px-8 py-5">Ref/ID</th>
+                       <th className="px-8 py-5">Amount</th>
+                       <th className="px-8 py-5 text-right">Action</th>
                      </tr>
                    </thead>
                    <tbody className="divide-y divide-slate-800/50">
                      {filteredPending.map(o => (
                        <tr key={o.id} className="hover:bg-slate-800/20 transition-colors">
-                         <td className="px-8 py-5 font-mono text-primary-400 font-bold">{o.id}</td>
-                         <td className="px-8 py-5 text-slate-200">{o.customerEmail}</td>
-                         <td className="px-8 py-5"><span className="px-3 py-1 bg-slate-900 border border-slate-800 rounded-lg text-[10px] font-mono font-bold text-slate-300">{o.bankRef}</span></td>
+                         <td className="px-8 py-5 font-mono text-primary-400 font-bold">
+                           {o.id}
+                           <div className="text-[9px] text-slate-600 mt-1 font-sans">{o.customerEmail}</div>
+                         </td>
+                         <td className="px-8 py-5">
+                            <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase border ${o.paymentMethod === 'Gateway' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 'bg-orange-500/10 text-orange-400 border-orange-500/20'}`}>
+                                {o.paymentMethod}
+                            </span>
+                         </td>
+                         <td className="px-8 py-5">
+                           <span className="px-3 py-1 bg-slate-900 border border-slate-800 rounded-lg text-[10px] font-mono font-bold text-slate-300">
+                             {o.bankRef || o.paymentId || 'N/A'}
+                           </span>
+                         </td>
                          <td className="px-8 py-5 font-bold text-white">${o.totalAmount}</td>
                          <td className="px-8 py-5 text-right">
                            <button 

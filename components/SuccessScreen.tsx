@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/apiService';
 import { Order } from '../types';
@@ -11,9 +12,18 @@ const SuccessScreen: React.FC<SuccessScreenProps> = ({ orderId, onClose }) => {
   const [order, setOrder] = useState<Order | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchOrder = () => {
+    setRefreshing(true);
+    api.getOrderById(orderId).then((o) => {
+        setOrder(o);
+        setRefreshing(false);
+    });
+  };
 
   useEffect(() => {
-    api.getOrderById(orderId).then(setOrder);
+    fetchOrder();
   }, [orderId]);
 
   const copyToClipboard = (text: string) => {
@@ -26,22 +36,67 @@ const SuccessScreen: React.FC<SuccessScreenProps> = ({ orderId, onClose }) => {
     setDownloading(true);
     setTimeout(() => {
       setDownloading(false);
-      alert(`Automated Invoice for ${orderId} generated and ready. (Simulation: File saved to virtual drive)`);
+      alert(`Automated Invoice for ${orderId} generated and ready.`);
     }, 1500);
   };
 
   if (!order) return null;
 
+  // SYSTEM LOGIC: "payment only verified when admin approve it otherwise it show pending"
+  if (order.status === 'Pending') {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-20 text-center animate-in fade-in duration-700">
+        <div className="mb-12 inline-flex items-center justify-center w-24 h-24 bg-orange-500/10 text-orange-400 rounded-full border border-orange-500/20 shadow-2xl animate-pulse">
+          <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        </div>
+
+        <h1 className="text-4xl md:text-6xl font-display font-bold mb-6">Settlement <span className="text-orange-400">Pending.</span></h1>
+        <p className="text-xl text-slate-400 mb-12 max-w-2xl mx-auto">
+            Your payment for order <strong>{order.id}</strong> has been received and is currently in the <strong>Verification Node</strong>. 
+            Once an administrator approves the settlement, your vouchers will be released here and via email.
+        </p>
+
+        <div className="glass p-10 rounded-[3rem] border border-slate-800 mb-12 max-w-xl mx-auto">
+            <div className="flex items-center justify-between mb-4">
+                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Protocol Status</span>
+                <span className="text-[10px] font-black text-orange-400 uppercase tracking-widest bg-orange-400/10 px-3 py-1 rounded-full">Awaiting Approval</span>
+            </div>
+            <p className="text-slate-500 text-sm italic leading-relaxed">
+                Verification usually takes between 10-60 minutes during standard operating hours. You can safely close this page; your assets will also appear in your student dashboard.
+            </p>
+        </div>
+
+        <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <button 
+              onClick={fetchOrder}
+              disabled={refreshing}
+              className="px-10 py-5 bg-primary-600 hover:bg-primary-500 text-white rounded-2xl font-bold transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+            >
+              {refreshing ? <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : null}
+              Check Status
+            </button>
+            <button 
+              onClick={onClose}
+              className="px-10 py-5 glass hover:bg-slate-800 text-white rounded-2xl font-bold transition-all border border-slate-800"
+            >
+              Back to Store
+            </button>
+        </div>
+      </div>
+    );
+  }
+
+  // VERIFIED STATE
   return (
-    <div className="max-w-4xl mx-auto px-4 py-20 text-center">
+    <div className="max-w-4xl mx-auto px-4 py-20 text-center animate-in zoom-in duration-700">
       <div className="mb-12 inline-flex items-center justify-center w-24 h-24 bg-emerald-500/10 text-emerald-500 rounded-full border border-emerald-500/20 shadow-2xl shadow-emerald-500/20">
         <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
       </div>
 
       <h1 className="text-4xl md:text-6xl font-display font-bold mb-6">Payment <span className="text-emerald-500">Verified.</span></h1>
       <p className="text-xl text-slate-400 mb-12 max-w-2xl mx-auto">
-        Your order <strong>{order.id}</strong> was processed successfully. 
-        Your secure vouchers are listed below and have also been sent to <strong>{order.customerEmail}</strong> via automated fulfillment.
+        Your order <strong>{order.id}</strong> was approved. 
+        Your secure vouchers are listed below and have been dispatched to <strong>{order.customerEmail}</strong>.
       </p>
 
       <div className="grid grid-cols-1 gap-6 mb-12 max-w-2xl mx-auto">

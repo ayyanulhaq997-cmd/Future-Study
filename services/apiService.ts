@@ -1,3 +1,4 @@
+
 import * as db from './db';
 import { 
   Product, VoucherCode, VoucherStatus, Order, User, ActivityLog, SecurityStatus, LMSCourse, 
@@ -118,17 +119,21 @@ export const api = {
     checkRole(['Admin', 'Teller', 'Finance']);
     const order = orders.find(o => o.id === orderId);
     if (order && order.status === 'Pending') {
-      order.status = 'Completed';
       const available = codes.filter(c => c.productId === order.productId && c.status === 'Available');
+      
       if (available.length < order.quantity) {
-        // Recovery logic if stock is low
-        for(let i=0; i<order.quantity; i++) order.voucherCodes.push('REC-'+Math.random().toString(36).toUpperCase().substr(0,8));
+        // Recovery logic if stock is low - Generating placeholders
+        for(let i=0; i<order.quantity; i++) {
+            order.voucherCodes.push('REC-'+Math.random().toString(36).toUpperCase().substr(0,8));
+        }
       } else {
         for (let i = 0; i < order.quantity; i++) {
           available[i].status = 'Used';
           order.voucherCodes.push(available[i].code);
         }
       }
+
+      order.status = 'Completed';
       api.logActivity('Verification', `Payment verified for ${orderId}. Vouchers released.`, 'info');
     }
     return order;
@@ -137,6 +142,8 @@ export const api = {
     await networkDelay();
     const product = products.find(p => p.id === productId)!;
     const price = await api.calculatePrice(productId, quantity, promoCode);
+    
+    // NEW LOGIC: Gateway payments now enter a 'Pending' state for Admin verification
     const order: Order = { 
       id: 'ORD-'+Math.random().toString(36).toUpperCase().substr(2, 5), 
       userId: currentUser?.id || 'guest', 
@@ -146,25 +153,15 @@ export const api = {
       ...price, 
       currency: 'USD', 
       customerEmail: email, 
-      status: 'Completed', 
+      status: 'Pending', 
       paymentMethod: 'Gateway',
       timestamp: new Date().toISOString(), 
-      voucherCodes: [],
+      voucherCodes: [], // Empty until Admin verifies
       paymentId: paymentData.paymentId 
     };
     
-    const available = codes.filter(c => c.productId === productId && c.status === 'Available');
-    for (let i = 0; i < quantity; i++) {
-      if (available[i]) {
-        available[i].status = 'Used';
-        order.voucherCodes.push(available[i].code);
-      } else {
-        order.voucherCodes.push('NEXUS-'+Math.random().toString(36).toUpperCase().substr(0, 8));
-      }
-    }
-
     orders.push(order);
-    api.logActivity('Fulfillment', `Order ${order.id} fulfilled for ${email}`, 'info');
+    api.logActivity('Payment', `Gateway payment captured for ${order.id}. Awaiting Admin verification.`, 'info');
     return order;
   },
   getFinanceReport: async () => {
@@ -202,13 +199,11 @@ export const api = {
     const isSpecial = ['Admin', 'Finance', 'Teller'].includes(currentUser.role);
     const unfiltered = isSpecial ? orders : orders.filter(o => o.userId === currentUser?.id);
     
-    // SECURITY: Support/Sale team couldn't see the actual voucher
     if (currentUser.role === 'Finance' || currentUser.role === 'Teller' || currentUser.role === 'Trainer') {
       return unfiltered.map(o => ({ ...o, voucherCodes: o.voucherCodes.map(() => '****-****-****') }));
     }
     return unfiltered;
   },
-  // Added missing method to fetch a single order by ID with security masking
   getOrderById: async (id: string) => {
     await networkDelay();
     const order = orders.find(o => o.id === id);
@@ -231,7 +226,6 @@ export const api = {
     if (enrollment) enrollment.progress = progress;
     return enrollment;
   },
-  // Fix: Removed duplicate getCourseModules property
   getCourseModules: async (cid: string) => db.lmsModules.filter(m => m.courseId === cid),
   getTestById: async (id: string) => db.lmsTests.find(t => t.id === id),
   submitTestResult: async (testId: string, answers: any, time: number) => { 
