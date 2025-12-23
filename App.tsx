@@ -237,17 +237,23 @@ const App: React.FC = () => {
           <div className="max-w-7xl mx-auto py-24 px-6 animate-in fade-in duration-700">
             <div className="text-center mb-20">
               <span className="text-[10px] font-black text-unicou-orange uppercase tracking-[0.4em] mb-4 block">Our Identity</span>
-              <h1 className="text-6xl md:text-8xl font-display font-bold mb-8 text-white tracking-tighter">About <span className="text-unicou-orange">UNICOU</span></h1>
-              <p className="text-slate-400 text-xl max-w-3xl mx-auto leading-relaxed font-medium italic">
-                A globally distributed academic mobility engine, redefining how the next generation accesses world-class education and professional certification.
-              </p>
+              <h1 className="text-6xl md:text-8xl font-display font-bold mb-8 text-white tracking-tighter">About <span className="text-unicou-orange">Us</span></h1>
+              <div className="glass p-12 rounded-[3.5rem] border-slate-800 shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none text-9xl font-black italic">HISTORY</div>
+                <p className="text-slate-300 text-xl leading-relaxed font-medium relative z-10">
+                  Founded with a passion for global education and international opportunity, we are a leading international education and immigration consultancy with deep roots and a growing global footprint. Our journey began in 2009 in Pakistan, where we first opened our doors to support ambitious students and professionals in navigating the complexities of studying, living, and working abroad. Over the years, we have built a reputation rooted in transparency, integrity, and long-term success.
+                </p>
+                <p className="text-slate-400 mt-8 leading-relaxed text-lg italic">
+                  As of 2023, we expanded our operations to include offices in the United Kingdom and Dubai, enhancing our ability to serve clients with localized expertise in two of the world’s most competitive education and migration markets. Our founder’s extensive professional training ensures that our guidance is both expert and trustworthy. We are also proud to be linked with globally recognized testing and recruitment partners including LanguageCert, Skills for English, TOEFL, Oxford ELLT, and Duolingo, reinforcing our leadership in secure English language testing.
+                </p>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-24">
                <div className="glass p-12 rounded-[3.5rem] border-slate-800 hover:border-unicou-orange/20 transition-all group">
                   <h3 className="text-3xl font-display font-bold mb-6 tracking-tight">Our <span className="text-unicou-orange">Vision</span></h3>
                   <p className="text-slate-400 leading-relaxed text-lg mb-8">
-                    To build a future where geography never dictates potential. UNICOU leverages high-performance digital infrastructure to provide students and professionals with instantaneous access to exams, degree paths, and immigration resources.
+                    To become the most trusted gateway for students, professionals, and institutions seeking global education and mobility solutions. We aspire to simplify international pathways, empower every client with informed choices, and build bridges between talent and opportunity across continents.
                   </p>
                   <div className="flex items-center gap-4 pt-6 border-t border-slate-900/50">
                     <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 group-hover:scale-110 transition-transform">
@@ -257,45 +263,67 @@ const App: React.FC = () => {
                   </div>
                </div>
                <div className="glass p-12 rounded-[3.5rem] border-slate-800 hover:border-unicou-orange/20 transition-all group">
-                  <h3 className="text-3xl font-display font-bold mb-6 tracking-tight">Our <span className="text-unicou-orange">Strategy</span></h3>
+                  <h3 className="text-3xl font-display font-bold mb-6 tracking-tight">Our <span className="text-unicou-orange">Mission</span></h3>
                   <p className="text-slate-400 leading-relaxed text-lg mb-8">
-                    We unify three core pillars: **Procurement (Voucher Store)**, **Training (LMS Academy)**, and **Consultation (Immigration Hub)**. This trifecta ensures that our clients don't just dream of global success—they achieve it with automated efficiency.
+                    Guided by ethics, expertise, and personalized support, our mission is to streamline study abroad journeys, immigration pathways, and professional placements. We are dedicated to helping individuals realize their aspirations with confidence while fostering strong partnerships.
                   </p>
                   <div className="flex items-center gap-4 pt-6 border-t border-slate-900/50">
                     <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 group-hover:scale-110 transition-transform">
-                      ⚙️
+                      🎯
                     </div>
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Infrastructure Hub v2.0</span>
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Client Aspirations Focused</span>
                   </div>
                </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center mb-24">
-               <div className="glass p-10 rounded-[2.5rem] border-slate-900">
-                  <p className="text-5xl font-display font-bold text-white mb-2 tracking-tighter">15+</p>
-                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Years Experience</p>
-               </div>
-               <div className="glass p-10 rounded-[2.5rem] border-slate-900">
-                  <p className="text-5xl font-display font-bold text-white mb-2 tracking-tighter">50+</p>
-                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Global Partners</p>
-               </div>
-               <div className="glass p-10 rounded-[2.5rem] border-slate-900">
-                  <p className="text-5xl font-display font-bold text-white mb-2 tracking-tighter">10k+</p>
-                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Verified Alums</p>
+            <section className="mb-24">
+              <h2 className="text-4xl font-display font-bold mb-12 text-center">What We <span className="text-unicou-orange">Do</span></h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="glass p-10 rounded-[3rem] border-slate-800">
+                  <h4 className="text-xl font-bold mb-4 text-white">Study Abroad</h4>
+                  <p className="text-slate-400 text-sm leading-relaxed">
+                    Comprehensive guidance for destinations including UK, USA, Canada, Australia, NZ, Ireland, Europe, UAE, Malaysia, and Turkey. Tailored counseling, admissions, and visa support managed with meticulous care.
+                  </p>
+                </div>
+                <div className="glass p-10 rounded-[3rem] border-slate-800">
+                  <h4 className="text-xl font-bold mb-4 text-white">Immigration Services</h4>
+                  <p className="text-slate-400 text-sm leading-relaxed">
+                    Supporting skilled individuals, entrepreneurs, and remote professionals. From skilled migration and business immigration to citizenship by investment and digital nomad visas.
+                  </p>
+                </div>
+                <div className="glass p-10 rounded-[3rem] border-slate-800">
+                  <h4 className="text-xl font-bold mb-4 text-white">Exam Solutions</h4>
+                  <p className="text-slate-400 text-sm leading-relaxed">
+                    Official vouchers and prep tools for IELTS, PTE, TOEFL, Skills for English, LanguageCert, DET, GRE, SAT, and GMAT. Flexible e-learning resources for confidence building.
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            <div className="glass p-16 rounded-[4rem] border-slate-800 bg-unicou-orange/5 relative overflow-hidden mb-24">
+               <h2 className="text-4xl font-display font-bold mb-8">Why Work <span className="text-unicou-orange">With Us</span></h2>
+               <p className="text-slate-300 text-lg leading-relaxed mb-12">
+                 Choosing us means choosing experience—more than a decade of trusted service, a global perspective, and expert guidance that speaks both to your personal aspirations and to international standards. Our advisors are certified and trained by leading global organizations, ensuring high-quality counseling that is both ethical and effective.
+               </p>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                 <div className="bg-slate-900/50 p-8 rounded-3xl border border-slate-800">
+                   <h5 className="font-bold text-white mb-3">Corporate Placement</h5>
+                   <p className="text-slate-500 text-sm">Matching international talent with strategic opportunities. We help organizations navigate compliance, workforce planning, and global talent acquisition.</p>
+                 </div>
+                 <div className="bg-slate-900/50 p-8 rounded-3xl border border-slate-800">
+                   <h5 className="font-bold text-white mb-3">Institution Partnership</h5>
+                   <p className="text-slate-500 text-sm">Collaborating with universities and training providers to support recruitment and international program success through strategic engagement.</p>
+                 </div>
                </div>
             </div>
 
-            <div className="glass p-16 rounded-[4rem] border-slate-800 bg-unicou-orange/5 text-center relative overflow-hidden mb-24">
-               <div className="absolute top-0 right-0 p-16 opacity-5 font-display font-black text-[12rem] tracking-tighter select-none pointer-events-none">
-                 EXCELLENCE
-               </div>
-               <h2 className="text-4xl font-display font-bold mb-8 relative z-10">Accredited by the <span className="text-unicou-orange">Best</span></h2>
-               <p className="text-slate-400 max-w-2xl mx-auto mb-12 text-lg relative z-10 leading-relaxed">
-                 Our certificates and test vouchers are verified directly with world-class exam boards and qualification bodies, including OTHM (UK), Pearson (PTE), and the British Council.
-               </p>
-               <button onClick={() => navigateTo({ type: 'store' })} className="px-12 py-5 bg-white text-slate-950 rounded-2xl font-black text-sm uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-2xl relative z-10">
-                 Explore Academic Catalog
-               </button>
+            <div className="text-center mb-24">
+              <h2 className="text-3xl font-display font-bold mb-6">Looking <span className="text-unicou-orange">Ahead</span></h2>
+              <div className="glass p-10 rounded-[3rem] border-slate-800 max-w-4xl mx-auto">
+                <p className="text-slate-300 text-lg leading-relaxed italic">
+                  Building on our strong legacy, we are actively planning expansion into the Middle East, India, China, Nepal, Bangladesh, Nigeria and Ghana. This next phase will deepen our global network and create more opportunities worldwide.
+                </p>
+              </div>
             </div>
 
             <div className="text-center">

@@ -13,9 +13,12 @@ const CountryList: React.FC<CountryListProps> = ({ onNavigateToGuide }) => {
 
   useEffect(() => {
     const fetchGuides = async () => {
-      // In a real app, we'd have a specific api.getAllCountryGuides()
-      // For this demo, we'll fetch known slugs
-      const slugs = ['uk', 'australia', 'usa', 'canada', 'new-zealand', 'sweden', 'finland', 'germany', 'italy', 'ireland', 'cyprus'];
+      // Slugs matching the updated database in services/db.ts
+      const slugs = [
+        'uk', 'australia', 'usa', 'canada', 'new-zealand', 
+        'ireland', 'germany', 'sweden', 'finland', 'cyprus',
+        'dubai', 'malaysia', 'turkey', 'europe'
+      ];
       const data = await Promise.all(slugs.map(s => api.getGuideBySlug(s)));
       setGuides(data.filter((g): g is CountryGuide => g !== null));
       setLoading(false);
@@ -26,7 +29,8 @@ const CountryList: React.FC<CountryListProps> = ({ onNavigateToGuide }) => {
   const flagMap: Record<string, string> = {
     'uk': '🇬🇧', 'australia': '🇦🇺', 'usa': '🇺🇸', 'canada': '🇨🇦',
     'new-zealand': '🇳🇿', 'sweden': '🇸🇪', 'finland': '🇫🇮',
-    'germany': '🇩🇪', 'italy': '🇮🇹', 'ireland': '🇮🇪', 'cyprus': '🇨🇾'
+    'germany': '🇩🇪', 'italy': '🇮🇹', 'ireland': '🇮🇪', 'cyprus': '🇨🇾',
+    'dubai': '🇦🇪', 'malaysia': '🇲🇾', 'turkey': '🇹🇷', 'europe': '🇪🇺'
   };
 
   if (loading) return (
