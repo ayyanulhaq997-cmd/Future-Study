@@ -6,7 +6,7 @@ interface NavItem {
   label: string;
   type: any;
   slug?: string;
-  subItems?: { label: string; type: any; slug?: string; icon: string }[];
+  subItems?: { label: string; type: any; slug?: string; context?: string; icon: string; formType?: any }[];
 }
 
 interface NavbarProps {
@@ -45,7 +45,17 @@ const NAV_CONFIG: NavItem[] = [
     type: 'store',
     subItems: [
       { label: 'Voucher Sale', type: 'store', icon: '💎' },
-      { label: 'Bulk Reseller', type: 'signup', icon: '🤝' },
+      { label: 'Bulk Reseller', type: 'apply', formType: 'agent-reg', icon: '🤝' },
+    ]
+  },
+  {
+    label: 'Connect',
+    type: 'apply',
+    subItems: [
+      { label: 'For Students', type: 'apply', formType: 'student-apply', context: 'Apply Online', icon: '🎓' },
+      { label: 'For Agents', type: 'apply', formType: 'agent-reg', context: 'Become a Sub-Agent', icon: '🤝' },
+      { label: 'Prep Centers', type: 'apply', formType: 'prep-center-reg', context: 'Partner Training Center', icon: '🏫' },
+      { label: 'Institutes', type: 'apply', formType: 'institute-connect', context: 'University Relations', icon: '🏛️' },
     ]
   },
   { label: 'About', type: 'about' }
@@ -67,6 +77,16 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
     }, 150);
   };
 
+  const handleNavClick = (item: any) => {
+    if (item.formType) {
+      onNavigate({ type: 'apply', formType: item.formType, context: item.context });
+    } else {
+      onNavigate(item.slug ? { type: item.type, slug: item.slug } : { type: item.type });
+    }
+    setActiveDropdown(null);
+    setMobileOpen(false);
+  };
+
   return (
     <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 ${
       scrolled ? 'py-4' : 'py-8'
@@ -84,7 +104,7 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
               <img src={LOGO_SRC} alt="UNICOU" className="h-10 md:h-12 w-auto object-contain" />
             </button>
 
-            {/* Desktop Navigation with Sub-tabs */}
+            {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center gap-1">
               {NAV_CONFIG.map((item) => (
                 <div 
@@ -94,7 +114,7 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
                   onMouseLeave={handleMouseLeave}
                 >
                   <button
-                    onClick={() => onNavigate(item.slug ? { type: item.type, slug: item.slug } : { type: item.type })}
+                    onClick={() => handleNavClick(item)}
                     className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:text-white flex items-center gap-1.5 ${
                       view.type === item.type ? 'bg-white/10 text-white shadow-inner' : 'text-slate-400'
                     }`}
@@ -115,10 +135,7 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
                           {item.subItems.map((sub) => (
                             <button
                               key={sub.label}
-                              onClick={() => {
-                                onNavigate(sub.slug ? { type: sub.type, slug: sub.slug } : { type: sub.type });
-                                setActiveDropdown(null);
-                              }}
+                              onClick={() => handleNavClick(sub)}
                               className="flex items-center gap-4 p-4 rounded-2xl hover:bg-white/5 text-left transition-all group/sub"
                             >
                               <span className="text-xl group-hover/sub:scale-125 transition-transform">{sub.icon}</span>
@@ -183,7 +200,7 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
                   onClick={() => onNavigate({ type: 'signup' })}
                   className="px-8 py-3.5 bg-unicou-orange text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:scale-105 active:scale-95 transition-all"
                 >
-                  Get Started
+                  Get Free Admission Guidance
                 </button>
               </div>
             )}
@@ -213,8 +230,7 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
                   <button
                     onClick={() => {
                       if (!item.subItems) {
-                        onNavigate({ type: item.type as any });
-                        setMobileOpen(false);
+                        handleNavClick(item);
                       } else {
                         setActiveDropdown(activeDropdown === item.label ? null : item.label);
                       }
@@ -234,10 +250,7 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
                        {item.subItems.map((sub) => (
                          <button
                            key={sub.label}
-                           onClick={() => {
-                             onNavigate(sub.slug ? { type: sub.type, slug: sub.slug } : { type: sub.type });
-                             setMobileOpen(false);
-                           }}
+                           onClick={() => handleNavClick(sub)}
                            className="w-full text-left p-3 rounded-xl hover:bg-white/5 text-slate-400 text-sm flex items-center gap-3"
                          >
                            <span>{sub.icon}</span>
@@ -251,7 +264,7 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
               {!user && (
                 <div className="grid grid-cols-2 gap-4 pt-4">
                   <button onClick={() => { onNavigate({ type: 'login' }); setMobileOpen(false); }} className="py-5 bg-slate-900 rounded-2xl text-xs font-black uppercase tracking-widest text-white border border-white/10">Log In</button>
-                  <button onClick={() => { onNavigate({ type: 'signup' }); setMobileOpen(false); }} className="py-5 bg-unicou-orange rounded-2xl text-xs font-black uppercase tracking-widest text-white shadow-xl shadow-orange-500/20">Sign Up</button>
+                  <button onClick={() => { onNavigate({ type: 'signup' }); setMobileOpen(false); }} className="py-5 bg-unicou-orange rounded-2xl text-xs font-black uppercase tracking-widest text-white shadow-xl shadow-orange-500/20">Get Guidance</button>
                 </div>
               )}
            </div>

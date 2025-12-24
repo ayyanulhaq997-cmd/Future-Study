@@ -30,7 +30,8 @@ const Resources: React.FC<ResourcesProps> = ({ onNavigate }) => {
       title: "University Matcher", 
       type: "Predictive AI", 
       icon: "🎓",
-      action: () => onNavigate({ type: 'apply', formType: 'study-abroad', context: 'AI Matching Assessment' })
+      // Fix: Changed 'study-abroad' to 'student-apply' to match the FormType union in types.ts
+      action: () => onNavigate({ type: 'apply', formType: 'student-apply', context: 'AI Matching Assessment' })
     },
   ];
 

@@ -1,6 +1,5 @@
-
 export type UserRole = 'Admin' | 'Agent' | 'Customer' | 'Trainer' | 'Finance' | 'Teller';
-export type FormType = 'study-abroad' | 'immigration' | 'membership' | 'general' | 'careers';
+export type FormType = 'student-apply' | 'agent-reg' | 'prep-center-reg' | 'institute-connect' | 'careers' | 'general';
 
 export interface User {
   id: string;

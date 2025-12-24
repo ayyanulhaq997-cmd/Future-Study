@@ -22,109 +22,21 @@ import LMSCoursePlayer from './components/LMSCoursePlayer';
 import LMSPracticeTest from './components/LMSPracticeTest';
 import QualificationCatalogue from './components/QualificationCatalogue';
 import AdminDashboard from './components/AdminDashboard';
+import PartnerShowcase from './components/PartnerShowcase';
+import CookieConsent from './components/CookieConsent';
 import { ViewState, User } from './types';
 import { api } from './services/apiService';
 import { LOGO_SRC } from './constants/assets';
 
 const POLICY_CONTENT: Record<string, { title: string; content: string }> = {
-  'modern-slavery': { 
-    title: 'Modern Slavery Statement', 
-    content: `Modern Slavery and Human Trafficking Statement
-Modern Slavery Statement – UniCou Ltd
-
-UniCou Ltd is committed to preventing modern slavery and human trafficking in all its business operations and supply chains. We recognise our responsibility under the UK Modern Slavery Act 2015 and support international efforts to eradicate slavery, forced labour, child labour, and human trafficking.
-
-UniCou Ltd operates as an education consultancy firm based in the United Kingdom, working with students, academic institutions, training providers, agents, and business partners across multiple countries. We take a zero-tolerance approach to modern slavery and expect the same high standards from all our partners, suppliers, and associates worldwide.
-
-Our business model does not involve manufacturing or high-risk labour sectors; however, we acknowledge that risks may exist within extended supply chains, particularly in international operations. We actively assess and monitor risks through due diligence, contractual obligations, and ethical standards.
-
-All staff members are expected to act ethically and report any concerns related to modern slavery. We provide guidance to employees to help them recognise signs of exploitation and understand reporting procedures. Any reported concerns are taken seriously and investigated promptly.
-
-UniCou Ltd only engages with suppliers and associates who demonstrate lawful employment practices and compliance with applicable labour laws. We reserve the right to terminate relationships where breaches of modern slavery laws are identified.
-
-This statement is reviewed annually and reflects our ongoing commitment to ethical business practices and human rights protection.` 
-  },
-  'accessibility': { 
-    title: 'Accessibility Statement', 
-    content: `Website Accessibility Statement – UniCou Ltd
-
-UniCou Ltd is committed to ensuring digital accessibility for all users, including people with disabilities. We aim to provide a website experience that is inclusive, user-friendly, and compliant with recognised accessibility standards.
-
-Our website is designed to align with the Web Content Accessibility Guidelines (WCAG) 2.1, Level AA, and relevant UK accessibility regulations. We strive to ensure that our content is accessible through assistive technologies such as screen readers, keyboard navigation, and text enlargement tools.
-
-We regularly review our website design, structure, and content to improve accessibility. This includes ensuring readable fonts, appropriate colour contrast, alternative text for images, and clear navigation.
-
-While we make every effort to maintain accessibility across all areas of our website, some third-party tools or external content may not fully meet accessibility standards. We continue to work with providers to improve accessibility where possible.
-
-If you experience difficulty accessing any part of our website or require information in an alternative format, please contact us. We are committed to responding promptly and making reasonable adjustments where feasible.` 
-  },
-  'privacy': { 
-    title: 'Privacy Policy', 
-    content: `UniCou Ltd is committed to protecting personal data and respecting privacy rights. This Privacy Policy explains how we collect, use, store, and share personal data in compliance with the UK GDPR, Data Protection Act 2018, and applicable international data protection laws.
-
-We collect personal data such as names, contact details, academic records, and identification documents for legitimate business purposes, including student counselling, university applications, visa guidance, marketing, and service improvement.
-
-Personal data may be shared with trusted associates, partner institutions, service providers, and regulatory authorities where necessary and lawful. Such sharing supports education placement, legal compliance, business development, lead management, and market analysis.
-
-We implement appropriate technical and organisational measures to safeguard personal data. Data is retained only for as long as necessary for its intended purpose or legal obligations.
-
-Individuals have rights regarding their personal data, including access, correction, deletion, and objection to processing. Requests can be made by contacting UniCou Ltd directly at connect@unicou.uk.` 
-  },
-  'carbon': { 
-    title: 'Carbon Reduction Plan', 
-    content: `UniCou Ltd recognises its responsibility to reduce environmental impact and contribute to global sustainability goals. We are committed to reducing carbon emissions across our operations in line with UK environmental policies and international climate objectives.
-
-As a service-based organisation, our environmental impact primarily relates to office operations, energy usage, digital infrastructure, and business travel. We actively seek to minimise emissions through remote working practices, digital communication, and efficient resource use.
-
-We encourage responsible travel, reduce paper consumption, and support energy-efficient technologies. Where possible, we work with suppliers who share our commitment to environmental responsibility.
-
-UniCou Ltd continuously monitors environmental performance and seeks opportunities for improvement. Our carbon reduction strategy evolves as our business grows and as sustainability standards advance.` 
-  },
-  'terms': { 
-    title: 'Website Terms of Use', 
-    content: `These Website Terms of Use govern access to and use of the UniCou Ltd website. By using our website, you agree to comply with these terms and all applicable UK and international laws.
-
-Website content is provided for general information purposes only and does not constitute legal, academic, or immigration advice. While we strive for accuracy, we do not guarantee completeness or reliability.
-
-All intellectual property on this website, including text, logos, and design, belongs to UniCou Ltd unless otherwise stated. Unauthorised use or reproduction is prohibited.
-
-We are not responsible for third-party websites linked from our site. Users access external links at their own risk.
-
-UniCou Ltd reserves the right to update website content and terms at any time. Continued use of the website constitutes acceptance of updated terms.` 
-  },
-  'terms-conditions': { 
-    title: 'Terms and Conditions', 
-    content: `These Terms and Conditions set forth the legally binding terms for the services provided by UniCou Ltd. 
-
-1. Service Agreement: By engaging our services, you agree to provide accurate information and comply with university and visa application protocols.
-2. Fees and Payments: Exam voucher sales are final and non-refundable once delivered to the student email node. Admission consultancy fees are subject to individual agreements.
-3. Limitation of Liability: While UniCou Ltd provides expert guidance, the final decision for university admission and visa issuance rests with the respective institutions and government authorities.
-4. Dispute Resolution: Any legal disputes arising from these terms shall be subject to the jurisdiction of the United Kingdom courts.` 
-  },
-  'cookies': { 
-    title: 'Cookie Use Policy', 
-    content: `UniCou Ltd uses cookies and similar technologies to enhance user experience, analyse website performance, and support marketing activities. This Cookie Policy explains how and why cookies are used when you visit our website.
-
-Cookies are small text files stored on your device that help websites function efficiently. We use essential cookies required for website operation, as well as analytical and marketing cookies to understand user behaviour and improve our services.
-
-Our use of cookies complies with the UK GDPR, Data Protection Act 2018, and Privacy and Electronic Communications Regulations (PECR). Where required, we seek user consent before placing non-essential cookies.
-
-Some cookies may be placed by trusted third-party service providers for analytics, advertising, or functionality purposes. These providers process data in accordance with their own privacy policies.
-
-You can manage or disable cookies through your browser settings at any time. Please note that disabling cookies may affect website functionality.` 
-  },
-  'whistleblowing': { 
-    title: 'Whistleblowing Policy', 
-    content: `UniCou Ltd encourages openness and transparency and is committed to conducting business with honesty and integrity. This Whistleblowing Policy provides a framework for employees, contractors, partners, and associates to report concerns safely and confidentially.
-
-Whistleblowing concerns may include unlawful activity, fraud, corruption, data misuse, modern slavery, unethical conduct, or breaches of company policy. Reports can be made without fear of retaliation.
-
-All disclosures are treated seriously and investigated appropriately. UniCou Ltd ensures confidentiality and protects whistleblowers in line with the Public Interest Disclosure Act 1998.
-
-Concerns can be raised internally through designated reporting channels. Where appropriate, matters may be escalated to external authorities.
-
-Retaliation against whistleblowers is strictly prohibited and may result in disciplinary action.` 
-  }
+  'modern-slavery': { title: 'Modern Slavery Statement', content: 'UniCou Ltd is committed to preventing modern slavery...' },
+  'accessibility': { title: 'Accessibility Statement', content: 'UniCou Ltd is committed to ensuring digital accessibility...' },
+  'privacy': { title: 'Privacy Policy', content: 'UniCou Ltd is committed to protecting personal data...' },
+  'carbon': { title: 'Carbon Reduction Plan', content: 'UniCou Ltd recognises its responsibility to reduce environmental impact...' },
+  'terms': { title: 'Website Terms of Use', content: 'These Website Terms of Use govern access to and use...' },
+  'terms-conditions': { title: 'Terms and Conditions', content: 'These Terms and Conditions set forth the legally binding terms...' },
+  'cookies': { title: 'Cookie Use Policy', content: 'UniCou Ltd uses cookies and similar technologies...' },
+  'whistleblowing': { title: 'Whistleblowing Policy', content: 'UniCou Ltd encourages openness and transparency...' }
 };
 
 const OFFICE_LOCATIONS = [
@@ -157,28 +69,46 @@ const App: React.FC = () => {
           <div className="animate-in fade-in duration-1000">
             <Hero 
               onStart={() => navigateTo({ type: 'store' })} 
-              onResellerClick={() => navigateTo({ type: 'signup' })} 
+              onResellerClick={() => navigateTo({ type: 'apply', formType: 'agent-reg', context: 'Reseller Portal Initialization' })} 
             />
             <Features />
+            <PartnerShowcase />
+            
+            <div id="destination-directory" className="scroll-mt-24">
+               <CountryList onNavigateToGuide={(slug) => navigateTo({ type: 'country-guide', slug })} />
+            </div>
+
             <section className="py-24 max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12">
                <div className="glass p-12 rounded-[3rem] border-slate-800">
                   <h2 className="text-4xl font-display font-bold mb-6 tracking-tight">Academic <span className="text-unicou-orange">Excellence</span></h2>
                   <p className="text-slate-400 text-lg leading-relaxed mb-8 italic">
                     UNICOU provides a seamless bridge for students aiming for global horizons. Our automated infrastructure handles the complexity, so you can focus on your future.
                   </p>
-                  <button onClick={() => navigateTo({ type: 'country-list' })} className="text-primary-400 font-black uppercase text-[10px] tracking-widest hover:underline flex items-center gap-2">
-                    Explore Destinations <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                  <button onClick={() => navigateTo({ type: 'apply', formType: 'student-apply', context: 'Free Admission Guidance Request' })} className="px-8 py-4 bg-primary-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest hover:scale-105 transition-all shadow-xl">
+                    Get Free Admission Guidance
                   </button>
                </div>
                <div className="glass p-12 rounded-[3rem] border-slate-800 bg-unicou-orange/5">
                   <h2 className="text-4xl font-display font-bold mb-6 tracking-tight">Voucher <span className="text-unicou-orange">Vault</span></h2>
                   <p className="text-slate-400 text-lg leading-relaxed mb-8">
-                    Instant procurement for Pearson PTE, IELTS, and TOEFL. Bank-grade security for every transaction.
+                    Instant procurement for Pearson PTE, IELTS, Oxford ELLT, and TOEFL. Fast fulfillment via secure email node.
                   </p>
                   <button onClick={() => navigateTo({ type: 'store' })} className="px-10 py-4 bg-unicou-orange text-white rounded-2xl font-black uppercase text-[10px] tracking-widest hover:scale-105 transition-all shadow-xl">
-                    Enter Voucher Sale
+                    Enter Voucher Store
                   </button>
                </div>
+            </section>
+            
+            {/* Subscription Section */}
+            <section className="py-24 max-w-5xl mx-auto px-6">
+              <div className="glass p-12 md:p-20 rounded-[4rem] border border-primary-500/20 relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-12 opacity-5 font-black text-9xl">NEWS</div>
+                <div className="relative z-10 text-center">
+                  <h2 className="text-4xl md:text-5xl font-display font-bold mb-6 tracking-tight">Sync for <span className="text-primary-400">Updates</span></h2>
+                  <p className="text-slate-400 text-lg mb-12 max-w-xl mx-auto font-medium">Receive real-time push notifications about scholarships, news, and rate changes via Email and WhatsApp.</p>
+                  <ApplyForm type="general" context="Sync Hub: Email & WhatsApp Notifications" />
+                </div>
+              </div>
             </section>
           </div>
         );
@@ -187,11 +117,11 @@ const App: React.FC = () => {
           <div className="animate-in fade-in duration-700">
             <VoucherStore 
               onCheckout={(p, q) => navigateTo({ type: 'checkout', productId: p, quantity: q })} 
-              onBook={(p) => navigateTo({ type: 'apply', formType: 'study-abroad', context: `Booking: ${p}` })} 
-              onNavigateToAgent={() => navigateTo({ type: 'signup' })}
+              onBook={(p) => navigateTo({ type: 'apply', formType: 'student-apply', context: `Booking: ${p}` })} 
+              onNavigateToAgent={() => navigateTo({ type: 'apply', formType: 'agent-reg', context: 'Partner Hub Access' })}
             />
             <div className="max-w-7xl mx-auto px-6 py-24 border-t border-slate-900">
-               <ApplyForm type="general" context="Instant Connection Node" />
+               <ApplyForm type="student-apply" context="Secure Instant Inquiry" />
             </div>
           </div>
         );
@@ -200,7 +130,7 @@ const App: React.FC = () => {
       case 'country-list':
         return <div className="pt-8"><CountryList onNavigateToGuide={(slug) => navigateTo({ type: 'country-guide', slug })} /></div>;
       case 'country-guide':
-        return <CountryGuide slug={view.slug} onViewUniversity={(uSlug) => navigateTo({ type: 'university', slug: uSlug })} onRegister={() => navigateTo({ type: 'apply', formType: 'study-abroad', context: `Registration: ${view.slug}` })} />;
+        return <CountryGuide slug={view.slug} onViewUniversity={(uSlug) => navigateTo({ type: 'university', slug: uSlug })} onRegister={() => navigateTo({ type: 'apply', formType: 'student-apply', context: `Registration: ${view.slug}` })} />;
       case 'lms-dashboard':
         return <LMSDashboard onNavigate={navigateTo} />;
       case 'course-catalogue':
@@ -208,7 +138,7 @@ const App: React.FC = () => {
       case 'library':
         return <Resources onNavigate={navigateTo} />;
       case 'careers':
-        return <Careers />;
+        return <div className="max-w-7xl mx-auto px-6 py-12"><Careers /></div>;
       case 'checkout':
         return (
           <div className="pt-20 min-h-[80vh]">
@@ -229,8 +159,7 @@ const App: React.FC = () => {
       case 'lms-practice-test':
         return <LMSPracticeTest testId={view.testId} onNavigate={navigateTo} />;
       case 'qualifications':
-        /* Fixed typo: changed fontType to formType */
-        return <QualificationCatalogue onApply={(qid) => navigateTo({ type: 'apply', formType: 'general', context: `Program: ${qid}` })} />;
+        return <QualificationCatalogue onApply={(qid) => navigateTo({ type: 'apply', formType: 'student-apply', context: `Qualification node: ${qid}` })} />;
       case 'admin':
         return <AdminDashboard />;
       case 'login': 
@@ -241,102 +170,12 @@ const App: React.FC = () => {
         return <div className="pt-10"><VerificationPending email={view.email} onVerified={() => navigateTo({ type: 'login' })} /></div>;
       case 'about':
         return (
-          <div className="max-w-7xl mx-auto py-24 px-6 animate-in fade-in duration-700">
-            <div className="text-center mb-20">
-              <span className="text-[10px] font-black text-unicou-orange uppercase tracking-[0.4em] mb-4 block">Our Identity</span>
-              <h1 className="text-6xl md:text-8xl font-display font-bold mb-8 text-white tracking-tighter">About <span className="text-unicou-orange">Us</span></h1>
-              <div className="glass p-12 rounded-[3.5rem] border-slate-800 shadow-2xl relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none text-9xl font-black italic">HISTORY</div>
-                <p className="text-slate-300 text-xl leading-relaxed font-medium relative z-10">
-                  Founded with a passion for global education and international opportunity, we are a leading international education and consultancy with deep roots and a growing global footprint. Our journey began in 2009 in Pakistan, where we first opened our doors to support ambitious students and professionals in navigating the complexities of studying, living, and working abroad. Over the years, we have built a reputation rooted in transparency, integrity, and long-term success.
-                </p>
-                <p className="text-slate-400 mt-8 leading-relaxed text-lg italic">
-                  As of 2023, we expanded our operations to include offices in the United Kingdom and Dubai, enhancing our ability to serve clients with localized expertise in two of the world’s most competitive education markets. Our founder’s extensive professional training ensures that our guidance is both expert and trustworthy. We are also proud to be linked with globally recognized testing and recruitment partners including LanguageCert, Skills for English, TOEFL, Oxford ELLT, and Duolingo, reinforcing our leadership in secure English language testing.
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-24">
-               <div className="glass p-12 rounded-[3.5rem] border-slate-800 hover:border-unicou-orange/20 transition-all group">
-                  <h3 className="text-3xl font-display font-bold mb-6 tracking-tight">Our <span className="text-unicou-orange">Vision</span></h3>
-                  <p className="text-slate-400 leading-relaxed text-lg mb-8">
-                    To become the most trusted gateway for students, professionals, and institutions seeking global education and mobility solutions. We aspire to simplify international pathways, empower every client with informed choices, and build bridges between talent and opportunity across continents.
-                  </p>
-                  <div className="flex items-center gap-4 pt-6 border-t border-slate-900/50">
-                    <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 group-hover:scale-110 transition-transform">
-                      🌍
-                    </div>
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Global Mobility Node</span>
-                  </div>
-               </div>
-               <div className="glass p-12 rounded-[3.5rem] border-slate-800 hover:border-unicou-orange/20 transition-all group">
-                  <h3 className="text-3xl font-display font-bold mb-6 tracking-tight">Our <span className="text-unicou-orange">Mission</span></h3>
-                  <p className="text-slate-400 leading-relaxed text-lg mb-8">
-                    Guided by ethics, expertise, and personalized support, our mission is to streamline study abroad journeys and professional placements. We are dedicated to helping individuals realize their aspirations with confidence while fostering strong partnerships.
-                  </p>
-                  <div className="flex items-center gap-4 pt-6 border-t border-slate-900/50">
-                    <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 group-hover:scale-110 transition-transform">
-                      🎯
-                    </div>
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Client Aspirations Focused</span>
-                  </div>
-               </div>
-            </div>
-
-            <section className="mb-24">
-              <h2 className="text-4xl font-display font-bold mb-12 text-center">What We <span className="text-unicou-orange">Do</span></h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="glass p-10 rounded-[3rem] border-slate-800">
-                  <h4 className="text-xl font-bold mb-4 text-white">Study Abroad</h4>
-                  <p className="text-slate-400 text-sm leading-relaxed">
-                    Comprehensive guidance for destinations including UK, USA, Canada, Australia, NZ, Ireland, Europe, UAE, Malaysia, and Turkey. Tailored counseling, admissions, and visa support managed with meticulous care.
-                  </p>
-                </div>
-                <div className="glass p-10 rounded-[3rem] border-slate-800">
-                  <h4 className="text-xl font-bold mb-4 text-white">Exam Solutions</h4>
-                  <p className="text-slate-400 text-sm leading-relaxed">
-                    Official vouchers and prep tools for IELTS, PTE, TOEFL, Skills for English, LanguageCert, DET, GRE, SAT, and GMAT. Flexible e-learning resources for confidence building.
-                  </p>
-                </div>
-              </div>
-            </section>
-
-            <div className="glass p-16 rounded-[4rem] border-slate-800 bg-unicou-orange/5 relative overflow-hidden mb-24">
-               <h2 className="text-4xl font-display font-bold mb-8">Why Work <span className="text-unicou-orange">With Us</span></h2>
-               <p className="text-slate-300 text-lg leading-relaxed mb-12">
-                 Choosing us means choosing experience—more than a decade of trusted service, a global perspective, and expert guidance that speaks both to your personal aspirations and to international standards. Our advisors are certified and trained by leading global organizations, ensuring high-quality counseling that is both ethical and effective.
-               </p>
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                 <div className="bg-slate-900/50 p-8 rounded-3xl border border-slate-800">
-                   <h5 className="font-bold text-white mb-3">Corporate Placement</h5>
-                   <p className="text-slate-500 text-sm">Matching international talent with strategic opportunities. We help organizations navigate compliance, workforce planning, and global talent acquisition.</p>
-                 </div>
-                 <div className="bg-slate-900/50 p-8 rounded-3xl border border-slate-800">
-                   <h5 className="font-bold text-white mb-3">Institution Partnership</h5>
-                   <p className="text-slate-500 text-sm">Collaborating with universities and training providers to support recruitment and international program success through strategic engagement.</p>
-                 </div>
-               </div>
-            </div>
-
-            <div className="text-center mb-24">
-              <h2 className="text-3xl font-display font-bold mb-6">Looking <span className="text-unicou-orange">Ahead</span></h2>
-              <div className="glass p-10 rounded-[3rem] border-slate-800 max-w-4xl mx-auto">
-                <p className="text-slate-300 text-lg leading-relaxed italic">
-                  Building on our strong legacy, we are actively planning expansion into the Middle East, India, China, Nepal, Bangladesh, Nigeria and Ghana. This next phase will deepen our global network and create more opportunities worldwide.
-                </p>
-              </div>
-            </div>
-
-            <div className="text-center">
-              <h3 className="text-3xl font-display font-bold mb-12">Global Headquarters</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {OFFICE_LOCATIONS.map((loc, i) => (
-                  <div key={i} className="glass p-8 rounded-[2.5rem] border border-slate-800 text-left">
-                    <p className="text-unicou-orange font-black text-[10px] uppercase tracking-[0.3em] mb-3">{loc.country}</p>
-                    <p className="text-slate-300 font-medium text-lg leading-relaxed">{loc.address}</p>
-                  </div>
-                ))}
-              </div>
+          <div className="max-w-7xl mx-auto py-24 px-6 animate-in fade-in duration-700 text-center">
+            <h1 className="text-6xl font-display font-bold mb-8">About <span className="text-unicou-orange">UNICOU</span></h1>
+            <div className="glass p-12 rounded-[3rem] border-slate-800 shadow-2xl">
+              <p className="text-slate-300 text-xl leading-relaxed font-medium">
+                Founded with a passion for global education, we are a leading consultancy with deep roots in Pakistan and a growing presence in the UK and Dubai. Our mission is to simplify international pathways and build bridges between talent and opportunity.
+              </p>
             </div>
           </div>
         );
@@ -351,12 +190,7 @@ const App: React.FC = () => {
           </div>
         );
       default:
-        return (
-          <div className="py-40 text-center">
-             <p className="text-slate-500 font-mono text-xs">Error: View Node Not Found</p>
-             <button onClick={() => navigateTo({ type: 'home' })} className="mt-4 text-primary-400 font-bold hover:underline">Return to Home Node</button>
-          </div>
-        );
+        return <div className="py-40 text-center">View Node Not Found.</div>;
     }
   };
 
@@ -382,87 +216,39 @@ const App: React.FC = () => {
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 pb-16">
             <div className="md:col-span-1">
-               <div className="mb-6">
-                <img 
-                  src={LOGO_SRC} 
-                  alt="UNICOU Logo" 
-                  className="h-10 w-auto object-contain"
-                />
-               </div>
-               <p className="text-slate-500 text-xs font-bold uppercase tracking-widest leading-relaxed mb-6">Global Academic Mobility Hub <br /> Unified Infrastructure v2.0</p>
+               <img src={LOGO_SRC} alt="UNICOU" className="h-10 w-auto object-contain mb-6" />
+               <p className="text-slate-500 text-xs font-bold uppercase tracking-widest leading-relaxed">Global Academic Mobility Hub <br /> Unified Infrastructure v2.1</p>
             </div>
-            
-            <div className="md:col-span-2">
-              <h4 className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-8">Our Global Offices</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                {OFFICE_LOCATIONS.map((loc, i) => (
-                  <div key={i} className="space-y-2">
-                    <h5 className="text-[9px] font-black text-unicou-orange uppercase tracking-widest">{loc.country}</h5>
-                    <p className="text-[10px] text-slate-400 leading-relaxed max-w-[240px]">{loc.address}</p>
-                  </div>
-                ))}
-              </div>
+            <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-8">
+              {OFFICE_LOCATIONS.map((loc, i) => (
+                <div key={i}>
+                  <h5 className="text-[9px] font-black text-unicou-orange uppercase tracking-widest mb-2">{loc.country}</h5>
+                  <p className="text-[10px] text-slate-400 leading-relaxed max-w-[240px]">{loc.address}</p>
+                </div>
+              ))}
             </div>
-
             <div className="md:col-span-1">
               <h4 className="text-[10px] font-black text-slate-600 uppercase mb-8 tracking-widest">Explore</h4>
               <ul className="space-y-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                <li><button onClick={() => navigateTo({ type: 'store' })} className="hover:text-unicou-orange transition-colors">Voucher Sale</button></li>
-                <li><button onClick={() => navigateTo({ type: 'library' })} className="hover:text-unicou-orange transition-colors">Library</button></li>
+                <li><button onClick={() => navigateTo({ type: 'store' })} className="hover:text-unicou-orange transition-colors">Voucher Store</button></li>
+                <li><button onClick={() => navigateTo({ type: 'careers' })} className="hover:text-unicou-orange transition-colors">Careers</button></li>
                 <li><button onClick={() => navigateTo({ type: 'lms-dashboard' })} className="hover:text-unicou-orange transition-colors">Academy</button></li>
               </ul>
             </div>
           </div>
-
-          {/* POLICIES SECTION - Matches the provided reference image */}
-          <div className="border-t border-slate-900 pt-16 pb-12 relative overflow-hidden">
-             {/* Subtle background pattern - Dots */}
-             <div className="absolute top-16 right-0 grid grid-cols-10 gap-4 opacity-10 pointer-events-none">
-                {Array.from({ length: 40 }).map((_, i) => (
-                  <div key={i} className="w-2 h-2 rounded-full bg-slate-500" />
-                ))}
-             </div>
-
-             <h4 className="text-xl font-bold text-white mb-8">Policies</h4>
-             <div className="h-px w-full bg-white/20 mb-10" />
-             
-             <div className="flex flex-wrap items-center gap-y-6 gap-x-8 text-sm font-medium text-[#3b82f6] mb-4">
-                {[
-                  { label: 'Modern Slavery Statement', id: 'modern-slavery' },
-                  { label: 'Accessibility', id: 'accessibility' },
-                  { label: 'Cookie Policy', id: 'cookies' },
-                  { label: 'Whistleblowing Policy', id: 'whistleblowing' },
-                  { label: 'Privacy Policy', id: 'privacy' },
-                  { label: 'Carbon Reduction Plan', id: 'carbon' },
-                  { label: 'Terms and Conditions', id: 'terms-conditions' }
-                ].map((p) => (
-                  <button 
-                    key={p.id} 
-                    onClick={() => navigateTo({ type: 'policy', policyId: p.id })}
-                    className="hover:underline transition-all whitespace-nowrap"
-                  >
-                    {p.label}
-                  </button>
-                ))}
-             </div>
-             <div className="text-sm font-medium text-[#3b82f6]">
-               <button 
-                onClick={() => navigateTo({ type: 'policy', policyId: 'terms' })}
-                className="hover:underline transition-all"
-               >
-                 Website terms of use
-               </button>
-             </div>
+          <div className="border-t border-slate-900 pt-16 flex flex-wrap gap-x-8 gap-y-4 text-xs font-medium text-primary-400">
+             {Object.entries(POLICY_CONTENT).map(([id, p]) => (
+               <button key={id} onClick={() => navigateTo({ type: 'policy', policyId: id })} className="hover:underline">{p.title}</button>
+             ))}
           </div>
-
           <div className="mt-8 pt-8 border-t border-slate-900 flex justify-between items-center text-[9px] font-bold text-slate-600 uppercase tracking-widest">
-             <p>© 2024 UNICOU. All rights reserved.</p>
-             <p>Authorized Fulfillment Center</p>
+             <p>© 2024 UNICOU. Authorized Fulfillment Center</p>
           </div>
         </div>
       </footer>
 
       <AIChat />
+      <CookieConsent />
       {searchOpen && <SearchOverlay onClose={() => setSearchOpen(false)} onNavigate={navigateTo} />}
     </div>
   );
