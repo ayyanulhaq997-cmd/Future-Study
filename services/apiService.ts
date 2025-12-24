@@ -4,13 +4,25 @@ import {
   Product, VoucherCode, VoucherStatus, Order, User, ActivityLog, SecurityStatus, LMSCourse, 
   LMSModule, LMSLesson, Enrollment, TestResult, CourseVoucher, Qualification, 
   QualificationLead, TestBooking, ManualSubmission, SkillScore, SkillType, LeadSubmission, 
-  LeadStatus, PromoCode, FinanceReport, QuestionReview, UserRole, ImmigrationGuideData 
+  LeadStatus, PromoCode, FinanceReport, UserRole, ImmigrationGuideData 
 } from '../types';
 
 // ==========================================
-// REAL PAYMENT GATEWAY CONFIGURATION
+// PRODUCTION PAYMENT CONFIGURATION
 // ==========================================
+// Replace this with your LIVE Key from Razorpay Dashboard for real card payments
 const RAZORPAY_KEY_ID = 'rzp_test_NexusDemoKey123'; 
+
+// Update these with your ACTUAL bank account details
+export const BANK_DETAILS = {
+  bankName: "UNICOU HUB INTERNATIONAL",
+  accountName: "UniCou Ltd",
+  accountNumber: "9988776655",
+  sortCode: "20-44-55",
+  iban: "GB00UNICOU1234567890",
+  swift: "UNICOUGB2L",
+  referenceNote: "Use your Email as Reference"
+};
 // ==========================================
 
 let products = [...db.products];
@@ -75,7 +87,7 @@ export const api = {
     if (logs.length > 100) logs.pop();
   },
   getCodes: async () => { 
-    checkRole(['Admin']); // ONLY ADMIN CAN SEE ACTUAL RAW CODES
+    checkRole(['Admin']); 
     return codes; 
   },
   getStockCount: async (productId: string) => codes.filter(c => c.productId === productId && c.status === 'Available').length,
@@ -126,7 +138,6 @@ export const api = {
       const available = codes.filter(c => c.productId === order.productId && c.status === 'Available');
       
       if (available.length < order.quantity) {
-        // Recovery logic if stock is low - Generating placeholders
         for(let i=0; i<order.quantity; i++) {
             order.voucherCodes.push('REC-'+Math.random().toString(36).toUpperCase().substr(0,8));
         }
@@ -147,7 +158,6 @@ export const api = {
     const product = products.find(p => p.id === productId)!;
     const price = await api.calculatePrice(productId, quantity, promoCode);
     
-    // NEW LOGIC: Gateway payments now enter a 'Pending' state for Admin verification
     const order: Order = { 
       id: 'ORD-'+Math.random().toString(36).toUpperCase().substr(2, 5), 
       userId: currentUser?.id || 'guest', 
@@ -160,7 +170,7 @@ export const api = {
       status: 'Pending', 
       paymentMethod: 'Gateway',
       timestamp: new Date().toISOString(), 
-      voucherCodes: [], // Empty until Admin verifies
+      voucherCodes: [], 
       paymentId: paymentData.paymentId 
     };
     
