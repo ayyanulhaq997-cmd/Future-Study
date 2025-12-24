@@ -33,54 +33,80 @@ const ApplyForm: React.FC<ApplyFormProps> = ({ type, context, onSuccess }) => {
         <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
       </div>
       <h3 className="text-3xl font-display font-bold mb-4">Transmission Successful</h3>
-      <p className="text-slate-400 mb-2 leading-relaxed">Your request has been logged. Our specialists will synchronize with your node within 24 hours.</p>
-      <p className="text-primary-400 font-black text-[10px] uppercase tracking-widest mb-8">Service Hub: connect@unicou.uk</p>
-      <button onClick={() => { setDone(false); setAgreeTerms(false); }} className="text-slate-500 font-bold hover:text-white uppercase text-[10px] tracking-widest">Submit Another Request</button>
+      <p className="text-slate-400 mb-2 leading-relaxed">Your application has been securely logged in the UNICOU registry. A regional coordinator will synchronize with your node within 24 business hours.</p>
+      <p className="text-primary-400 font-black text-[10px] uppercase tracking-widest mb-8">Verification Node: connect@unicou.uk</p>
+      <button onClick={() => { setDone(false); setAgreeTerms(false); }} className="text-slate-500 font-bold hover:text-white uppercase text-[10px] tracking-widest">Submit New Entry</button>
     </div>
   );
 
   const renderFields = () => {
     switch (type) {
       case 'student-apply':
-      case 'careers':
         return (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Input label="Full Name" placeholder="Alex Johnson" required />
-              <Input label="Email Address" type="email" placeholder="alex@example.com" required />
+              <Input label="Student Full Name" placeholder="Alex Johnson" required />
+              <Input label="Father's Name" placeholder="Guardian Name" required />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Input label="Mobile Number (WhatsApp)" placeholder="+44 700 000 000" required />
+              <Input label="Email Address" type="email" placeholder="alex@example.com" required />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Input label="City of Residence" placeholder="e.g. Manchester / Lahore" required />
+              <Select label="Target Destination" options={['United Kingdom', 'Australia', 'USA', 'Canada', 'Ireland', 'Germany', 'New Zealand', 'Turkey', 'Dubai', 'Malaysia', 'Europe Hub']} />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Select label="Target Country" options={['United Kingdom', 'Australia', 'USA', 'Canada', 'Ireland', 'Germany', 'New Zealand', 'Turkey', 'Dubai', 'Malaysia']} />
-              <Input label="Preferred Course" placeholder="e.g. MSc Data Science" required />
+              <Input label="Last Qualification" placeholder="e.g. A-Levels / Bachelor Degree" required />
+              <Input label="Marks / CGPA" placeholder="e.g. 3.8 / 85%" required />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Input label="Last Qualification" placeholder="e.g. Bachelors in IT" required />
               <Select label="English Proficiency Test" options={['Not Taken Yet', 'IELTS Academic', 'PTE Academic', 'Oxford ELLT', 'LanguageCert', 'Duolingo', 'TOEFL iBT']} />
+              <Select label="Preferred Intake" options={['September 2025', 'January 2026', 'May 2026', 'Other / Undecided']} />
             </div>
           </>
         );
       case 'agent-reg':
+        return (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Input label="Company / Agency Name" placeholder="Global Mobility Consultants" required />
+              <Input label="CEO / Manager Name" placeholder="Principal Contact" required />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Input label="Designation" placeholder="e.g. Managing Director" required />
+              <Input label="Professional Email" type="email" placeholder="partnership@agency.com" required />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Input label="WhatsApp / Mobile" placeholder="+44 700 000 000" required />
+              <Input label="Office Website / Social Link" placeholder="https://..." />
+            </div>
+            <div className="col-span-full">
+              <Input label="Full Office Address" placeholder="Street, City, Zip, Country" required />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Select label="Nature of Business" options={['Education Consultancy', 'Travel Agency', 'Corporate Recruiter', 'Language School', 'Other']} />
+              <Input label="Years of Experience" type="number" placeholder="0" required />
+            </div>
+          </>
+        );
       case 'prep-center-reg':
         return (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Input label="Organization / Center Name" placeholder="Global Training Hub" required />
-              <Input label="Principal Contact Name" placeholder="John Doe" required />
+              <Input label="Training Center Name" placeholder="Elite Prep Academy" required />
+              <Input label="Director / Principal Name" placeholder="Full Name" required />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Input label="Mobile / WhatsApp" placeholder="+44 700 000 000" required />
-              <Input label="Professional Email" type="email" placeholder="partner@edu.com" required />
+              <Input label="Official Email" type="email" placeholder="admin@center.com" required />
+              <Input label="Contact Number (WhatsApp)" placeholder="+44 700 000 000" required />
             </div>
             <div className="col-span-full">
-              <Input label="Business Address / City" placeholder="City, Country" required />
+              <Input label="Center Location / City" placeholder="City, Country" required />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Select label="Interest Primary" options={['Voucher Reselling', 'Study Abroad Collaboration', 'Mock Testing Integration', 'All Services']} />
-              <Input label="Years in Industry" type="number" placeholder="0" />
+              <Select label="Training Specialization" options={['IELTS Only', 'PTE Academic Only', 'Multiple Exam Preparation', 'General English Only']} />
+              <Input label="Current Student Count" type="number" placeholder="e.g. 50" required />
             </div>
           </>
         );
@@ -90,12 +116,15 @@ const ApplyForm: React.FC<ApplyFormProps> = ({ type, context, onSuccess }) => {
         return (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Input label="Name" placeholder="Full Name" required />
-              <Input label="Email" type="email" placeholder="contact@email.com" required />
+              <Input label="Full Name" placeholder="John Doe" required />
+              <Input label="Professional Email" type="email" placeholder="contact@email.com" required />
+            </div>
+            <div className="col-span-full">
+              <Input label="Organization / University Name" placeholder="Institution Entity Name" required />
             </div>
             <div className="col-span-full">
               <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">Collaboration Proposal</label>
-              <textarea className="w-full bg-slate-900 border border-slate-800 rounded-2xl p-5 text-slate-200 outline-none focus:border-primary-500 h-32 resize-none" placeholder="Elaborate on how we can work together..."></textarea>
+              <textarea className="w-full bg-slate-900 border border-slate-800 rounded-2xl p-5 text-slate-200 outline-none focus:border-primary-500 h-32 resize-none" placeholder="Elaborate on how your institution can collaborate with the UNICOU ecosystem..."></textarea>
             </div>
           </>
         );
@@ -105,14 +134,14 @@ const ApplyForm: React.FC<ApplyFormProps> = ({ type, context, onSuccess }) => {
   return (
     <div className="glass p-8 md:p-12 rounded-[3rem] border border-slate-800 shadow-3xl animate-in fade-in slide-in-from-bottom-4">
       <div className="mb-10">
-        <span className="text-[10px] font-black text-primary-500 uppercase tracking-[0.3em] mb-2 block">{context || 'Connect Node'}</span>
+        <span className="text-[10px] font-black text-primary-500 uppercase tracking-[0.3em] mb-2 block">{context || 'Nexus Registration'}</span>
         <h2 className="text-3xl md:text-5xl font-display font-bold tracking-tighter">
-          {type === 'student-apply' ? 'Apply for Admission' : 
-           type === 'agent-reg' ? 'Partner Registration' : 
-           type === 'prep-center-reg' ? 'Training Center Sign-up' : 
-           type === 'careers' ? 'Career Submission' : 'Professional Inquiry'}
+          {type === 'student-apply' ? 'Apply Online' : 
+           type === 'agent-reg' ? 'Become a Sub-Agent' : 
+           type === 'prep-center-reg' ? 'Partner Training Center' : 
+           type === 'careers' ? 'Career Submission' : 'University Relations'}
         </h2>
-        <p className="text-slate-500 text-sm mt-3 font-medium">Unified Registration Infrastructure v2.1</p>
+        <p className="text-slate-500 text-sm mt-3 font-medium">Verified Compliance Node • Protocol v2.1</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -146,7 +175,7 @@ const ApplyForm: React.FC<ApplyFormProps> = ({ type, context, onSuccess }) => {
                 <svg className="absolute w-3 h-3 text-white opacity-0 peer-checked:opacity-100 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4}><path d="M5 13l4 4L19 7" /></svg>
               </div>
               <span className="text-xs text-slate-400 group-hover:text-slate-300 transition-colors font-medium">
-                I am happy to receive notifications about <span className="text-unicou-orange font-bold">scholarships, discounts, news, and updates</span>.
+                I wish to receive real-time alerts for <span className="text-unicou-orange font-bold">scholarships, intakes, and rate changes</span>.
               </span>
            </label>
         </div>
@@ -155,7 +184,7 @@ const ApplyForm: React.FC<ApplyFormProps> = ({ type, context, onSuccess }) => {
           disabled={submitting}
           className="w-full py-6 bg-unicou-navy hover:bg-[#003a4d] text-white rounded-2xl font-black uppercase tracking-widest transition-all shadow-xl active:scale-95 flex items-center justify-center gap-4 group/btn"
         >
-          {submitting ? 'Authenticating Data Node...' : 'Establish Secure Connection'}
+          {submitting ? 'Encrypting Data Node...' : 'Establish Secure Connection'}
           <svg className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
         </button>
       </form>

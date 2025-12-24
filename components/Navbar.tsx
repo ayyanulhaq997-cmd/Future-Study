@@ -27,6 +27,15 @@ const NAV_CONFIG: NavItem[] = [
       { label: 'Australia', type: 'country-guide', slug: 'australia', icon: '🇦🇺' },
       { label: 'Canada', type: 'country-guide', slug: 'canada', icon: '🇨🇦' },
       { label: 'USA', type: 'country-guide', slug: 'usa', icon: '🇺🇸' },
+      { label: 'New Zealand', type: 'country-guide', slug: 'new-zealand', icon: '🇳🇿' },
+      { label: 'Ireland', type: 'country-guide', slug: 'ireland', icon: '🇮🇪' },
+      { label: 'Germany', type: 'country-guide', slug: 'germany', icon: '🇩🇪' },
+      { label: 'Sweden', type: 'country-guide', slug: 'sweden', icon: '🇸🇪' },
+      { label: 'Finland', type: 'country-guide', slug: 'finland', icon: '🇫🇮' },
+      { label: 'Cyprus', type: 'country-guide', slug: 'cyprus', icon: '🇨🇾' },
+      { label: 'Dubai', type: 'country-guide', slug: 'dubai', icon: '🇦🇪' },
+      { label: 'Malaysia', type: 'country-guide', slug: 'malaysia', icon: '🇲🇾' },
+      { label: 'Turkey', type: 'country-guide', slug: 'turkey', icon: '🇹🇷' },
       { label: 'Europe Hub', type: 'country-guide', slug: 'europe', icon: '🇪🇺' },
     ]
   },
@@ -52,10 +61,10 @@ const NAV_CONFIG: NavItem[] = [
     label: 'Connect',
     type: 'apply',
     subItems: [
-      { label: 'For Students', type: 'apply', formType: 'student-apply', context: 'Apply Online', icon: '🎓' },
-      { label: 'For Agents', type: 'apply', formType: 'agent-reg', context: 'Become a Sub-Agent', icon: '🤝' },
-      { label: 'Prep Centers', type: 'apply', formType: 'prep-center-reg', context: 'Partner Training Center', icon: '🏫' },
-      { label: 'Institutes', type: 'apply', formType: 'institute-connect', context: 'University Relations', icon: '🏛️' },
+      { label: 'Apply Online', type: 'apply', formType: 'student-apply', context: 'Student Registration', icon: '🎓' },
+      { label: 'Become a Sub-Agent', type: 'apply', formType: 'agent-reg', context: 'Agent Membership', icon: '🤝' },
+      { label: 'Partner Training Center', type: 'apply', formType: 'prep-center-reg', context: 'Institutional Partner', icon: '🏫' },
+      { label: 'University Relations', type: 'apply', formType: 'institute-connect', context: 'Institution Connect', icon: '🏛️' },
     ]
   },
   { label: 'Resources', type: 'resources' },
@@ -131,8 +140,10 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
                   {/* Desktop Dropdown Panel */}
                   {item.subItems && activeDropdown === item.label && (
                     <div className="absolute top-full left-0 pt-4 animate-in fade-in slide-in-from-top-2 duration-200">
-                      <div className="glass bg-slate-900/95 border border-white/10 rounded-[2rem] p-4 min-w-[240px] shadow-3xl">
-                        <div className="grid grid-cols-1 gap-1">
+                      <div className={`glass bg-slate-900/95 border border-white/10 rounded-[2rem] p-4 shadow-3xl ${
+                        item.label === 'Study Abroad' ? 'min-w-[500px]' : 'min-w-[240px]'
+                      }`}>
+                        <div className={`grid gap-1 ${item.label === 'Study Abroad' ? 'grid-cols-2' : 'grid-cols-1'}`}>
                           {item.subItems.map((sub) => (
                             <button
                               key={sub.label}
