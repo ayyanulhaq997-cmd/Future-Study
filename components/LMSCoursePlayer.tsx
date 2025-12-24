@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { api } from '../services/apiService';
 import { LMSCourse, LMSModule, LMSLesson, ViewState } from '../types';
@@ -267,7 +266,7 @@ const LMSCoursePlayer: React.FC<LMSCoursePlayerProps> = ({ courseId, initialLess
         <button 
           onClick={() => onNavigate({ type: 'lms-dashboard' })}
           className="px-6 py-2 bg-slate-900 text-white rounded-lg font-bold"
-        >Back to Academy</button>
+        >Back to Learning Hub</button>
       </div>
     </div>
   );

@@ -212,18 +212,18 @@ const App: React.FC = () => {
         {renderContent()}
       </main>
 
-      <footer className="bg-slate-950 border-t border-slate-900 py-16 mt-24">
+      <footer className="bg-slate-950 border-t border-slate-900 py-24 mt-24">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 pb-16">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-16 pb-16">
             <div className="md:col-span-1">
-               <img src={LOGO_SRC} alt="UNICOU" className="h-10 w-auto object-contain mb-6" />
+               <img src={LOGO_SRC} alt="UNICOU" className="h-24 md:h-32 w-auto object-contain mb-8" />
                <p className="text-slate-500 text-xs font-bold uppercase tracking-widest leading-relaxed">Global Academic Mobility Hub <br /> Unified Infrastructure v2.1</p>
             </div>
             <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-8">
               {OFFICE_LOCATIONS.map((loc, i) => (
                 <div key={i}>
-                  <h5 className="text-[9px] font-black text-unicou-orange uppercase tracking-widest mb-2">{loc.country}</h5>
-                  <p className="text-[10px] text-slate-400 leading-relaxed max-w-[240px]">{loc.address}</p>
+                  <h5 className="text-[10px] font-black text-unicou-orange uppercase tracking-widest mb-3">{loc.country}</h5>
+                  <p className="text-[11px] text-slate-400 leading-relaxed max-w-[240px]">{loc.address}</p>
                 </div>
               ))}
             </div>
@@ -232,7 +232,7 @@ const App: React.FC = () => {
               <ul className="space-y-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                 <li><button onClick={() => navigateTo({ type: 'store' })} className="hover:text-unicou-orange transition-colors">Voucher Store</button></li>
                 <li><button onClick={() => navigateTo({ type: 'careers' })} className="hover:text-unicou-orange transition-colors">Careers</button></li>
-                <li><button onClick={() => navigateTo({ type: 'lms-dashboard' })} className="hover:text-unicou-orange transition-colors">Academy</button></li>
+                <li><button onClick={() => navigateTo({ type: 'lms-dashboard' })} className="hover:text-unicou-orange transition-colors">Learning Hub</button></li>
               </ul>
             </div>
           </div>
@@ -241,7 +241,7 @@ const App: React.FC = () => {
                <button key={id} onClick={() => navigateTo({ type: 'policy', policyId: id })} className="hover:underline">{p.title}</button>
              ))}
           </div>
-          <div className="mt-8 pt-8 border-t border-slate-900 flex justify-between items-center text-[9px] font-bold text-slate-600 uppercase tracking-widest">
+          <div className="mt-8 pt-8 border-t border-slate-900 flex justify-between items-center text-[10px] font-bold text-slate-600 uppercase tracking-widest">
              <p>© 2024 UNICOU. Authorized Fulfillment Center</p>
           </div>
         </div>

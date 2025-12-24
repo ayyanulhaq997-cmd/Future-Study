@@ -59,14 +59,14 @@ const LMSDashboard: React.FC<LMSDashboardProps> = ({ onNavigate }) => {
     ? courses 
     : courses.filter(c => enrolledIds.includes(c.id));
 
-  if (loading) return <div className="p-20 text-center animate-pulse">Initializing UNICOU Academy Environment...</div>;
+  if (loading) return <div className="p-20 text-center animate-pulse">Initializing UNICOU Learning Hub Environment...</div>;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
       <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-12">
         <div>
           <h1 className="text-4xl font-display font-bold tracking-tight mb-2">
-            UNICOU <span className="text-primary-400">Academy</span>
+            UNICOU <span className="text-primary-400">Learning Hub</span>
           </h1>
           <p className="text-slate-500 max-w-lg">
             Authorized training material for international certification exams.

@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { GeminiService } from '../services/geminiService';
 
@@ -10,7 +9,7 @@ interface Message {
 const CHAT_HISTORY_KEY = 'unicou_chat_v2';
 const INITIAL_MESSAGE: Message = { 
   role: 'model', 
-  text: "Welcome to UNICOU Support! I'm your AI consultant. I can help with PTE/IELTS vouchers, visa paths, or OTHM qualifications. How can I assist you today?" 
+  text: "Welcome to UNICOU Support! I'm your AI consultant. I can help with PTE/IELTS vouchers, visa paths, or OTHM qualifications in our Learning Hub. How can I assist you today?" 
 };
 
 const AIChat: React.FC = () => {

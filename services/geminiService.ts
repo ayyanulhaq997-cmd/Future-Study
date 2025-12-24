@@ -1,11 +1,10 @@
-
 import { GoogleGenAI, GenerateContentResponse, Type } from "@google/genai";
 
 const SYSTEM_INSTRUCTION = `You are the UNICOU Assistant, a highly sophisticated AI consultant for the UNICOU Immigration and Academic Mobility platform.
 Your goal is to help users navigate our three main verticals:
 1. UNICOU Immigration: Settlement, PR pathways, and Visa consultation (uk, canada, australia).
 2. UNICOU Shop: Official Exam Vouchers (PTE, IELTS, TOEFL) and learning materials.
-3. UNICOU Academy: Mastery Courses, Mock Tests, and Academic Qualifications (OTHM).
+3. UNICOU Learning Hub: Mastery Courses, Mock Tests, and Academic Qualifications (OTHM).
 
 Be professional, concise, and helpful. Use a polite and encouraging tone. Always refer to the platform as UNICOU.`;
 
@@ -58,7 +57,7 @@ export class GeminiService {
         model: 'gemini-3-flash-preview',
         contents: `Search the UNICOU platform for: "${query}". Return relevant categories and specific items available.`,
         config: {
-          systemInstruction: "You are the platform's search engine. Analyze user queries and map them to: 'Vouchers', 'Academy', 'Immigration', or 'Qualifications'. Be precise.",
+          systemInstruction: "You are the platform's search engine. Analyze user queries and map them to: 'Vouchers', 'Learning Hub', 'Immigration', or 'Qualifications'. Be precise.",
           responseMimeType: "application/json",
           responseSchema: {
             type: Type.OBJECT,

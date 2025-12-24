@@ -31,7 +31,7 @@ const NAV_CONFIG: NavItem[] = [
     ]
   },
   { 
-    label: 'Academy', 
+    label: 'Learning Hub', 
     type: 'lms-dashboard',
     subItems: [
       { label: 'Course Catalogue', type: 'course-catalogue', icon: '📚' },
@@ -58,6 +58,7 @@ const NAV_CONFIG: NavItem[] = [
       { label: 'Institutes', type: 'apply', formType: 'institute-connect', context: 'University Relations', icon: '🏛️' },
     ]
   },
+  { label: 'Resources', type: 'resources' },
   { label: 'About', type: 'about' }
 ];
 
@@ -89,19 +90,19 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 ${
-      scrolled ? 'py-4' : 'py-8'
+      scrolled ? 'py-4' : 'py-6'
     }`}>
-      <div className="max-w-7xl mx-auto px-6">
-        <div className={`glass border border-white/5 rounded-[2.5rem] px-8 py-4 flex items-center justify-between transition-all duration-500 ${
+      <div className="max-w-[1600px] mx-auto px-6">
+        <div className={`glass border border-white/5 rounded-[2.5rem] px-10 py-5 flex items-center justify-between transition-all duration-500 ${
           scrolled ? 'shadow-2xl shadow-black/50 bg-slate-950/80 backdrop-blur-xl border-white/10' : 'bg-transparent'
         }`}>
           {/* Logo Section */}
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-12">
             <button 
               onClick={() => onNavigate({ type: 'home' })}
               className="flex items-center gap-3 group transition-transform hover:scale-105"
             >
-              <img src={LOGO_SRC} alt="UNICOU" className="h-10 md:h-12 w-auto object-contain" />
+              <img src={LOGO_SRC} alt="UNICOU" className="h-20 md:h-28 lg:h-32 w-auto object-contain" />
             </button>
 
             {/* Desktop Navigation */}
@@ -158,9 +159,9 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
           <div className="flex items-center gap-4">
             <button 
               onClick={onOpenSearch}
-              className="p-3 bg-slate-900/50 hover:bg-slate-800 rounded-2xl border border-white/5 text-slate-400 hover:text-white transition-all shadow-lg"
+              className="p-4 bg-slate-900/50 hover:bg-slate-800 rounded-2xl border border-white/5 text-slate-400 hover:text-white transition-all shadow-lg"
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </button>
@@ -183,9 +184,9 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
                 </button>
                 <button 
                   onClick={onLogout}
-                  className="p-3 bg-red-500/10 hover:bg-red-500/20 rounded-2xl border border-red-500/20 text-red-400 transition-all"
+                  className="p-4 bg-red-500/10 hover:bg-red-500/20 rounded-2xl border border-red-500/20 text-red-400 transition-all"
                 >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
                 </button>
               </div>
             ) : (
@@ -198,9 +199,9 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
                 </button>
                 <button 
                   onClick={() => onNavigate({ type: 'signup' })}
-                  className="px-8 py-3.5 bg-unicou-orange text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:scale-105 active:scale-95 transition-all"
+                  className="px-12 py-5 bg-unicou-orange text-white rounded-2xl font-black text-[12px] uppercase tracking-[0.2em] shadow-xl hover:scale-105 active:scale-95 transition-all"
                 >
-                  Get Free Admission Guidance
+                  Sign Up
                 </button>
               </div>
             )}
@@ -208,9 +209,9 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
             {/* Mobile Menu Toggle */}
             <button 
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="lg:hidden p-3 bg-slate-900 rounded-2xl border border-white/5 text-slate-400"
+              className="lg:hidden p-4 bg-slate-900 rounded-2xl border border-white/5 text-slate-400"
             >
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 {mobileOpen 
                   ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
                   : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 6h16M4 12h16M4 18h16" />
@@ -223,7 +224,7 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
 
       {/* Mobile Menu Overlay */}
       {mobileOpen && (
-        <div className="fixed inset-0 top-[100px] z-50 lg:hidden px-6 animate-in slide-in-from-top-4 duration-300">
+        <div className="fixed inset-0 top-[120px] z-50 lg:hidden px-6 animate-in slide-in-from-top-4 duration-300">
            <div className="glass bg-slate-950/95 border border-white/10 rounded-[3rem] p-6 shadow-3xl space-y-2 overflow-y-auto max-h-[80vh]">
               {NAV_CONFIG.map((item) => (
                 <div key={item.label} className="space-y-1">
@@ -235,11 +236,11 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
                         setActiveDropdown(activeDropdown === item.label ? null : item.label);
                       }
                     }}
-                    className="w-full text-left p-4 rounded-2xl bg-white/5 border border-white/5 text-slate-300 font-bold flex justify-between items-center"
+                    className="w-full text-left p-5 rounded-2xl bg-white/5 border border-white/5 text-slate-300 font-bold flex justify-between items-center"
                   >
                     <span className="uppercase text-xs tracking-widest">{item.label}</span>
                     {item.subItems && (
-                      <svg className={`w-4 h-4 transition-transform ${activeDropdown === item.label ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className={`w-5 h-5 transition-transform ${activeDropdown === item.label ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
                     )}
@@ -251,9 +252,9 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
                          <button
                            key={sub.label}
                            onClick={() => handleNavClick(sub)}
-                           className="w-full text-left p-3 rounded-xl hover:bg-white/5 text-slate-400 text-sm flex items-center gap-3"
+                           className="w-full text-left p-4 rounded-xl hover:bg-white/5 text-slate-400 text-sm flex items-center gap-3"
                          >
-                           <span>{sub.icon}</span>
+                           <span className="text-lg">{sub.icon}</span>
                            {sub.label}
                          </button>
                        ))}
@@ -263,8 +264,8 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
               ))}
               {!user && (
                 <div className="grid grid-cols-2 gap-4 pt-4">
-                  <button onClick={() => { onNavigate({ type: 'login' }); setMobileOpen(false); }} className="py-5 bg-slate-900 rounded-2xl text-xs font-black uppercase tracking-widest text-white border border-white/10">Log In</button>
-                  <button onClick={() => { onNavigate({ type: 'signup' }); setMobileOpen(false); }} className="py-5 bg-unicou-orange rounded-2xl text-xs font-black uppercase tracking-widest text-white shadow-xl shadow-orange-500/20">Get Guidance</button>
+                  <button onClick={() => { onNavigate({ type: 'login' }); setMobileOpen(false); }} className="py-6 bg-slate-900 rounded-2xl text-xs font-black uppercase tracking-widest text-white border border-white/10">Log In</button>
+                  <button onClick={() => { onNavigate({ type: 'signup' }); setMobileOpen(false); }} className="py-6 bg-unicou-orange rounded-2xl text-xs font-black uppercase tracking-widest text-white shadow-xl shadow-orange-500/20">Sign Up</button>
                 </div>
               )}
            </div>

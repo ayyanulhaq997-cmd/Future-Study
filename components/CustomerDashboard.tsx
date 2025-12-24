@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/apiService';
 import { Order, User, TestResult, LMSCourse } from '../types';
@@ -42,7 +41,7 @@ const CustomerDashboard: React.FC<{ user: User }> = ({ user }) => {
             <button 
               onClick={() => setActiveTab('academy')}
               className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'academy' ? 'bg-primary-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
-            >Academy Assets</button>
+            >Learning Assets</button>
             <button 
               onClick={() => setActiveTab('results')}
               className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'results' ? 'bg-primary-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
@@ -91,7 +90,7 @@ const CustomerDashboard: React.FC<{ user: User }> = ({ user }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {courses.length === 0 ? (
               <div className="col-span-full glass p-20 rounded-[3rem] border-dashed border-slate-800 text-center">
-                <p className="text-slate-600 italic">No academic enrollments found.</p>
+                <p className="text-slate-600 italic">No learning enrollments found.</p>
               </div>
             ) : (
               courses.map((course, idx) => (

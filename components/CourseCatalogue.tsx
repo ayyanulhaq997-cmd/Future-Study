@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/apiService';
 import { Product, ViewState } from '../types';
@@ -20,13 +19,13 @@ const CourseCatalogue: React.FC<CourseCatalogueProps> = ({ onCheckout }) => {
     fetch();
   }, []);
 
-  if (loading) return <div className="p-20 text-center animate-pulse">Scanning Learning Assets...</div>;
+  if (loading) return <div className="p-20 text-center animate-pulse">Scanning Learning Hub Assets...</div>;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
       <div className="text-center mb-16">
         <h2 className="text-4xl md:text-6xl font-display font-bold mb-4 tracking-tight">
-          Academy <span className="text-primary-400">Catalogue</span>
+          Learning Hub <span className="text-primary-400">Catalogue</span>
         </h2>
         <p className="text-slate-400 max-w-xl mx-auto">
           High-performance preparation courses for global English language proficiency exams.
@@ -41,7 +40,7 @@ const CourseCatalogue: React.FC<CourseCatalogueProps> = ({ onCheckout }) => {
             </div>
             <div className="p-10 flex flex-col flex-grow">
               <div className="flex justify-between items-start mb-4">
-                <span className="text-[10px] font-black uppercase tracking-widest text-primary-400 bg-primary-500/10 px-3 py-1 rounded-full border border-primary-500/20">
+                <span className="text-[10px] font-black uppercase tracking-widest text-primary-400 bg-primary-400/10 px-3 py-1 rounded-full border border-primary-500/20">
                   {c.category} SPECIALIST
                 </span>
                 <span className="text-2xl font-bold font-mono">${c.basePrice}</span>
