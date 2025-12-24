@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { api } from '../services/apiService';
 import { Product } from '../types';
 
@@ -12,6 +11,7 @@ interface VoucherStoreProps {
 const VoucherStore: React.FC<VoucherStoreProps> = ({ onCheckout, onBook, onNavigateToAgent }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeCategory, setActiveCategory] = useState<string>('ALL');
 
   useEffect(() => {
     api.getProducts().then(p => {
@@ -19,6 +19,16 @@ const VoucherStore: React.FC<VoucherStoreProps> = ({ onCheckout, onBook, onNavig
       setLoading(false);
     });
   }, []);
+
+  const categories = useMemo(() => {
+    const cats = new Set(products.map(p => p.category));
+    return ['ALL', ...Array.from(cats)];
+  }, [products]);
+
+  const filteredProducts = useMemo(() => {
+    if (activeCategory === 'ALL') return products;
+    return products.filter(p => p.category === activeCategory);
+  }, [products, activeCategory]);
 
   if (loading) return <div className="p-20 text-center animate-pulse">Establishing Secure Online Store Connection...</div>;
 
@@ -48,7 +58,7 @@ const VoucherStore: React.FC<VoucherStoreProps> = ({ onCheckout, onBook, onNavig
             Voucher <span className="text-unicou-orange">Sale</span>
           </h2>
           <p className="text-slate-400 leading-relaxed font-medium text-lg">
-            Authorized digital procurement for Pearson PTE, IELTS, and TOEFL iBT. Our system ensures **Instant Vouchers Delivery through email** following automated or teller-verified payment nodes.
+            Authorized digital procurement for Pearson PTE, IELTS, OET, and TOEFL iBT. Our system ensures **Instant Vouchers Delivery through email** following automated or teller-verified payment nodes.
           </p>
           
           <div className="flex flex-wrap gap-4 mt-8">
@@ -80,8 +90,25 @@ const VoucherStore: React.FC<VoucherStoreProps> = ({ onCheckout, onBook, onNavig
         </div>
       </div>
 
+      {/* Category Filter */}
+      <div className="mb-12 flex flex-wrap gap-3">
+        {categories.map(cat => (
+          <button
+            key={cat}
+            onClick={() => setActiveCategory(cat)}
+            className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all ${
+              activeCategory === cat 
+              ? 'bg-unicou-orange text-white border-unicou-orange shadow-lg shadow-rose-500/20' 
+              : 'bg-slate-900 text-slate-500 border-slate-800 hover:border-slate-700'
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-24">
-        {products.map(p => (
+        {filteredProducts.map(p => (
           <div key={p.id} className="glass p-10 rounded-[3.5rem] border border-slate-800 hover:border-unicou-orange/40 transition-all group flex flex-col h-full shadow-3xl relative overflow-hidden">
             <div className="absolute -top-10 -right-10 w-40 h-40 bg-unicou-orange/5 blur-[60px] group-hover:bg-unicou-orange/10 transition-all" />
             

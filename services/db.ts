@@ -9,8 +9,20 @@ export const users: User[] = [
 ];
 
 export const products: Product[] = [
-  { id: 'p-pte-std', name: 'PTE Academic (Standard)', category: 'PTE', type: 'Voucher', basePrice: 180, currency: 'USD', description: 'Pearson Test of English voucher.', icon: '📊', supportsFullRegistration: true },
-  { id: 'p-ielts-std', name: 'IELTS Academic / General', category: 'IELTS', type: 'Voucher', basePrice: 220, currency: 'USD', description: 'Standard IELTS voucher.', icon: '🌐', supportsFullRegistration: true }
+  { id: 'p-pte-std', name: 'PTE Academic', category: 'PTE', type: 'Voucher', basePrice: 180, currency: 'USD', description: 'Standard Pearson Test of English Academic voucher.', icon: '📊', supportsFullRegistration: true },
+  { id: 'p-pte-ukvi', name: 'PTE Academic UKVI', category: 'PTE', type: 'Voucher', basePrice: 210, currency: 'USD', description: 'Pearson Test for UK Visas and Immigration (SELT).', icon: '🇬🇧', supportsFullRegistration: true },
+  { id: 'p-pte-core', name: 'PTE Core', category: 'PTE', type: 'Voucher', basePrice: 185, currency: 'USD', description: 'New PTE Core for Canadian migration and general purposes.', icon: '🇨🇦', supportsFullRegistration: true },
+  { id: 'p-ielts-std', name: 'IELTS Academic/General', category: 'IELTS', type: 'Voucher', basePrice: 220, currency: 'USD', description: 'Standard IELTS voucher for Academic or General Training.', icon: '🌐', supportsFullRegistration: true },
+  { id: 'p-ielts-ukvi', name: 'IELTS for UKVI', category: 'IELTS', type: 'Voucher', basePrice: 255, currency: 'USD', description: 'Secure English Language Test (SELT) for UK immigration.', icon: '🛡️', supportsFullRegistration: true },
+  { id: 'p-oet-nurse', name: 'OET (Nursing)', category: 'OET', type: 'Voucher', basePrice: 450, currency: 'USD', description: 'Occupational English Test for Healthcare Professionals.', icon: '🏥', supportsFullRegistration: true },
+  { id: 'p-oet-med', name: 'OET (Medicine)', category: 'OET', type: 'Voucher', basePrice: 450, currency: 'USD', description: 'Occupational English Test for Doctors and Specialists.', icon: '🩺', supportsFullRegistration: true },
+  { id: 'p-toefl-ibt', name: 'TOEFL iBT', category: 'TOEFL', type: 'Voucher', basePrice: 205, currency: 'USD', description: 'ETS TOEFL iBT voucher for standard and Home Edition.', icon: '🌎', supportsFullRegistration: true },
+  { id: 'p-ellt-oxford', name: 'Oxford ELLT Digital', category: 'ELLT', type: 'Voucher', basePrice: 120, currency: 'USD', description: 'Oxford International English Language Level Test.', icon: '🏫', supportsFullRegistration: true },
+  { id: 'p-det', name: 'Duolingo English Test', category: 'OTHER', type: 'Voucher', basePrice: 59, currency: 'USD', description: 'Rapid, affordable online English proficiency test.', icon: '🦉', supportsFullRegistration: true },
+  { id: 'p-gre', name: 'GRE General Test', category: 'OTHER', type: 'Voucher', basePrice: 220, currency: 'USD', description: 'ETS GRE voucher for Graduate school admissions.', icon: '🎓', supportsFullRegistration: true },
+  { id: 'p-gmat', name: 'GMAT Focus Edition', category: 'OTHER', type: 'Voucher', basePrice: 275, currency: 'USD', description: 'Standardized assessment for Business school entry.', icon: '💼', supportsFullRegistration: true },
+  { id: 'p-ged', name: 'GED Test Voucher', category: 'OTHER', type: 'Voucher', basePrice: 80, currency: 'USD', description: 'General Educational Development certification.', icon: '📜', supportsFullRegistration: true },
+  { id: 'p-langcert-selt', name: 'LanguageCert SELT', category: 'OTHER', type: 'Voucher', basePrice: 195, currency: 'USD', description: 'Secure English Language Test for UKVI.', icon: '⚡', supportsFullRegistration: true }
 ];
 
 export const qualifications: Qualification[] = [
@@ -42,9 +54,9 @@ export const countryGuides: CountryGuide[] = [
 
 ### Why Study in the UK in 2025?
 The UK’s reputation for academic excellence is unmatched. In 2025, several factors continue to make the UK a top choice:
-- **Shorter Course Durations:** Most UK Bachelor’s degrees take only three years, and Master’s degrees are typically completed in just one year.
+- **Shorter Course Durations:** Most UK Bachelor’s degrees take only three years, and Master’s degrees are typically completed in just one year. This saves you both time and tuition costs.
 - **World-Class Research:** UK universities are at the forefront of global innovation in AI, renewable energy, and healthcare.
-- **Cultural Diversity:** Join a community from over 180 countries.
+- **Cultural Diversity:** You will join a vibrant community of students from over 180 countries, building a global network that will last a lifetime.
 
 ### The Latest 2025/2026 UK Student Visa Rules
 1. **Increased Financial Maintenance Requirements:** As of November 11, 2025, the Home Office increased living cost requirements:
@@ -54,7 +66,7 @@ The UK’s reputation for academic excellence is unmatched. In 2025, several fac
 
 2. **English Language Requirements:** For degree-level programs, UK HEIs can accept online and home-based exams like Oxford ELLT Digital, LanguageCert ESOL Online, Password Skills Plus, and Duolingo (university-dependent). For below-degree level, a SELT from an approved center (IELTS UKVI, PTE UKVI) is mandatory.
 
-3. **Transition to eVisas:** Physical BRPs are replaced by eVisas. Access your status online via UKVI.
+3. **Transition to eVisas:** Say goodbye to the physical Biometric Residence Permit (BRP). The UK has fully transitioned to eVisas. Access your status online via UKVI.
 
 ### Top Courses in Demand
 - Computer Science & AI
