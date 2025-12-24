@@ -32,6 +32,28 @@ export const products: Product[] = [
     icon: '🌐',
     supportsFullRegistration: true,
     priceTiers: [{ minQuantity: 3, discountPercentage: 3 }]
+  },
+  {
+    id: 'pte-mastery-prod',
+    name: 'PTE Academic Mastery Course',
+    category: 'PTE',
+    type: 'Course',
+    basePrice: 99,
+    currency: 'USD',
+    description: 'Comprehensive video training and simulated practice for PTE Academic.',
+    icon: '🎓',
+    lmsCourseId: 'pte-mastery'
+  },
+  {
+    id: 'ielts-bootcamp-prod',
+    name: 'IELTS Band 8 Bootcamp',
+    category: 'IELTS',
+    type: 'Course',
+    basePrice: 149,
+    currency: 'USD',
+    description: 'Intensive preparation track for achieving high band scores in IELTS.',
+    icon: '🚀',
+    lmsCourseId: 'ielts-bootcamp'
   }
 ];
 
@@ -775,7 +797,7 @@ However, Finland loves high achievers. Almost every university offers Scholarshi
 Working While You Study: 30 Hours of Freedom
 Finland is incredibly generous when it comes to work rights. In 2026, international students are allowed to work an average of 30 hours per week during the semester. During holidays, there are no limits at all.
 
-The 2-Year Post-Study Work Visa: Your Path to Residency
+The 202-Year Post-Study Work Visa: Your Path to Residency
 Finland doesn't want you to leave after graduation; they want you to stay and join the workforce. In 2026, graduates can apply for a Post-Study Residence Permit that is valid for two years.
 This is one of the longest "stay-back" periods in Europe. It gives you plenty of time to find a job that matches your degree. Once you find a professional role, you can switch to a work-based permit, which is the direct path to permanent residency and, eventually, Finnish citizenship.
 
