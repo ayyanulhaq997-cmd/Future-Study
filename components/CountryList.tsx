@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/apiService';
 import { CountryGuide } from '../types';
@@ -13,11 +12,11 @@ const CountryList: React.FC<CountryListProps> = ({ onNavigateToGuide }) => {
 
   useEffect(() => {
     const fetchGuides = async () => {
-      // Slugs matching the updated database in services/db.ts
+      // Updated to include all 15 countries provided in the registry
       const slugs = [
         'uk', 'australia', 'usa', 'canada', 'new-zealand', 
         'ireland', 'germany', 'sweden', 'finland', 'cyprus',
-        'dubai', 'malaysia', 'turkey', 'europe'
+        'dubai', 'malaysia', 'turkey', 'europe', 'italy'
       ];
       const data = await Promise.all(slugs.map(s => api.getGuideBySlug(s)));
       setGuides(data.filter((g): g is CountryGuide => g !== null));
