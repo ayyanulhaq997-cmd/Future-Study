@@ -66,17 +66,17 @@ const AIChat: React.FC = () => {
 
   return (
     <div className="fixed bottom-6 right-6 z-[200]">
-      {/* WhatsApp style float button */}
+      {/* Reverted to brand orange for the main chat toggle */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={`w-16 h-16 rounded-full flex items-center justify-center shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all duration-500 hover:scale-110 active:scale-95 ${
-          isOpen ? 'bg-slate-800 -rotate-90' : 'bg-[#25D366]'
+          isOpen ? 'bg-slate-800 -rotate-90' : 'bg-unicou-orange'
         }`}
       >
         {isOpen ? (
           <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
         ) : (
-          <svg className="w-9 h-9 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.246 2.248 3.484 5.232 3.484 8.412-.003 6.557-5.338 11.892-11.893 11.892-1.997-.001-3.951-.5-5.688-1.448l-6.309 1.656zm6.222-4.032c1.503.893 3.129 1.364 4.791 1.365 5.282.002 9.58-4.296 9.582-9.58.001-2.56-.992-4.967-2.797-6.772-1.804-1.804-4.212-2.798-6.772-2.799-5.282 0-9.58 4.298-9.582 9.582-.001 1.688.439 3.336 1.272 4.793l-1.01 3.69 3.784-1.006z"/></svg>
+          <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
         )}
         {!isOpen && (
           <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full border-2 border-slate-950 flex items-center justify-center animate-bounce">
@@ -87,7 +87,7 @@ const AIChat: React.FC = () => {
 
       {isOpen && (
         <div className="absolute bottom-20 right-0 w-[380px] h-[600px] glass rounded-[3rem] border border-white/10 shadow-3xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-6 duration-300">
-          <div className="p-8 bg-[#004a61] flex items-center justify-between">
+          <div className="p-8 bg-unicou-navy flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20">
                 <span className="text-2xl">🤖</span>
