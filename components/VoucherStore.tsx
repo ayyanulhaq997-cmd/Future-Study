@@ -10,14 +10,24 @@ interface VoucherStoreProps {
 
 const VoucherStore: React.FC<VoucherStoreProps> = ({ onCheckout, onBook, onNavigateToAgent }) => {
   const [products, setProducts] = useState<Product[]>([]);
+  const [stockMap, setStockMap] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<string>('ALL');
 
   useEffect(() => {
-    api.getProducts().then(p => {
-      setProducts(p.filter(x => x.type === 'Voucher'));
+    const init = async () => {
+      const p = await api.getProducts();
+      const filtered = p.filter(x => x.type === 'Voucher');
+      setProducts(filtered);
+      
+      const counts: Record<string, number> = {};
+      for (const item of filtered) {
+        counts[item.id] = await api.getStockCount(item.id);
+      }
+      setStockMap(counts);
       setLoading(false);
-    });
+    };
+    init();
   }, []);
 
   const categories = useMemo(() => {
@@ -58,7 +68,7 @@ const VoucherStore: React.FC<VoucherStoreProps> = ({ onCheckout, onBook, onNavig
             Voucher <span className="text-unicou-orange">Sale</span>
           </h2>
           <p className="text-slate-400 leading-relaxed font-medium text-lg">
-            Authorized digital procurement for Pearson PTE, IELTS, OET, and TOEFL iBT. Our system ensures **Instant Vouchers Delivery through email** following automated or teller-verified payment nodes.
+            Authorized digital procurement for Pearson PTE, IELTS, LanguageCert, and TOEFL iBT. Our system ensures **Instant Vouchers Delivery through email** following automated or teller-verified payment nodes.
           </p>
           
           <div className="flex flex-wrap gap-4 mt-8">
@@ -76,7 +86,7 @@ const VoucherStore: React.FC<VoucherStoreProps> = ({ onCheckout, onBook, onNavig
              className="px-8 py-5 bg-unicou-navy hover:bg-[#003a4d] text-white rounded-[2rem] font-bold text-[11px] uppercase tracking-[0.2em] border border-white/10 transition-all shadow-2xl flex items-center justify-center gap-3 active:scale-95"
            >
              Agent / Training Centers Portal
-             <svg className="w-5 h-5 text-unicou-orange" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+             <svg className="w-5 h-5 text-unicou-orange" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zM6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
            </button>
            <div className="p-5 glass border border-white/5 rounded-[2rem] flex items-center gap-4">
               <div className="w-10 h-10 bg-emerald-500/10 rounded-full flex items-center justify-center">
@@ -108,52 +118,67 @@ const VoucherStore: React.FC<VoucherStoreProps> = ({ onCheckout, onBook, onNavig
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-24">
-        {filteredProducts.map(p => (
-          <div key={p.id} className="glass p-10 rounded-[3.5rem] border border-slate-800 hover:border-unicou-orange/40 transition-all group flex flex-col h-full shadow-3xl relative overflow-hidden">
-            <div className="absolute -top-10 -right-10 w-40 h-40 bg-unicou-orange/5 blur-[60px] group-hover:bg-unicou-orange/10 transition-all" />
-            
-            <div className="flex justify-between items-start mb-10 relative z-10">
-              <div className="w-20 h-20 bg-slate-950 rounded-[2rem] flex items-center justify-center text-5xl shadow-inner border border-white/5 group-hover:scale-110 transition-transform">
-                {p.icon}
-              </div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-unicou-orange bg-unicou-orange/10 px-5 py-2 rounded-full border border-unicou-orange/20">
-                Nexus Verified
-              </span>
-            </div>
-            
-            <h3 className="text-3xl font-display font-bold mb-4 group-hover:text-white transition-colors tracking-tight">{p.name}</h3>
-            <p className="text-slate-500 text-sm mb-12 leading-relaxed flex-grow italic">{p.description}</p>
-            
-            <div className="space-y-8 pt-8 border-t border-slate-900/50 relative z-10">
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-1">Standard Settlement</p>
-                  <p className="text-5xl font-display font-bold text-white font-mono tracking-tighter">${p.basePrice}</p>
-                </div>
-                <div className="text-right">
-                   <div className="flex items-center gap-1.5 justify-end mb-1">
-                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      <span className="text-[10px] font-black text-slate-500 uppercase">Vault Ready</span>
-                   </div>
-                   <span className="text-xs font-bold text-slate-400">Stock: 2,400+</span>
-                </div>
-              </div>
+        {filteredProducts.map(p => {
+          const stockCount = stockMap[p.id] || 0;
+          const isOutOfStock = stockCount === 0;
+          const hasNoPrice = p.basePrice === 0;
 
-              <div className="grid grid-cols-1 gap-4">
-                 <button 
-                  onClick={() => onCheckout(p.id, 1)}
-                  className="w-full py-6 bg-unicou-orange hover:bg-orange-600 text-white rounded-[2rem] font-black text-sm uppercase tracking-widest transition-all shadow-xl shadow-unicou-orange/20 active:scale-[0.98] flex items-center justify-center gap-4 group/buy"
-                >
-                  Buy Now
-                  <svg className="w-6 h-6 group-hover/buy:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-                </button>
+          return (
+            <div key={p.id} className="glass p-10 rounded-[3.5rem] border border-slate-800 hover:border-unicou-orange/40 transition-all group flex flex-col h-full shadow-3xl relative overflow-hidden">
+              <div className="absolute -top-10 -right-10 w-40 h-40 bg-unicou-orange/5 blur-[60px] group-hover:bg-unicou-orange/10 transition-all" />
+              
+              <div className="flex justify-between items-start mb-10 relative z-10">
+                <div className="w-20 h-20 bg-slate-950 rounded-[2rem] flex items-center justify-center text-5xl shadow-inner border border-white/5 group-hover:scale-110 transition-transform">
+                  {p.icon}
+                </div>
+                <span className={`text-[10px] font-black uppercase tracking-widest px-5 py-2 rounded-full border ${
+                  isOutOfStock ? 'bg-red-500/10 text-red-500 border-red-500/20' : 'bg-unicou-orange/10 text-unicou-orange border-unicou-orange/20'
+                }`}>
+                  {isOutOfStock ? 'OUT OF STOCK' : 'NEXUS VERIFIED'}
+                </span>
+              </div>
+              
+              <h3 className="text-3xl font-display font-bold mb-4 group-hover:text-white transition-colors tracking-tight">{p.name}</h3>
+              <p className="text-slate-500 text-sm mb-12 leading-relaxed flex-grow italic">{p.description}</p>
+              
+              <div className="space-y-8 pt-8 border-t border-slate-900/50 relative z-10">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-1">Standard Settlement</p>
+                    <p className="text-4xl font-display font-bold text-white font-mono tracking-tighter">
+                      {hasNoPrice ? 'Contact' : `$${p.basePrice}`}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                     <div className="flex items-center gap-1.5 justify-end mb-1">
+                        <div className={`w-1.5 h-1.5 rounded-full ${isOutOfStock ? 'bg-red-500' : 'bg-emerald-500 animate-pulse'}`} />
+                        <span className="text-[10px] font-black text-slate-500 uppercase">{isOutOfStock ? 'Depleted' : 'Vault Ready'}</span>
+                     </div>
+                     <span className="text-xs font-bold text-slate-400">Stock: {stockCount}</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4">
+                   <button 
+                    onClick={() => onCheckout(p.id, 1)}
+                    disabled={isOutOfStock}
+                    className={`w-full py-6 rounded-[2rem] font-black text-sm uppercase tracking-widest transition-all shadow-xl active:scale-[0.98] flex items-center justify-center gap-4 group/buy ${
+                      isOutOfStock 
+                      ? 'bg-slate-800 text-slate-600 cursor-not-allowed border border-slate-700' 
+                      : 'bg-unicou-orange hover:bg-orange-600 text-white shadow-unicou-orange/20'
+                    }`}
+                  >
+                    {isOutOfStock ? 'Sold Out' : 'Buy Now'}
+                    {!isOutOfStock && <svg className="w-6 h-6 group-hover/buy:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>}
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
       
-      {/* Security/Access Policy section as requested */}
+      {/* Security/Access Policy section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 mt-32">
          <div className="space-y-4">
             <div className="w-12 h-12 bg-red-500/10 text-red-500 rounded-2xl flex items-center justify-center border border-red-500/20">

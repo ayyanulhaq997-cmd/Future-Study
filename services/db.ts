@@ -9,27 +9,59 @@ export const users: User[] = [
 ];
 
 export const products: Product[] = [
-  { id: 'p-pte-std', name: 'PTE Academic', category: 'PTE', type: 'Voucher', basePrice: 180, currency: 'USD', description: 'Standard Pearson Test of English Academic voucher.', icon: '📊', supportsFullRegistration: true },
-  { id: 'p-pte-ukvi', name: 'PTE Academic UKVI', category: 'PTE', type: 'Voucher', basePrice: 210, currency: 'USD', description: 'Pearson Test for UK Visas and Immigration (SELT).', icon: '🇬🇧', supportsFullRegistration: true },
-  { id: 'p-pte-core', name: 'PTE Core', category: 'PTE', type: 'Voucher', basePrice: 185, currency: 'USD', description: 'New PTE Core for Canadian migration and general purposes.', icon: '🇨🇦', supportsFullRegistration: true },
-  { id: 'p-ielts-std', name: 'IELTS Academic/General', category: 'IELTS', type: 'Voucher', basePrice: 220, currency: 'USD', description: 'Standard IELTS voucher for Academic or General Training.', icon: '🌐', supportsFullRegistration: true },
-  { id: 'p-ielts-ukvi', name: 'IELTS for UKVI', category: 'IELTS', type: 'Voucher', basePrice: 255, currency: 'USD', description: 'Secure English Language Test (SELT) for UK immigration.', icon: '🛡️', supportsFullRegistration: true },
-  { id: 'p-oet-nurse', name: 'OET (Nursing)', category: 'OET', type: 'Voucher', basePrice: 450, currency: 'USD', description: 'Occupational English Test for Healthcare Professionals.', icon: '🏥', supportsFullRegistration: true },
-  { id: 'p-oet-med', name: 'OET (Medicine)', category: 'OET', type: 'Voucher', basePrice: 450, currency: 'USD', description: 'Occupational English Test for Doctors and Specialists.', icon: '🩺', supportsFullRegistration: true },
-  { id: 'p-toefl-ibt', name: 'TOEFL iBT', category: 'TOEFL', type: 'Voucher', basePrice: 205, currency: 'USD', description: 'ETS TOEFL iBT voucher for standard and Home Edition.', icon: '🌎', supportsFullRegistration: true },
-  { id: 'p-ellt-oxford', name: 'Oxford ELLT Digital', category: 'ELLT', type: 'Voucher', basePrice: 120, currency: 'USD', description: 'Oxford International English Language Level Test.', icon: '🏫', supportsFullRegistration: true },
-  { id: 'p-det', name: 'Duolingo English Test', category: 'OTHER', type: 'Voucher', basePrice: 59, currency: 'USD', description: 'Rapid, affordable online English proficiency test.', icon: '🦉', supportsFullRegistration: true },
-  { id: 'p-gre', name: 'GRE General Test', category: 'OTHER', type: 'Voucher', basePrice: 220, currency: 'USD', description: 'ETS GRE voucher for Graduate school admissions.', icon: '🎓', supportsFullRegistration: true },
-  { id: 'p-gmat', name: 'GMAT Focus Edition', category: 'OTHER', type: 'Voucher', basePrice: 275, currency: 'USD', description: 'Standardized assessment for Business school entry.', icon: '💼', supportsFullRegistration: true },
-  { id: 'p-ged', name: 'GED Test Voucher', category: 'OTHER', type: 'Voucher', basePrice: 80, currency: 'USD', description: 'General Educational Development certification.', icon: '📜', supportsFullRegistration: true },
-  { id: 'p-langcert-selt', name: 'LanguageCert SELT', category: 'OTHER', type: 'Voucher', basePrice: 195, currency: 'USD', description: 'Secure English Language Test for UKVI.', icon: '⚡', supportsFullRegistration: true }
+  // IELTS (Country Wise)
+  { id: 'v-1', name: 'IELTS Voucher (Sr No 1)', category: 'IELTS', type: 'Voucher', basePrice: 149, currency: 'USD', description: 'Standard IELTS Academic/General training voucher.', icon: '🌐' },
+  { id: 'v-2', name: 'IELTS Voucher (Sr No 2)', category: 'IELTS', type: 'Voucher', basePrice: 149, currency: 'USD', description: 'Standard IELTS Academic/General training voucher.', icon: '🌐' },
+  { id: 'v-3', name: 'IELTS Voucher (Sr No 3)', category: 'IELTS', type: 'Voucher', basePrice: 135, currency: 'USD', description: 'Discounted IELTS Academic training node.', icon: '🌐' },
+  { id: 'v-4', name: 'IELTS Voucher (Sr No 4)', category: 'IELTS', type: 'Voucher', basePrice: 0, currency: 'USD', description: 'IELTS Regional Voucher (Price TBD).', icon: '🌐' },
+  { id: 'v-5', name: 'IELTS Voucher (Sr No 5)', category: 'IELTS', type: 'Voucher', basePrice: 0, currency: 'USD', description: 'IELTS Regional Voucher (Price TBD).', icon: '🌐' },
+  
+  // PTE (Country Wise)
+  { id: 'v-6', name: 'PTE Academic (Sr No 6)', category: 'PTE', type: 'Voucher', basePrice: 65, currency: 'USD', description: 'Pearson Test of English Academic voucher.', icon: '📊' },
+  { id: 'v-7', name: 'PTE Academic (Sr No 7)', category: 'PTE', type: 'Voucher', basePrice: 65, currency: 'USD', description: 'Pearson Test of English Academic voucher.', icon: '📊' },
+  { id: 'v-8', name: 'PTE Regional (Sr No 8)', category: 'PTE', type: 'Voucher', basePrice: 0, currency: 'USD', description: 'PTE Regional Node (Price TBD).', icon: '📊' },
+  { id: 'v-9', name: 'PTE Regional (Sr No 9)', category: 'PTE', type: 'Voucher', basePrice: 0, currency: 'USD', description: 'PTE Regional Node (Price TBD).', icon: '📊' },
+
+  // LanguageCert (Country Wise)
+  { id: 'v-10', name: 'LanguageCert (Sr No 10)', category: 'LanguageCert', type: 'Voucher', basePrice: 155, currency: 'USD', description: 'Secure English Language Test (SELT) voucher.', icon: '⚡' },
+  { id: 'v-11', name: 'LanguageCert (Sr No 11)', category: 'LanguageCert', type: 'Voucher', basePrice: 155, currency: 'USD', description: 'Secure English Language Test (SELT) voucher.', icon: '⚡' },
+  { id: 'v-12', name: 'LanguageCert (Sr No 12)', category: 'LanguageCert', type: 'Voucher', basePrice: 125, currency: 'USD', description: 'LanguageCert ESOL Assessment voucher.', icon: '⚡' },
+  { id: 'v-13', name: 'LanguageCert (Sr No 13)', category: 'LanguageCert', type: 'Voucher', basePrice: 0, currency: 'USD', description: 'LanguageCert Regional Node (Price TBD).', icon: '⚡' },
+  { id: 'v-14', name: 'LanguageCert (Sr No 14)', category: 'LanguageCert', type: 'Voucher', basePrice: 0, currency: 'USD', description: 'LanguageCert Regional Node (Price TBD).', icon: '⚡' },
+  { id: 'v-15', name: 'LanguageCert (Sr No 15)', category: 'LanguageCert', type: 'Voucher', basePrice: 60, currency: 'USD', description: 'LanguageCert Entry-Level voucher.', icon: '⚡' },
+  { id: 'v-16', name: 'LanguageCert (Sr No 16)', category: 'LanguageCert', type: 'Voucher', basePrice: 60, currency: 'USD', description: 'LanguageCert Entry-Level voucher.', icon: '⚡' },
+
+  // Skills for English (Country Wise)
+  { id: 'v-17', name: 'Skills for English (Sr No 17)', category: 'Skills for English', type: 'Voucher', basePrice: 0, currency: 'USD', description: 'PSI Skills for English SELT voucher.', icon: '🛡️' },
+  { id: 'v-18', name: 'Skills for English (Sr No 18)', category: 'Skills for English', type: 'Voucher', basePrice: 0, currency: 'USD', description: 'PSI Skills for English SELT voucher.', icon: '🛡️' },
+
+  // TOEFL iBT (Country Wise)
+  { id: 'v-19', name: 'TOEFL iBT (Sr No 19)', category: 'TOEFL', type: 'Voucher', basePrice: 0, currency: 'USD', description: 'ETS TOEFL iBT Official voucher.', icon: '🌎' },
+
+  // Global Items
+  { id: 'v-20', name: 'Duolingo (Sr No 20)', category: 'Duolingo', type: 'Voucher', basePrice: 60, currency: 'USD', description: 'Duolingo English Test Global voucher.', icon: '🦉' },
+  { id: 'v-21', name: 'Oxford ELLT (Sr No 21)', category: 'ELLT', type: 'Voucher', basePrice: 85, currency: 'USD', description: 'Oxford International ELLT Digital voucher.', icon: '🏫' },
+  { id: 'v-22', name: 'Password Skills Plus (Sr No 22)', category: 'OTHER', type: 'Voucher', basePrice: 85, currency: 'USD', description: 'Password Skills Plus Global assessment.', icon: '🔑' }
+];
+
+// Population of stock only for "Stock Available" items
+export const voucherCodes: VoucherCode[] = [
+  // Available stock generation
+  ...Array(50).fill(0).map((_, i) => ({ id: `v10-${i}`, productId: 'v-10', code: `LC-V10-${Math.random().toString(36).substr(2, 6).toUpperCase()}`, status: 'Available' as const, expiryDate: '2026-01-01' })),
+  ...Array(50).fill(0).map((_, i) => ({ id: `v11-${i}`, productId: 'v-11', code: `LC-V11-${Math.random().toString(36).substr(2, 6).toUpperCase()}`, status: 'Available' as const, expiryDate: '2026-01-01' })),
+  ...Array(50).fill(0).map((_, i) => ({ id: `v12-${i}`, productId: 'v-12', code: `LC-V12-${Math.random().toString(36).substr(2, 6).toUpperCase()}`, status: 'Available' as const, expiryDate: '2026-01-01' })),
+  ...Array(50).fill(0).map((_, i) => ({ id: `v15-${i}`, productId: 'v-15', code: `LC-V15-${Math.random().toString(36).substr(2, 6).toUpperCase()}`, status: 'Available' as const, expiryDate: '2026-01-01' })),
+  ...Array(50).fill(0).map((_, i) => ({ id: `v16-${i}`, productId: 'v-16', code: `LC-V16-${Math.random().toString(36).substr(2, 6).toUpperCase()}`, status: 'Available' as const, expiryDate: '2026-01-01' })),
+  ...Array(50).fill(0).map((_, i) => ({ id: `v17-${i}`, productId: 'v-17', code: `SE-V17-${Math.random().toString(36).substr(2, 6).toUpperCase()}`, status: 'Available' as const, expiryDate: '2026-01-01' })),
+  ...Array(50).fill(0).map((_, i) => ({ id: `v18-${i}`, productId: 'v-18', code: `SE-V18-${Math.random().toString(36).substr(2, 6).toUpperCase()}`, status: 'Available' as const, expiryDate: '2026-01-01' })),
+  ...Array(50).fill(0).map((_, i) => ({ id: `v20-${i}`, productId: 'v-20', code: `DE-V20-${Math.random().toString(36).substr(2, 6).toUpperCase()}`, status: 'Available' as const, expiryDate: '2026-01-01' })),
+  ...Array(50).fill(0).map((_, i) => ({ id: `v21-${i}`, productId: 'v-21', code: `OX-V21-${Math.random().toString(36).substr(2, 6).toUpperCase()}`, status: 'Available' as const, expiryDate: '2026-01-01' })),
+  ...Array(50).fill(0).map((_, i) => ({ id: `v22-${i}`, productId: 'v-22', code: `PS-V22-${Math.random().toString(36).substr(2, 6).toUpperCase()}`, status: 'Available' as const, expiryDate: '2026-01-01' })),
 ];
 
 export const qualifications: Qualification[] = [
   { id: 'q-othm-3', title: 'OTHM Level 3 Diploma in Business Studies', duration: '6 Months', qualificationBody: 'OTHM', tuitionFees: '$1,200', requirements: ['High School Certificate'], description: 'Business operations foundation.', level: 'Level 3', image: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800' }
 ];
-
-export const voucherCodes: VoucherCode[] = [];
 
 export const universities: University[] = [
   { id: 'uni-manchester', name: 'University of Manchester', slug: 'manchester', location: 'Manchester, UK', ranking: 32, description: 'Research powerhouse.', logo: 'https://images.unsplash.com/photo-1541339907198-e08756ebafe3?w=200', countryId: 'uk', website: 'https://www.manchester.ac.uk' },
