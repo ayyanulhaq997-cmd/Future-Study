@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { api } from '../services/apiService';
 import { University, Course } from '../types';
@@ -250,7 +249,7 @@ const UniversityProfile: React.FC<{ slug: string }> = ({ slug }) => {
                    Download Prospectus
                  </button>
                  <p className="text-center text-[10px] text-slate-500 uppercase font-black tracking-widest mt-6">
-                   Nexus Unified Verification Engine • 2024.1
+                   UNICOU Unified Verification Engine • 2024.1
                  </p>
               </div>
             </div>

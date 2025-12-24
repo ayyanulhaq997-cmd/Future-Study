@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/apiService';
 import { UserRole } from '../types';
@@ -78,7 +77,7 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
             </svg>
           </div>
           <h2 className="text-3xl font-display font-bold">New <span className="text-primary-400">Identity</span></h2>
-          <p className="text-slate-500 text-sm mt-2">Initialize your Nexus Academy credentials.</p>
+          <p className="text-slate-500 text-sm mt-2">Initialize your UNICOU Academy credentials.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -110,7 +109,7 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
                 autoComplete="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="alex@nexus-edu.com"
+                placeholder="alex@unicou.uk"
                 className="w-full bg-slate-900 border border-slate-700 rounded-xl p-4 text-slate-200 outline-none focus:border-primary-500 transition-all"
               />
             </div>

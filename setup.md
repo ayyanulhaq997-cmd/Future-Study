@@ -11,36 +11,36 @@ UNICOU is a high-performance ecosystem for:
 
 ## 2. Payment Configuration (Real Payments)
 
-### Primary: Bank Transfer (Direct Settlement)
-Bank transfers are the primary source for receiving funds. This is a manual verification process.
+### PRIMARY: Bank Transfer (Direct Settlement)
+Bank transfers are the **official production standard** for UNICOU Ltd. This ensures 0% gateway leakage and total control over settlement verification.
 1. **Configure Bank Details**:
    - Open `services/apiService.ts`.
    - Locate the `BANK_DETAILS` constant.
-   - Update `accountNumber`, `sortCode`, `iban`, and `swift` with your real business account info.
+   - Update `accountNumber`, `sortCode`, `iban`, and `swift` with your real UniCou Ltd business account info.
 2. **Verification Workflow**:
-   - When a customer selects "Bank Transfer", they see your details and enter a reference number.
-   - The order status is set to `Pending`.
-   - Log in to the **Admin Terminal** (`admin@nexus.ai`).
+   - Customers see bank details during checkout and are prompted to upload a receipt/provide a reference.
+   - Order status is locked to `Pending`.
+   - Log in to the **Admin Terminal** (`admin@unicou.uk`).
    - Go to **Teller Desk**.
-   - Review the reference number against your bank statement.
-   - Click **"Approve & Release"**. This triggers the instant email dispatch of vouchers.
+   - Cross-reference the uploaded receipt/reference against your real-time bank ledger.
+   - Click **"Approve & Release"**. This triggers the instant SMTP dispatch of vouchers to the student.
 
-### Secondary: Razorpay (Credit/Debit Cards)
-Automated card payments can be enabled for instant fulfillment.
+### SECONDARY: Razorpay (Credit/Debit Cards)
+Optional automated card payments.
 1. **Live Key Configuration**:
    - Open `services/apiService.ts`.
    - Update `RAZORPAY_KEY_ID` with your **Live Key ID** from the Razorpay Dashboard.
-2. **Note on Currency**: The current logic converts USD amounts to INR for Razorpay processing. Adjust the currency logic in `createGatewayOrder` if using a different gateway region.
+2. **Note on Currency**: The current logic converts USD amounts to local currency nodes for gateway processing.
 
 ## 3. Administrative Access
 Use the following credentials to access management nodes:
-- **Super Admin**: `admin@nexus.ai` (Full access to inventory, logs, users).
-- **Finance/Teller**: `finance@nexus.ai` (Verify payments, view reports).
-- **Lead Trainer**: `trainer@nexus.ai` (Grade Writing/Speaking submissions).
+- **Super Admin**: `admin@unicou.uk` (Full access to inventory, logs, users).
+- **Finance/Teller**: `finance@unicou.uk` (Verify payments, view reports).
+- **Lead Trainer**: `trainer@unicou.uk` (Grade Writing/Speaking submissions).
 
 ## 4. Fulfillment & Security
 - **Voucher Vault**: Vouchers are stored in `services/db.ts` or imported via the Admin Terminal.
-- **Masking**: Staff roles (Finance/Trainer) see masked voucher codes (`****-****-****`) to prevent theft. Only the Admin or the verified Customer sees raw codes.
+- **Masking**: Staff roles (Finance/Teller) see masked voucher codes (`****-****-****`) to prevent theft. Only the Admin or the verified Customer sees raw codes.
 - **Instant Delivery**: Vouchers are released to the customer's email node immediately upon "Verified" status.
 
 ## 5. Contact & Support

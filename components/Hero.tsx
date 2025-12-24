@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 interface HeroProps {
@@ -19,7 +18,7 @@ const Hero: React.FC<HeroProps> = ({ onStart, onResellerClick }) => {
       <div className="max-w-7xl mx-auto text-center relative z-10">
         <div className="inline-flex items-center gap-3 px-6 py-2.5 rounded-full glass border border-primary-500/30 text-primary-400 text-[10px] font-black uppercase tracking-[0.3em] mb-12 shadow-xl animate-in slide-in-from-top-4 duration-1000">
           <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-          UNICOU UNIFIED INFRASTRUCTURE • STUDY | IMMIGRATION | ACADEMY
+          UNICOU UNIFIED INFRASTRUCTURE • STUDY | ACADEMY
         </div>
         
         <h1 className="text-6xl md:text-[9.5rem] font-display font-bold tracking-tighter mb-12 leading-[0.85] animate-in slide-in-from-bottom duration-700">
@@ -28,7 +27,7 @@ const Hero: React.FC<HeroProps> = ({ onStart, onResellerClick }) => {
         </h1>
         
         <p className="text-lg md:text-2xl text-slate-400 max-w-4xl mx-auto mb-16 leading-relaxed font-medium px-4">
-          UNICOU unifies <span className="text-slate-200">Study Abroad</span>, <span className="text-slate-200">Immigration Paths</span>, and <span className="text-slate-200">Academy Training</span> into a single, high-performance ecosystem.
+          UNICOU unifies <span className="text-slate-200">Study Abroad</span> and <span className="text-slate-200">Academy Training</span> into a single, high-performance ecosystem.
         </p>
         
         <div className="flex flex-col sm:flex-row items-center justify-center gap-6 px-4">

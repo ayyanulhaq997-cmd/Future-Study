@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { api } from '../services/apiService';
 import { User } from '../types';
@@ -49,7 +48,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, onNavigateToSignup }) => {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="e.g. alex@nexus.ai"
+              placeholder="e.g. alex@unicou.uk"
               className="w-full bg-slate-900 border border-slate-700 rounded-2xl p-5 text-slate-200 outline-none focus:border-primary-500 transition-all placeholder:text-slate-600"
             />
           </div>
@@ -74,7 +73,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, onNavigateToSignup }) => {
           </button>
 
           <p className="text-center text-sm text-slate-500 pt-4">
-            New to Nexus?{' '}
+            New to UNICOU?{' '}
             <button 
               type="button" 
               onClick={onNavigateToSignup}

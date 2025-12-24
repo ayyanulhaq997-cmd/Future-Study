@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { GeminiService } from '../services/geminiService';
 import { ViewState } from '../types';
@@ -68,7 +67,7 @@ const SearchOverlay: React.FC<SearchOverlayProps> = ({ onClose, onNavigate }) =>
           {loading && (
             <div className="py-20 text-center space-y-4">
                <div className="w-10 h-10 border-2 border-primary-500/20 border-t-primary-500 rounded-full animate-spin mx-auto" />
-               <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Querying Global Nexus...</p>
+               <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Querying UNICOU Infrastructure...</p>
             </div>
           )}
 

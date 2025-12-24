@@ -1,10 +1,9 @@
-
 import { Product, VoucherCode, User, University, Course, CountryGuide, LMSCourse, LMSModule, LMSPracticeTest, Enrollment, CourseVoucher, Qualification, ImmigrationGuideData } from '../types';
 
 export const users: User[] = [
-  { id: 'u-admin', name: 'System Admin', email: 'admin@nexus.ai', role: 'Admin' },
-  { id: 'u-trainer', name: 'Lead IELTS Trainer', email: 'trainer@nexus.ai', role: 'Trainer' },
-  { id: 'u-finance', name: 'Chief Financial Officer', email: 'finance@nexus.ai', role: 'Finance' },
+  { id: 'u-admin', name: 'System Admin', email: 'admin@unicou.uk', role: 'Admin' },
+  { id: 'u-trainer', name: 'Lead IELTS Trainer', email: 'trainer@unicou.uk', role: 'Trainer' },
+  { id: 'u-finance', name: 'Chief Financial Officer', email: 'finance@unicou.uk', role: 'Finance' },
   { id: 'u-agent', name: 'Global Training Center', email: 'partner@edu.com', role: 'Agent', tier: 2 },
   { id: 'u-student', name: 'Alex Smith', email: 'alex@gmail.com', role: 'Customer' },
 ];
@@ -171,7 +170,7 @@ Expired CAS: Your Confirmation of Acceptance for Studies (CAS) is only valid for
 Incomplete TB Testing: If you are from a country that requires a Tuberculosis (TB) test, ensure you visit a UKVI-approved clinic.
 
 How UniCou Can Help You
-At UniCou, we are more than just agents; we are your partners in success. Our team stays updated on every policy change to ensure your journey to the UK is smooth and stress-free. We provide:
+At UniCou, we are more than just agents; we are your partners in success. Our team stays updated on every policy change to ensure your journey to the UK is smooth and stress-free. we provide:
 Personalized University Selection: We help you find the best institution for your budget and career goals.
 Visa Application Support: From document checklists to interview prep, we handle the hard part.
 Scholarship Guidance: We identify merit-based scholarships that can significantly reduce your tuition burden.
@@ -470,7 +469,7 @@ Top High-Demand Courses in Ireland for 2026
 Ireland’s economy is built on specific "Critical Skills" sectors. At UniCou Ltd, we recommend focusing on these fields to maximize your 1G visa period:
 Data Science & Artificial Intelligence: With Dublin being a data hub, AI specialists are seeing record-high demand from tech firms.
 Pharmaceutical & Biolgy Sciences: Ireland is the world’s third-largest exporter of pharmaceuticals. Degrees in Bioprocessing or Medicinal Chemistry are highly lucrative.
-FinTech & Financial Services: As a major financial hub, the demand for graduates who understand both finance and blockchain technology is surging in 2026.
+FinTech & Financial Services: As a major financial hub, the demand for graduates who can bridge the gap between finance and technology is surging in 2026.
 Sustainable Energy Engineering: Ireland is investing heavily in offshore wind energy, creating a massive need for "Green Engineers."
 Cybersecurity: With many global HQ operations based in Dublin, protecting digital infrastructure is a top national priority.
 
@@ -615,7 +614,7 @@ Why UniCou Ltd?
 We don't just "apply" for you. We strategize for you. UniCou Ltd understands that moving to Germany is a life-changing decision. We help with:
 University Shortlisting: Finding the balance between your grades and your budget.
 Blocked Account Support: Ensuring your funds are safe and verified.
-Visa Coaching: Mock interviews that actually prepare you for the real thing.
+Visa Coaching: Mock interviews that actually prepare for the real thing.
 On-Arrival Guidance: Because the first week in a new country shouldn't be spent feeling lost.
 
 Final Thoughts: Start Your German Story
@@ -979,8 +978,78 @@ export const lmsCourses: LMSCourse[] = [
   { id: 'pte-mastery', title: 'PTE Academic Mastery', description: 'Complete prep for Pearson Test of English.', thumbnail: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800', category: 'PTE', duration: '20 Hours', instructor: 'Dr. Jane Smith', price: 99, status: 'Paid' },
   { id: 'ielts-bootcamp', title: 'IELTS Band 8 Bootcamp', description: 'Intensive prep for Higher Band IELTS scores.', thumbnail: 'https://images.unsplash.com/photo-1544391496-1ca7c97457cd?w=800', category: 'IELTS', duration: '35 Hours', instructor: 'Prof. Mark Wood', price: 149, status: 'Paid' }
 ];
-export const lmsModules: LMSModule[] = [];
-export const lmsTests: LMSPracticeTest[] = [];
+
+export const lmsModules: LMSModule[] = [
+  {
+    id: 'm1-pte',
+    courseId: 'pte-mastery',
+    title: 'Module 1: Speaking & Writing Strategy',
+    lessons: [
+      { id: 'l1-pte', title: 'Read Aloud Technique', type: 'Video', content: 'https://www.youtube.com/embed/dQw4w9WgXcQ' },
+      { id: 'l2-pte', title: 'The PTE Essay Blueprint', type: 'Text', content: '### Introduction to PTE Writing\nFocus on structure over vocabulary. Use connectors like "Furthermore" and "Consequently".' },
+      { id: 'l3-pte', title: 'Speaking Concept Quiz', type: 'Quiz', content: JSON.stringify([
+        { id: 'q1', question: 'How many seconds should you wait before speaking after the tone?', options: ['0 seconds', '3 seconds', '5 seconds', '10 seconds'], correct: 0 },
+        { id: 'q2', question: 'Which scoring criteria is most important for Read Aloud?', options: ['Vocabulary', 'Oral Fluency', 'Grammar', 'Spelling'], correct: 1 }
+      ])}
+    ]
+  },
+  {
+    id: 'm2-pte',
+    courseId: 'pte-mastery',
+    title: 'Module 2: Reading & Listening Mastery',
+    lessons: [
+      { id: 'l4-pte', title: 'Fill in the Blanks (Collocations)', type: 'Text', content: '### Academic Collocations\nMastering collocations like "conduct research" or "significant impact" is key to high Reading scores.' },
+      { id: 'l5-pte', title: 'Listening: Summarize Spoken Text', type: 'Video', content: 'https://www.youtube.com/embed/dQw4w9WgXcQ' }
+    ]
+  },
+  {
+    id: 'm1-ielts',
+    courseId: 'ielts-bootcamp',
+    title: 'Unit 1: The Reading Component',
+    lessons: [
+      { id: 'l1-ielts', title: 'Skimming & Scanning Methods', type: 'Video', content: 'https://www.youtube.com/embed/dQw4w9WgXcQ' },
+      { id: 'l2-ielts', title: 'True/False/Not Given Analysis', type: 'Text', content: '### Deciphering "Not Given"\nThis is the most common trap. If the text does not explicitly mention the information, it is Not Given.' }
+    ]
+  },
+  {
+    id: 'm2-ielts',
+    courseId: 'ielts-bootcamp',
+    title: 'Unit 2: High Band Writing',
+    lessons: [
+      { id: 'l3-ielts', title: 'Task 1: Describing Data', type: 'Video', content: 'https://www.youtube.com/embed/dQw4w9WgXcQ' },
+      { id: 'l4-ielts', title: 'Task 2: Academic Argument', type: 'Text', content: '### Structuring your Argument\n1. Introduction (Paraphrase & Thesis)\n2. Body Paragraph 1 (Topic sentence & Evidence)\n3. Body Paragraph 2 (Counter-argument)\n4. Conclusion' }
+    ]
+  }
+];
+
+export const lmsTests: LMSPracticeTest[] = [
+  {
+    id: 'full-mock-1',
+    title: 'IELTS/PTE Combined Mock Exam Alpha',
+    sections: [
+      {
+        id: 's1',
+        skill: 'Reading',
+        title: 'Academic Reading Section',
+        timeLimit: 20,
+        questions: [
+          { id: 'rq1', text: 'What is the primary theme of global academic mobility?', type: 'MCQ', skill: 'Reading', options: ['Tourism', 'Knowledge Exchange', 'Industrial Growth', 'Resource Extraction'], maxScore: 1 },
+          { id: 'rq2', text: 'Briefly explain why English is the global language of science.', type: 'Essay', skill: 'Reading', maxScore: 5 }
+        ]
+      },
+      {
+        id: 's2',
+        skill: 'Writing',
+        title: 'Critical Thinking Task',
+        timeLimit: 40,
+        questions: [
+          { id: 'wq1', text: 'Write an essay on the impact of Artificial Intelligence on global education systems (250 words).', type: 'Essay', skill: 'Writing', maxScore: 9 }
+        ]
+      }
+    ]
+  }
+];
+
 export const initialEnrollments: Enrollment[] = [];
 export const courseVouchers: CourseVoucher[] = [];
 export const universityBySlug = (slug: string): University | null => {

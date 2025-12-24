@@ -1,4 +1,3 @@
-
 import * as db from './db';
 import { 
   Product, VoucherCode, VoucherStatus, Order, User, ActivityLog, SecurityStatus, LMSCourse, 
@@ -11,7 +10,7 @@ import {
 // PRODUCTION PAYMENT CONFIGURATION
 // ==========================================
 // Replace this with your LIVE Key from Razorpay Dashboard for real card payments
-const RAZORPAY_KEY_ID = 'rzp_test_NexusDemoKey123'; 
+const RAZORPAY_KEY_ID = 'rzp_test_UNICOU_DemoKey123'; 
 
 // Update these with your ACTUAL bank account details
 export const BANK_DETAILS = {
@@ -63,7 +62,7 @@ export const api = {
   signup: async (email: string, role: UserRole = 'Customer') => {
     await networkDelay();
     if (users.find(u => u.email === email)) {
-      throw new Error('User already exists in the Nexus registry.');
+      throw new Error('User already exists in the UNICOU registry.');
     }
     const newUser: User = { id: 'u-' + Math.random().toString(36).substr(2, 9), name: email.split('@')[0], email, role, verified: false, tier: role === 'Agent' ? 1 : undefined };
     users.push(newUser);

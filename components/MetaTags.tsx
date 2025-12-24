@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 
 interface MetaTagsProps {
@@ -8,7 +7,7 @@ interface MetaTagsProps {
 
 const MetaTags: React.FC<MetaTagsProps> = ({ title, description }) => {
   useEffect(() => {
-    document.title = `${title} | Nexus Study Abroad`;
+    document.title = `${title} | UNICOU Global Mobility`;
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) {
       metaDesc.setAttribute('content', description);

@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 const HandoverView: React.FC = () => {
@@ -6,7 +5,7 @@ const HandoverView: React.FC = () => {
     <div className="max-w-4xl mx-auto py-20 px-4">
       <div className="text-center mb-16">
         <h1 className="text-4xl font-display font-bold mb-4">Project <span className="text-primary-400">Handover</span></h1>
-        <p className="text-slate-500">System architecture and security documentation for the Nexus EDU platform.</p>
+        <p className="text-slate-500">System architecture and security documentation for the UNICOU platform.</p>
       </div>
 
       <div className="space-y-12">

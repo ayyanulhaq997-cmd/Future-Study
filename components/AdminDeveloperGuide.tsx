@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 const AdminDeveloperGuide: React.FC = () => {
@@ -22,15 +21,15 @@ const AdminDeveloperGuide: React.FC = () => {
           </div>
           <div className="glass p-8 rounded-[2.5rem] border border-slate-800 space-y-6">
             <p className="text-slate-400 leading-relaxed">
-              The Nexus platform utilizes a <strong>Role-Based Access Control (RBAC)</strong> model. Access is granted based on specific identity nodes verified against the central authentication service.
+              The UNICOU platform utilizes a <strong>Role-Based Access Control (RBAC)</strong> model. Access is granted based on specific identity nodes verified against the central authentication service.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-slate-900/50 p-6 rounded-3xl border border-slate-800">
-                <h4 className="font-bold text-white mb-2">Demo Credentials</h4>
+                <h4 className="font-bold text-white mb-2">Staff Credentials</h4>
                 <ul className="text-sm space-y-2 text-slate-500 font-mono">
-                  <li><span className="text-primary-400">System Admin:</span> admin@nexus.ai</li>
-                  <li><span className="text-primary-400">Finance:</span> finance@nexus.ai</li>
-                  <li><span className="text-primary-400">Lead Trainer:</span> trainer@nexus.ai</li>
+                  <li><span className="text-primary-400">System Admin:</span> admin@unicou.uk</li>
+                  <li><span className="text-primary-400">Finance:</span> finance@unicou.uk</li>
+                  <li><span className="text-primary-400">Lead Trainer:</span> trainer@unicou.uk</li>
                 </ul>
               </div>
               <div className="bg-slate-900/50 p-6 rounded-3xl border border-slate-800">
@@ -151,7 +150,7 @@ const AdminDeveloperGuide: React.FC = () => {
         <div className="text-center py-10">
           <p className="text-slate-600 text-sm mb-6">Need deep integration support or custom module deployment?</p>
           <button className="px-10 py-4 bg-white text-slate-950 rounded-2xl font-black transition-all hover:scale-105 active:scale-95 shadow-2xl">
-            Contact Nexus Core Team
+            Contact UNICOU Core Team
           </button>
         </div>
       </div>

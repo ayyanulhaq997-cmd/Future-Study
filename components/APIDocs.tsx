@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { APIEndpoint } from '../types';
 
@@ -50,7 +49,7 @@ const APIDocs: React.FC = () => {
     <div className="max-w-7xl mx-auto py-12 px-4">
       <div className="mb-12">
         <h1 className="text-4xl font-display font-bold mb-4 tracking-tight">System <span className="text-primary-400">Documentation</span></h1>
-        <p className="text-slate-500">REST API Specification for Nexus Platform Integration (v1.0.4-LABLE).</p>
+        <p className="text-slate-500">REST API Specification for UNICOU Platform Integration (v1.1.0-PRODUCTION).</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">

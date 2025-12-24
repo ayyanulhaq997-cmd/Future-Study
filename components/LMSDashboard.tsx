@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/apiService';
 import { LMSCourse, ViewState } from '../types';
@@ -60,14 +59,14 @@ const LMSDashboard: React.FC<LMSDashboardProps> = ({ onNavigate }) => {
     ? courses 
     : courses.filter(c => enrolledIds.includes(c.id));
 
-  if (loading) return <div className="p-20 text-center animate-pulse">Initializing Learning Environment...</div>;
+  if (loading) return <div className="p-20 text-center animate-pulse">Initializing UNICOU Academy Environment...</div>;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
       <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-12">
         <div>
           <h1 className="text-4xl font-display font-bold tracking-tight mb-2">
-            Nexus <span className="text-primary-400">Academy</span>
+            UNICOU <span className="text-primary-400">Academy</span>
           </h1>
           <p className="text-slate-500 max-w-lg">
             Authorized training material for international certification exams.
@@ -113,7 +112,7 @@ const LMSDashboard: React.FC<LMSDashboardProps> = ({ onNavigate }) => {
               <div className="relative aspect-video overflow-hidden">
                 <img src={course.thumbnail} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt={course.title} />
                 <div className="absolute top-4 left-4 bg-slate-950/80 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-primary-400 border border-primary-500/20">
-                  {course.category}
+                  {course.category} Mastery
                 </div>
                 {course.status === 'Free' && (
                   <div className="absolute top-4 right-4 bg-emerald-500/90 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-white shadow-lg">
