@@ -14,18 +14,18 @@ const REVIEWS = [
 
 const PartnerShowcase: React.FC = () => {
   return (
-    <section className="py-24 bg-slate-950/50 border-y border-slate-900">
+    <section className="py-32 bg-slate-50 border-y border-slate-100">
       <div className="max-w-7xl mx-auto px-6">
-        <div className="text-center mb-16">
-          <span className="text-[10px] font-black text-primary-500 uppercase tracking-[0.4em] mb-4 block">Global Ecosystem</span>
-          <h2 className="text-3xl md:text-5xl font-display font-bold tracking-tight">Accredited <span className="text-unicou-orange">Nodes</span> & Partners</h2>
+        <div className="text-center mb-20">
+          <span className="text-[11px] font-black text-unicou-navy uppercase tracking-[0.4em] mb-4 block">Global Ecosystem</span>
+          <h2 className="text-4xl md:text-6xl font-display font-bold tracking-tight text-slate-900">Accredited <span className="text-unicou-orange">Nodes</span> & Partners</h2>
         </div>
 
         {/* Partner Logo Marquee */}
-        <div className="overflow-hidden relative mb-24 grayscale opacity-40 hover:opacity-100 hover:grayscale-0 transition-all duration-1000">
-          <div className="flex gap-20 animate-marquee whitespace-nowrap">
+        <div className="overflow-hidden relative mb-24 grayscale opacity-60 hover:opacity-100 hover:grayscale-0 transition-all duration-1000 bg-white p-12 rounded-[3rem] border border-slate-200">
+          <div className="flex gap-24 animate-marquee whitespace-nowrap">
             {[...PARTNERS, ...PARTNERS].map((p, i) => (
-              <div key={i} className="text-2xl font-black text-slate-500 hover:text-white transition-colors cursor-default">
+              <div key={i} className="text-2xl font-black text-slate-400 hover:text-unicou-navy transition-colors cursor-default tracking-tighter">
                 {p.toUpperCase()}
               </div>
             ))}
@@ -33,20 +33,20 @@ const PartnerShowcase: React.FC = () => {
         </div>
 
         {/* Reviews Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
           {REVIEWS.map((rev, i) => (
-            <div key={i} className="glass p-10 rounded-[3rem] border border-slate-800 hover:border-primary-500/30 transition-all group">
-               <div className="flex gap-1 mb-6">
-                 {[1,2,3,4,5].map(s => <span key={s} className="text-unicou-orange text-xs">★</span>)}
+            <div key={i} className="bg-white p-12 rounded-[3.5rem] border border-slate-200 hover:border-unicou-orange/30 transition-all group shadow-lg">
+               <div className="flex gap-1.5 mb-8">
+                 {[1,2,3,4,5].map(s => <span key={s} className="text-unicou-orange text-sm">★</span>)}
                </div>
-               <p className="text-slate-300 text-lg italic leading-relaxed mb-8">"{rev.text}"</p>
-               <div className="flex items-center gap-4">
-                 <div className="w-10 h-10 rounded-full bg-primary-600/10 border border-primary-500/20 flex items-center justify-center text-primary-400 font-bold text-xs uppercase">
+               <p className="text-slate-600 text-lg italic leading-relaxed mb-10 font-medium">"{rev.text}"</p>
+               <div className="flex items-center gap-6">
+                 <div className="w-14 h-14 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center text-unicou-navy font-black text-lg uppercase shadow-inner">
                    {rev.name.charAt(0)}
                  </div>
                  <div>
-                   <h4 className="text-sm font-bold text-slate-100">{rev.name}</h4>
-                   <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{rev.role}</p>
+                   <h4 className="text-base font-bold text-slate-900">{rev.name}</h4>
+                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{rev.role}</p>
                  </div>
                </div>
             </div>
@@ -60,7 +60,7 @@ const PartnerShowcase: React.FC = () => {
           100% { transform: translateX(-50%); }
         }
         .animate-marquee {
-          animation: marquee 40s linear infinite;
+          animation: marquee 50s linear infinite;
           display: flex;
           width: max-content;
         }
