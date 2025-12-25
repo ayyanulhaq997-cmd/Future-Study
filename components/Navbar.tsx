@@ -97,6 +97,12 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
     setMobileOpen(false);
   };
 
+  const getDashboardTarget = (u: User): ViewState => {
+    if (u.role === 'Admin') return { type: 'admin' };
+    if (u.role === 'Agent') return { type: 'agent' };
+    return { type: 'home' };
+  };
+
   return (
     <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 ${
       scrolled ? 'py-4' : 'py-6'
@@ -182,7 +188,7 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
             {user ? (
               <div className="flex items-center gap-3">
                 <button 
-                  onClick={() => onNavigate(user.role === 'Admin' ? { type: 'admin' } : { type: 'home' })}
+                  onClick={() => onNavigate(getDashboardTarget(user))}
                   className="hidden sm:flex items-center gap-3 pl-2 pr-5 py-2 bg-primary-600/10 border border-primary-500/20 rounded-2xl hover:bg-primary-600/20 transition-all group"
                 >
                   <div className="w-8 h-8 rounded-xl bg-primary-600 flex items-center justify-center text-[10px] font-black text-white shadow-lg">
@@ -190,7 +196,9 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
                   </div>
                   <div className="text-left">
                     <p className="text-[10px] font-black text-white uppercase tracking-widest leading-none">{user.name}</p>
-                    <p className="text-[8px] text-primary-400 font-bold uppercase tracking-widest mt-1">{user.role}</p>
+                    <p className="text-[8px] text-primary-400 font-bold uppercase tracking-widest mt-1">
+                      {user.role === 'Agent' ? 'Partner Node' : user.role}
+                    </p>
                   </div>
                 </button>
                 <button 

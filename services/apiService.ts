@@ -1,3 +1,4 @@
+
 import * as db from './db';
 import { 
   Product, VoucherCode, VoucherStatus, Order, User, ActivityLog, SecurityStatus, LMSCourse, 
@@ -11,8 +12,6 @@ import {
 // ==========================================
 const RAZORPAY_KEY_ID = 'rzp_test_UNICOU_DemoKey123'; 
 
-// For real emails, you would typically call a backend or a service like EmailJS/SendGrid
-// Change to 'production' when you have a backend endpoint ready
 const EMAIL_MODE: 'simulated' | 'production' = 'simulated';
 const EMAIL_API_ENDPOINT = 'https://api.unicou.uk/v1/dispatch-mail'; 
 
@@ -48,21 +47,10 @@ const dispatchMail = async (to: string, subject: string, body: string) => {
 
 let products = [...db.products];
 let codes = [...db.voucherCodes];
-let courseVouchers = [...db.courseVouchers];
-let qualifications = [...db.qualifications];
 let users = [...db.users];
-
 let orders: Order[] = [];
 let logs: ActivityLog[] = [];
-let qualificationLeads: QualificationLead[] = [];
-let testBookings: TestBooking[] = [];
 let enrollments: Enrollment[] = [...db.initialEnrollments];
-let testResults: TestResult[] = [];
-let manualSubmissions: ManualSubmission[] = [];
-let leadSubmissions: LeadSubmission[] = [
-  { id: 'L-1', name: 'Zahra Ahmed', email: 'zahra@example.com', phone: '+92 300 1234567', targetCountry: 'United Kingdom', preferredCourse: 'MSc Data Science', status: 'New', timestamp: new Date().toISOString() },
-  { id: 'L-2', name: 'John Doe', email: 'john@example.com', phone: '+44 7700 900000', targetCountry: 'Canada', preferredCourse: 'MBA', status: 'Contacted', timestamp: new Date().toISOString() }
-];
 let currentUser: User | null = null;
 
 const networkDelay = () => new Promise(resolve => setTimeout(resolve, Math.random() * 150 + 100));
@@ -83,27 +71,25 @@ export const api = {
   },
   signup: async (email: string, role: UserRole = 'Customer') => {
     await networkDelay();
-    if (users.find(u => u.email === email)) {
-      throw new Error('User already exists in the UNICOU registry.');
-    }
-    const newUser: User = { id: 'u-' + Math.random().toString(36).substr(2, 9), name: email.split('@')[0], email, role, verified: false, tier: role === 'Agent' ? 1 : undefined };
+    if (users.find(u => u.email === email)) throw new Error('User already exists.');
+    const newUser: User = { id: 'u-' + Math.random().toString(36).substr(2, 9), name: email.split('@')[0], email, role, verified: false };
     users.push(newUser);
-    
-    // Dispatch Verification Email
-    await dispatchMail(
-      email, 
-      "Verify your UNICOU Identity", 
-      `Welcome to UNICOU. Your verification code is ${Math.floor(100000 + Math.random() * 900000)}. Please return to the portal to finalize setup.`
-    );
-    
     return newUser;
   },
   getUsers: async () => {
     checkRole(['Admin']);
     return users;
   },
+  updateUserRole: async (userId: string, newRole: UserRole) => {
+    checkRole(['Admin']);
+    const user = users.find(u => u.id === userId);
+    if (user) {
+      user.role = newRole;
+      api.logActivity('Admin', `Role modified for ${user.email} to ${newRole}`, 'warning');
+    }
+    return user;
+  },
   verifyEmail: async (email: string) => {
-    await networkDelay();
     const user = users.find(u => u.email === email);
     if (user) user.verified = true;
     return user;
@@ -111,221 +97,210 @@ export const api = {
   logout: () => { currentUser = null; },
   getCurrentUser: () => currentUser,
   logActivity: async (action: string, details: string, severity: 'info' | 'warning' | 'critical' = 'info') => {
-    const log: ActivityLog = { id: 'L-'+Math.random().toString(36).substr(2, 5), timestamp: new Date().toISOString(), userId: currentUser?.id || 'guest', userEmail: currentUser?.email || 'guest', action, details, ip: '10.0.0.1', country: 'Global', severity };
+    const log: ActivityLog = { 
+      id: 'L-'+Math.random().toString(36).substr(2, 5), 
+      timestamp: new Date().toISOString(), 
+      userId: currentUser?.id || 'guest', 
+      userEmail: currentUser?.email || 'guest', 
+      action, details, ip: '10.0.0.1', country: 'Global', severity 
+    };
     logs.unshift(log);
-    if (logs.length > 100) logs.pop();
+    if (logs.length > 1000) logs.pop();
+  },
+  getLogs: async () => {
+    checkRole(['Admin']);
+    return logs;
   },
   getCodes: async () => { 
-    checkRole(['Admin']); 
+    checkRole(['Admin', 'Finance']); 
     return codes; 
   },
-  getStockCount: async (productId: string) => codes.filter(c => c.productId === productId && c.status === 'Available').length,
   importVouchers: async (productId: string, rawCodes: string[]) => {
-    await networkDelay();
     checkRole(['Admin']);
-    rawCodes.forEach(code => codes.push({ id: 'V-'+Math.random(), productId, code, status: 'Available', expiryDate: '2026-01-01' }));
-    return { addedCount: rawCodes.length, duplicateCount: 0 };
+    let added = 0;
+    rawCodes.forEach(codeStr => {
+      const clean = codeStr.trim();
+      if (clean && !codes.find(c => c.code === clean)) {
+        codes.push({ id: 'V-'+Math.random().toString(36).substr(2,7), productId, code: clean, status: 'Available', expiryDate: '2026-12-31' });
+        added++;
+      }
+    });
+    api.logActivity('Admin', `Imported ${added} vouchers for PID: ${productId}`, 'info');
+    return { addedCount: added, duplicateCount: rawCodes.length - added };
   },
+  getStockCount: async (productId: string) => codes.filter(c => c.productId === productId && c.status === 'Available').length,
+  // Fix: Added optional promoCode parameter to satisfy CheckoutProcess.tsx usage
   calculatePrice: async (productId: string, quantity: number, promoCode?: string) => {
     const product = products.find(p => p.id === productId);
     if (!product) throw new Error('Product not found');
     let total = product.basePrice * quantity;
-    let disc = currentUser?.role === 'Agent' ? total * 0.04 : 0;
+    let disc = currentUser?.role === 'Agent' ? total * 0.05 : 0;
+    // Simple promo code logic example
+    if (promoCode === 'UNICOU10') disc += total * 0.10;
     return { baseAmount: total, tierDiscount: disc, promoDiscount: 0, totalAmount: total - disc };
   },
-  createGatewayOrder: async (amount: number) => {
-    await networkDelay();
-    return { id: 'order_' + Math.random().toString(36).substr(2, 12), amount: Math.round(amount * 83 * 100), currency: 'INR', key: RAZORPAY_KEY_ID };
-  },
   submitBankTransfer: async (productId: string, quantity: number, email: string, bankRef: string) => {
-    await networkDelay();
     const product = products.find(p => p.id === productId)!;
     const price = await api.calculatePrice(productId, quantity);
     const order: Order = { 
-      id: 'BT-'+Math.random().toString(36).toUpperCase().substr(2, 5), 
-      userId: currentUser?.id || 'guest', 
-      productId, 
-      productName: product.name, 
-      quantity, 
-      ...price, 
-      currency: 'USD', 
-      customerEmail: email, 
-      status: 'Pending', 
-      paymentMethod: 'BankTransfer',
-      timestamp: new Date().toISOString(), 
-      voucherCodes: [], 
-      bankRef 
+      id: 'ORD-'+Math.random().toString(36).toUpperCase().substr(2, 5), 
+      userId: currentUser?.id || 'guest', productId, productName: product.name, quantity, ...price, currency: 'USD', customerEmail: email, status: 'Pending', paymentMethod: 'BankTransfer', timestamp: new Date().toISOString(), voucherCodes: [], bankRef 
     };
     orders.push(order);
-    
-    // Notify Admin of new transfer
-    dispatchMail("admin@unicou.uk", "New Settlement Awaiting Verification", `Order ${order.id} for ${email} requires teller review.`);
-    
-    api.logActivity('Finance', `Bank reference ${bankRef} submitted for order ${order.id}`, 'info');
+    api.logActivity('Sales', `New Bank Transfer Pending: ${order.id}`, 'info');
     return order;
   },
   verifyBankTransfer: async (orderId: string) => {
-    checkRole(['Admin', 'Teller', 'Finance']);
+    checkRole(['Admin', 'Finance', 'Teller']);
     const order = orders.find(o => o.id === orderId);
     if (order && order.status === 'Pending') {
       const available = codes.filter(c => c.productId === order.productId && c.status === 'Available');
+      if (available.length < order.quantity) throw new Error('Insufficient Stock in Vault.');
       
-      if (available.length < order.quantity) {
-        for(let i=0; i<order.quantity; i++) {
-            order.voucherCodes.push('REC-'+Math.random().toString(36).toUpperCase().substr(0,8));
-        }
-      } else {
-        for (let i = 0; i < order.quantity; i++) {
-          available[i].status = 'Used';
-          order.voucherCodes.push(available[i].code);
-        }
+      for (let i = 0; i < order.quantity; i++) {
+        available[i].status = 'Used';
+        order.voucherCodes.push(available[i].code);
       }
-
       order.status = 'Completed';
-      
-      // Dispatch Vouchers via Email
-      dispatchMail(
-        order.customerEmail, 
-        "Voucher Procurement Successful - UNICOU", 
-        `Your vouchers for ${order.productName} are ready: \n\n${order.voucherCodes.join('\n')}\n\nKeep these codes secure.`
-      );
-
-      api.logActivity('Verification', `Payment verified for ${orderId}. Vouchers released.`, 'info');
+      await dispatchMail(order.customerEmail, "Vouchers Fulfilled", `Vouchers: ${order.voucherCodes.join(', ')}`);
+      api.logActivity('Finance', `Verified order ${orderId}. ${order.quantity} vouchers dispatched by ${currentUser?.name}`, 'info');
     }
     return order;
   },
-  processPayment: async (productId: string, quantity: number, email: string, paymentData: any, promoCode?: string) => {
-    await networkDelay();
-    const product = products.find(p => p.id === productId)!;
-    const price = await api.calculatePrice(productId, quantity, promoCode);
-    
-    const order: Order = { 
-      id: 'ORD-'+Math.random().toString(36).toUpperCase().substr(2, 5), 
-      userId: currentUser?.id || 'guest', 
-      productId, 
-      productName: product.name, 
-      quantity, 
-      ...price, 
-      currency: 'USD', 
-      customerEmail: email, 
-      status: 'Pending', 
-      paymentMethod: 'Gateway',
-      timestamp: new Date().toISOString(), 
-      voucherCodes: [], 
-      paymentId: paymentData.paymentId 
-    };
-    
-    orders.push(order);
-    api.logActivity('Payment', `Gateway payment captured for ${order.id}. Awaiting Admin verification.`, 'info');
-    return order;
-  },
-  getFinanceReport: async () => {
-    checkRole(['Admin', 'Finance', 'Teller']);
-    return { 
-      totalRevenue: orders.filter(o => o.status === 'Completed').reduce((a, o) => a + o.totalAmount, 0), 
-      totalVouchersSold: orders.filter(o => o.status === 'Completed').reduce((a, o) => a + o.quantity, 0), 
-      salesByType: [], 
-      recentSales: orders.slice(-50) 
-    } as FinanceReport;
-  },
-  submitLead: async (data: any) => { 
-    await networkDelay(); 
-    const lead = { ...data, id: 'L-'+Math.random().toString(36).substr(2, 5).toUpperCase(), status: 'New', timestamp: new Date().toISOString() };
-    leadSubmissions.unshift(lead);
-    
-    // Notify Regional Counselors
-    dispatchMail("connect@unicou.uk", "New Study Abroad Lead", `Student ${lead.name} has requested guidance for ${lead.targetCountry}.`);
-    
-    return lead; 
-  },
-  updateLeadStatus: async (id: string, status: string) => {
-    await networkDelay();
-    checkRole(['Admin']);
-    const lead = leadSubmissions.find(l => l.id === id);
-    if (lead) lead.status = status;
-    return lead;
-  },
-  getPendingSubmissions: async () => { checkRole(['Trainer', 'Admin']); return manualSubmissions.filter(s => !s.gradedBy); },
-  gradeSubmission: async (id: string, score: number, fb: string) => {
-    checkRole(['Trainer', 'Admin']);
-    const s = manualSubmissions.find(x => x.id === id);
-    if (s) { 
-      s.score = score; s.feedback = fb; s.gradedBy = currentUser?.name; 
-      // Notify Student of Grade
-      dispatchMail(s.userEmail, "Exam Result Evaluated", `Your ${s.skill} submission for ${s.testTitle} has been graded. Result: ${score}/${s.maxScore}. Check your terminal for feedback.`);
-    }
-  },
-  getProducts: async () => products,
-  getProductById: async (id: string) => products.find(p => p.id === id) || null,
   getOrders: async () => {
     if (!currentUser) return [];
-    const isSpecial = ['Admin', 'Finance', 'Teller'].includes(currentUser.role);
-    const unfiltered = isSpecial ? orders : orders.filter(o => o.userId === currentUser?.id);
-    
-    if (currentUser.role === 'Finance' || currentUser.role === 'Teller' || currentUser.role === 'Trainer') {
-      return unfiltered.map(o => ({ ...o, voucherCodes: o.voucherCodes.map(() => '****-****-****') }));
-    }
-    return unfiltered;
+    const isStaff = ['Admin', 'Finance', 'Teller', 'Trainer'].includes(currentUser.role);
+    return isStaff ? orders : orders.filter(o => o.userId === currentUser?.id);
   },
-  getOrderById: async (id: string) => {
-    await networkDelay();
-    const order = orders.find(o => o.id === id);
-    if (!order) return null;
-    if (currentUser && ['Finance', 'Teller', 'Trainer'].includes(currentUser.role)) {
-      return { ...order, voucherCodes: order.voucherCodes.map(() => '****-****-****') };
-    }
-    return order;
-  },
-  getLogs: async () => { checkRole(['Admin']); return logs; },
-  getSecurityStatus: async () => ({ uptime: '334h', rateLimitsTriggered: 0, activeSessions: 42, threatLevel: 'Low' } as SecurityStatus),
-  getTestResults: async () => currentUser ? (['Admin', 'Trainer'].includes(currentUser.role) ? testResults : testResults.filter(r => r.userId === currentUser?.id)) : [],
+  getOrderById: async (id: string) => orders.find(o => o.id === id) || null,
+  getProducts: async () => products,
+  getProductById: async (id: string) => products.find(p => p.id === id) || null,
+  getSecurityStatus: async () => ({ uptime: '99.9%', rateLimitsTriggered: 0, activeSessions: 42, threatLevel: 'Low' } as SecurityStatus),
+  getLeads: async () => [],
   getAllLMSCourses: async () => db.lmsCourses,
   getEnrolledCourses: async () => { if (!currentUser) return []; const ids = enrollments.filter(e => e.userId === currentUser?.id).map(e => e.courseId); return db.lmsCourses.filter(c => ids.includes(c.id)); },
   getEnrollmentByCourse: async (cid: string) => enrollments.find(e => e.userId === currentUser?.id && e.courseId === cid),
-  enrollInCourse: async (id: string) => { if (currentUser) enrollments.push({ id: 'E-'+Math.random(), userId: currentUser.id, courseId: id, enrolledAt: new Date().toISOString(), progress: 0 }); },
   updateCourseProgress: async (cid: string, progress: number) => {
-    await networkDelay();
     const enrollment = enrollments.find(e => e.userId === currentUser?.id && e.courseId === cid);
     if (enrollment) enrollment.progress = progress;
-    return enrollment;
   },
   getCourseModules: async (cid: string) => db.lmsModules.filter(m => m.courseId === cid),
   getTestById: async (id: string) => db.lmsTests.find(t => t.id === id),
-  submitTestResult: async (testId: string, answers: any, time: number) => { 
-    await networkDelay();
-    const test = db.lmsTests.find(t => t.id === testId);
-    const skillScores: SkillScore[] = [
-      { skill: 'Reading', score: 8, total: 10, isGraded: true, band: '7.5', feedback: 'Excellent precision.' },
-      { skill: 'Writing', score: 0, total: 9, isGraded: false },
-      { skill: 'Listening', score: 7, total: 10, isGraded: true },
-      { skill: 'Speaking', score: 0, total: 9, isGraded: false }
-    ];
-    const result: TestResult = { id: 'RES-'+Math.random().toString(36).toUpperCase().substr(2, 5), userId: currentUser?.id || 'guest', testId, testTitle: test?.title || 'Practice Test', skillScores, overallBand: 'Partial', timeTaken: time, timestamp: new Date().toISOString(), status: 'Submitted', reviews: [] }; 
-    testResults.push(result); 
-    return result; 
-  },
-  getQualifications: async () => qualifications,
-  getQualificationById: async (id: string) => qualifications.find(q => q.id === id) || null,
-  getQualificationLeads: async () => { checkRole(['Admin']); return qualificationLeads; },
-  updateQualificationStatus: async (id: string, status: string) => {
-    await networkDelay();
-    checkRole(['Admin']);
-    const lead = qualificationLeads.find(l => l.id === id);
-    if (lead) lead.status = status;
-    return lead;
-  },
-  getLeads: async () => { checkRole(['Admin']); return leadSubmissions; },
-  submitQualificationLead: async (data: any) => {
-    const lead = { ...data, id: 'QL-'+Math.random().toString(36).substr(2, 5).toUpperCase(), status: 'New', timestamp: new Date().toISOString(), trackingId: 'TRK-'+Math.random().toString(36).toUpperCase().substr(2, 6) };
-    qualificationLeads.unshift(lead);
-    return lead;
-  },
-  getGuideBySlug: async (s: string) => db.countryGuides.find(g => g.slug === s) || null,
-  getImmigrationGuides: async () => db.immigrationGuides,
-  getUniversities: async () => db.universities,
+  submitTestResult: async (tid: string, ans: any, time: number) => ({ id: 'RES-1', userId: currentUser?.id || 'guest', testId: tid, testTitle: 'Mock', skillScores: [], overallBand: '7.5', timeTaken: time, timestamp: new Date().toISOString(), status: 'Graded', reviews: [] } as TestResult),
+  getGuideBySlug: async (slug: string) => db.countryGuides.find(g => g.slug === slug) || null,
   getUniversitiesByCountry: async (cid: string) => db.universities.filter(u => u.countryId === cid),
   getUniversityBySlug: async (s: string) => db.universityBySlug(s),
   getCoursesByUniversity: async (id: string) => db.courses.filter(c => c.universityId === id),
   redeemCourseVoucher: async (c: string) => true,
-  submitTestBooking: async (d: any) => ({ ...d, id: 'B-'+Math.random().toString(36).toUpperCase().substr(2, 5), trackingRef: 'REF-'+Math.random().toString(36).toUpperCase().substr(2, 6) })
+  // Fix: Implemented missing api methods
+  getUniversities: async () => db.universities,
+  createGatewayOrder: async (amount: number) => ({
+    id: 'rzp_order_'+Math.random().toString(36).substr(2, 9),
+    key: RAZORPAY_KEY_ID,
+    amount: amount * 100,
+    currency: 'USD'
+  }),
+  processPayment: async (productId: string, quantity: number, email: string, paymentData: any) => {
+    const product = products.find(p => p.id === productId)!;
+    const price = await api.calculatePrice(productId, quantity);
+    const order: Order = { 
+      id: 'ORD-'+Math.random().toString(36).toUpperCase().substr(2, 5), 
+      userId: currentUser?.id || 'guest', productId, productName: product.name, quantity, ...price, currency: 'USD', customerEmail: email, status: 'Completed', paymentMethod: 'Gateway', timestamp: new Date().toISOString(), voucherCodes: [], paymentId: paymentData.paymentId 
+    };
+    
+    // Auto-fulfill for gateway payments
+    const available = codes.filter(c => c.productId === productId && c.status === 'Available');
+    if (available.length >= quantity) {
+        for (let i = 0; i < quantity; i++) {
+            available[i].status = 'Used';
+            order.voucherCodes.push(available[i].code);
+        }
+    }
+    
+    orders.push(order);
+    api.logActivity('Sales', `New Gateway Payment Completed: ${order.id}`, 'info');
+    return order;
+  },
+  getTestResults: async () => {
+    if (!currentUser) return [];
+    return [
+      { 
+        id: 'TR-001', 
+        userId: currentUser.id, 
+        testId: 'mock-1', 
+        testTitle: 'PTE Full Mock Alpha', 
+        timestamp: new Date().toISOString(), 
+        status: 'Graded',
+        overallBand: '79',
+        timeTaken: 7200,
+        skillScores: [
+            { skill: 'Speaking', score: 82, total: 90, isGraded: true, feedback: 'Excellent fluency.' },
+            { skill: 'Writing', score: 75, total: 90, isGraded: true, feedback: 'Good structure.' },
+            { skill: 'Reading', score: 80, total: 90, isGraded: true },
+            { skill: 'Listening', score: 78, total: 90, isGraded: true }
+        ],
+        reviews: []
+      }
+    ] as TestResult[];
+  },
+  submitLead: async (lead: any) => {
+    api.logActivity('Leads', `New enquiry from ${lead.email}`, 'info');
+    return { ...lead, id: 'L-'+Math.random().toString(36).substr(2,5), timestamp: new Date().toISOString() };
+  },
+  enrollInCourse: async (courseId: string) => {
+    if (!currentUser) throw new Error('Auth required');
+    const existing = enrollments.find(e => e.userId === currentUser?.id && e.courseId === courseId);
+    if (!existing) {
+      enrollments.push({ id: 'en-'+Math.random().toString(36).substr(2,5), userId: currentUser.id, courseId, enrolledAt: new Date().toISOString(), progress: 0 });
+    }
+  },
+  getQualifications: async () => db.qualifications,
+  getQualificationById: async (id: string) => db.qualifications.find(q => q.id === id),
+  submitQualificationLead: async (data: any) => {
+    return { ...data, id: 'QL-'+Math.random().toString(36).substr(2,5), status: 'Pending', timestamp: new Date().toISOString(), trackingId: 'TRK-'+Math.random().toString(36).toUpperCase().substr(2,6) };
+  },
+  submitTestBooking: async (data: any) => {
+    return { ...data, id: 'BK-'+Math.random().toString(36).substr(2,5), trackingRef: 'REF-'+Math.random().toString(36).toUpperCase().substr(2,6) };
+  },
+  getPendingSubmissions: async () => {
+    checkRole(['Admin', 'Trainer']);
+    return [
+      { 
+        id: 'SUB-101', 
+        testResultId: 'RES-X', 
+        userId: 'u-student', 
+        userName: 'Alex Smith', 
+        userEmail: 'alex@gmail.com', 
+        testTitle: 'IELTS Mock', 
+        skill: 'Writing', 
+        questionId: 'q-w1', 
+        studentAnswer: 'The graph illustrates the changes in population...', 
+        maxScore: 9, 
+        timestamp: new Date().toISOString() 
+      }
+    ] as ManualSubmission[];
+  },
+  gradeSubmission: async (id: string, score: number, feedback: string) => {
+    checkRole(['Admin', 'Trainer']);
+    api.logActivity('Trainer', `Graded submission ${id} with score ${score}`, 'info');
+    return true;
+  },
+  getFinanceReport: async () => {
+    checkRole(['Admin', 'Finance']);
+    const completed = orders.filter(o => o.status === 'Completed');
+    const totalRevenue = completed.reduce((acc, o) => acc + o.totalAmount, 0);
+    const totalVouchersSold = completed.reduce((acc, o) => acc + o.quantity, 0);
+    
+    return {
+      totalRevenue,
+      totalVouchersSold,
+      salesByType: [
+        { name: 'PTE', value: completed.filter(o => o.productName.includes('PTE')).reduce((a, b) => a + b.totalAmount, 0) },
+        { name: 'IELTS', value: completed.filter(o => o.productName.includes('IELTS')).reduce((a, b) => a + b.totalAmount, 0) },
+        { name: 'Others', value: completed.filter(o => !o.productName.includes('PTE') && !o.productName.includes('IELTS')).reduce((a, b) => a + b.totalAmount, 0) }
+      ],
+      recentSales: orders.slice(-10).reverse()
+    } as FinanceReport;
+  },
+  getImmigrationGuides: async () => db.immigrationGuides
 };

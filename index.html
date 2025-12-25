@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UNICOU | Global Academic Mobility</title>
-    <!-- Ensure routing works correctly on subdirectories if needed -->
     <base href="/">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
@@ -25,7 +24,6 @@
               },
               unicou: {
                 navy: '#004a61',
-                // Reverted to original vibrant orange
                 orange: '#f15a24',
               },
               slate: {
@@ -38,13 +36,8 @@
     </script>
     <style>
       :root {
-        --nav-height: 110px;
-        --nav-bg: rgba(2, 6, 23, 0.9);
-        --nav-border: rgba(255, 255, 255, 0.05);
-        --nav-text-muted: #94a3b8;
-        --nav-text-active: #f15a24;
-        --nav-accent: #f15a24;
-        --nav-font-size: clamp(8.5px, 0.7vw, 10px);
+        --nav-height: 120px;
+        --content-top: 160px; /* Increased for better clearance */
       }
 
       body {
@@ -71,12 +64,18 @@
         z-index: -1;
       }
       
-      .no-scroll-x {
-        overflow-x: hidden !important;
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
         scrollbar-width: none;
       }
-      .no-scroll-x::-webkit-scrollbar {
-        display: none;
+      
+      /* View-specific container to prevent overlap */
+      .view-container {
+        padding-top: var(--content-top);
+        min-height: 100vh;
       }
     </style>
 <script type="importmap">
