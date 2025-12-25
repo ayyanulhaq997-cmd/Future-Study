@@ -10,10 +10,7 @@ import {
 // PRODUCTION CONFIGURATION
 // ==========================================
 const RAZORPAY_KEY_ID = 'rzp_test_UNICOU_DemoKey123'; 
-const SESSION_KEY = 'unicou_active_session';
-
-const EMAIL_MODE: 'simulated' | 'production' = 'simulated';
-const EMAIL_API_ENDPOINT = 'https://api.unicou.uk/v1/dispatch-mail'; 
+const SESSION_KEY = 'unicou_active_session_v4';
 
 export const BANK_DETAILS = {
   bankName: "UNICOU HUB INTERNATIONAL",
@@ -26,89 +23,93 @@ export const BANK_DETAILS = {
 };
 // ==========================================
 
-const dispatchMail = async (to: string, subject: string, body: string) => {
-  if (EMAIL_MODE === 'simulated') {
-    console.log(`%c[SIMULATED EMAIL] To: ${to}\nSubject: ${subject}\nBody: ${body}`, 'color: #f15a24; font-weight: bold;');
-    return true;
-  }
-  
-  try {
-    const response = await fetch(EMAIL_API_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ to, subject, body, apiKey: process.env.MAIL_API_KEY })
-    });
-    return response.ok;
-  } catch (e) {
-    console.error("Email Dispatch Node Failure:", e);
-    return false;
-  }
-};
-
+// Global State
 let products = [...db.products];
 let codes = [...db.voucherCodes];
-let users = [...db.users];
+let users = [...db.users]; // Strictly initialized from db.ts
 let orders: Order[] = [];
 let logs: ActivityLog[] = [];
 let enrollments: Enrollment[] = [...db.initialEnrollments];
 let currentUser: User | null = null;
 
-// Initialize session from localStorage
-const savedUser = localStorage.getItem(SESSION_KEY);
-if (savedUser) {
+// Persistent Session Recovery
+const savedUserStr = localStorage.getItem(SESSION_KEY);
+if (savedUserStr) {
   try {
-    currentUser = JSON.parse(savedUser);
+    const parsed = JSON.parse(savedUserStr);
+    // Sync with memory registry
+    const liveMatch = users.find(u => u.email.toLowerCase() === parsed.email.toLowerCase());
+    if (liveMatch) {
+        currentUser = liveMatch;
+    } else {
+        // If not in seed, it might be a new signup
+        users.push(parsed);
+        currentUser = parsed;
+    }
   } catch (e) {
     localStorage.removeItem(SESSION_KEY);
   }
 }
 
-const networkDelay = () => new Promise(resolve => setTimeout(resolve, Math.random() * 150 + 100));
+const networkDelay = () => new Promise(resolve => setTimeout(resolve, 400));
 
 const checkRole = (allowedRoles: UserRole[]) => {
-  if (!currentUser) throw new Error('401 Unauthorized');
-  if (!allowedRoles.includes(currentUser.role)) throw new Error(`403 Forbidden`);
+  if (!currentUser) throw new Error('401 Unauthorized Session');
+  if (!allowedRoles.includes(currentUser.role)) throw new Error(`403 Access Node Restricted`);
 };
 
 export const api = {
   login: async (email: string) => {
     await networkDelay();
-    const user = users.find(u => u.email === email);
-    if (!user) throw new Error('User node not found. Please sign up first.');
+    const cleanEmail = email.trim().toLowerCase();
+    
+    // Search the live registry
+    let user = users.find(u => u.email.toLowerCase() === cleanEmail);
+    
+    if (!user) {
+      // Fallback: check seeded DB again explicitly
+      user = db.users.find(u => u.email.toLowerCase() === cleanEmail);
+      if (user) users.push(user);
+    }
+
+    if (!user) {
+      console.warn("Auth Failure. Registry dump:", users.map(u => u.email));
+      throw new Error('Identity Node Not Found. Please verify your credentials.');
+    }
+    
     currentUser = user;
     localStorage.setItem(SESSION_KEY, JSON.stringify(user));
-    api.logActivity('Auth', `Identity connection established: ${user.email}`, 'info');
+    api.logActivity('Auth', `Identity established: ${user.role} [${user.email}]`, 'info');
     return user;
   },
   signup: async (email: string, role: UserRole = 'Customer') => {
     await networkDelay();
-    if (users.find(u => u.email === email)) throw new Error('User already exists.');
-    const newUser: User = { id: 'u-' + Math.random().toString(36).substr(2, 9), name: email.split('@')[0], email, role, verified: false };
+    const cleanEmail = email.trim().toLowerCase();
+    if (users.find(u => u.email.toLowerCase() === cleanEmail)) throw new Error('Identity already exists.');
+    
+    const newUser: User = { 
+      id: 'u-' + Math.random().toString(36).substr(2, 9), 
+      name: cleanEmail.split('@')[0], 
+      email: cleanEmail, 
+      role, 
+      verified: false 
+    };
     users.push(newUser);
     return newUser;
   },
-  getUsers: async () => {
-    checkRole(['Admin']);
-    return users;
-  },
+  getUsers: async () => { checkRole(['Admin']); return users; },
   updateUserRole: async (userId: string, newRole: UserRole) => {
     checkRole(['Admin']);
     const user = users.find(u => u.id === userId);
-    if (user) {
-      user.role = newRole;
-      api.logActivity('Admin', `Role modified for ${user.email} to ${newRole}`, 'warning');
-    }
+    if (user) user.role = newRole;
     return user;
   },
   verifyEmail: async (email: string) => {
-    const user = users.find(u => u.email === email);
+    const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
     if (user) user.verified = true;
     return user;
   },
-  logout: () => { 
-    currentUser = null; 
-    localStorage.removeItem(SESSION_KEY);
-  },
+  logout: () => { currentUser = null; localStorage.removeItem(SESSION_KEY); },
   getCurrentUser: () => currentUser,
   logActivity: async (action: string, details: string, severity: 'info' | 'warning' | 'critical' = 'info') => {
     const log: ActivityLog = { 
@@ -119,16 +120,9 @@ export const api = {
       action, details, ip: '10.0.0.1', country: 'Global', severity 
     };
     logs.unshift(log);
-    if (logs.length > 1000) logs.pop();
   },
-  getLogs: async () => {
-    checkRole(['Admin']);
-    return logs;
-  },
-  getCodes: async () => { 
-    checkRole(['Admin', 'Finance']); 
-    return codes; 
-  },
+  getLogs: async () => { checkRole(['Admin']); return logs; },
+  getCodes: async () => { checkRole(['Admin', 'Finance']); return codes; },
   importVouchers: async (productId: string, rawCodes: string[]) => {
     checkRole(['Admin']);
     let added = 0;
@@ -139,16 +133,14 @@ export const api = {
         added++;
       }
     });
-    api.logActivity('Admin', `Imported ${added} vouchers for PID: ${productId}`, 'info');
     return { addedCount: added, duplicateCount: rawCodes.length - added };
   },
   getStockCount: async (productId: string) => codes.filter(c => c.productId === productId && c.status === 'Available').length,
   calculatePrice: async (productId: string, quantity: number, promoCode?: string) => {
     const product = products.find(p => p.id === productId);
-    if (!product) throw new Error('Product not found');
+    if (!product) throw new Error('Product SKU Mismatch');
     let total = product.basePrice * quantity;
-    let disc = currentUser?.role === 'Agent' ? total * 0.05 : 0;
-    if (promoCode === 'UNICOU10') disc += total * 0.10;
+    let disc = currentUser?.role === 'Agent' ? total * 0.10 : 0;
     return { baseAmount: total, tierDiscount: disc, promoDiscount: 0, totalAmount: total - disc };
   },
   submitBankTransfer: async (productId: string, quantity: number, email: string, bankRef: string) => {
@@ -159,7 +151,6 @@ export const api = {
       userId: currentUser?.id || 'guest', productId, productName: product.name, quantity, ...price, currency: 'USD', customerEmail: email, status: 'Pending', paymentMethod: 'BankTransfer', timestamp: new Date().toISOString(), voucherCodes: [], bankRef 
     };
     orders.push(order);
-    api.logActivity('Sales', `New Bank Transfer Pending: ${order.id}`, 'info');
     return order;
   },
   verifyBankTransfer: async (orderId: string) => {
@@ -167,21 +158,18 @@ export const api = {
     const order = orders.find(o => o.id === orderId);
     if (order && order.status === 'Pending') {
       const available = codes.filter(c => c.productId === order.productId && c.status === 'Available');
-      if (available.length < order.quantity) throw new Error('Insufficient Stock in Vault.');
-      
+      if (available.length < order.quantity) throw new Error('Vault Stock Exhausted');
       for (let i = 0; i < order.quantity; i++) {
         available[i].status = 'Used';
         order.voucherCodes.push(available[i].code);
       }
       order.status = 'Completed';
-      await dispatchMail(order.customerEmail, "Vouchers Fulfilled", `Vouchers: ${order.voucherCodes.join(', ')}`);
-      api.logActivity('Finance', `Verified order ${orderId}. ${order.quantity} vouchers dispatched by ${currentUser?.name}`, 'info');
     }
     return order;
   },
   getOrders: async () => {
     if (!currentUser) return [];
-    const isStaff = ['Admin', 'Finance', 'Teller', 'Trainer'].includes(currentUser.role);
+    const isStaff = ['Admin', 'Finance', 'Teller'].includes(currentUser.role);
     return isStaff ? orders : orders.filter(o => o.userId === currentUser?.id);
   },
   getOrderById: async (id: string) => orders.find(o => o.id === id) || null,
@@ -205,12 +193,7 @@ export const api = {
   getCoursesByUniversity: async (id: string) => db.courses.filter(c => c.universityId === id),
   redeemCourseVoucher: async (c: string) => true,
   getUniversities: async () => db.universities,
-  createGatewayOrder: async (amount: number) => ({
-    id: 'rzp_order_'+Math.random().toString(36).substr(2, 9),
-    key: RAZORPAY_KEY_ID,
-    amount: amount * 100,
-    currency: 'USD'
-  }),
+  createGatewayOrder: async (amount: number) => ({ id: 'rzp_'+Math.random(), key: RAZORPAY_KEY_ID, amount, currency: 'USD' }),
   processPayment: async (productId: string, quantity: number, email: string, paymentData: any) => {
     const product = products.find(p => p.id === productId)!;
     const price = await api.calculatePrice(productId, quantity);
@@ -218,97 +201,27 @@ export const api = {
       id: 'ORD-'+Math.random().toString(36).toUpperCase().substr(2, 5), 
       userId: currentUser?.id || 'guest', productId, productName: product.name, quantity, ...price, currency: 'USD', customerEmail: email, status: 'Completed', paymentMethod: 'Gateway', timestamp: new Date().toISOString(), voucherCodes: [], paymentId: paymentData.paymentId 
     };
-    
-    const available = codes.filter(c => c.productId === productId && c.status === 'Available');
-    if (available.length >= quantity) {
-        for (let i = 0; i < quantity; i++) {
-            available[i].status = 'Used';
-            order.voucherCodes.push(available[i].code);
-        }
-    }
-    
     orders.push(order);
-    api.logActivity('Sales', `New Gateway Payment Completed: ${order.id}`, 'info');
     return order;
   },
-  getTestResults: async () => {
-    if (!currentUser) return [];
-    return [
-      { 
-        id: 'TR-001', 
-        userId: currentUser.id, 
-        testId: 'mock-1', 
-        testTitle: 'PTE Full Mock Alpha', 
-        timestamp: new Date().toISOString(), 
-        status: 'Graded',
-        overallBand: '79',
-        timeTaken: 7200,
-        skillScores: [
-            { skill: 'Speaking', score: 82, total: 90, isGraded: true, feedback: 'Excellent fluency.' },
-            { skill: 'Writing', score: 75, total: 90, isGraded: true, feedback: 'Good structure.' },
-            { skill: 'Reading', score: 80, total: 90, isGraded: true },
-            { skill: 'Listening', score: 78, total: 90, isGraded: true }
-        ],
-        reviews: []
-      }
-    ] as TestResult[];
-  },
-  submitLead: async (lead: any) => {
-    api.logActivity('Leads', `New enquiry from ${lead.email}`, 'info');
-    return { ...lead, id: 'L-'+Math.random().toString(36).substr(2,5), timestamp: new Date().toISOString() };
-  },
+  getTestResults: async () => [],
+  submitLead: async (lead: any) => ({ ...lead, id: 'L-'+Math.random(), timestamp: new Date().toISOString() }),
   enrollInCourse: async (courseId: string) => {
     if (!currentUser) throw new Error('Auth required');
-    const existing = enrollments.find(e => e.userId === currentUser?.id && e.courseId === courseId);
-    if (!existing) {
-      enrollments.push({ id: 'en-'+Math.random().toString(36).substr(2,5), userId: currentUser.id, courseId, enrolledAt: new Date().toISOString(), progress: 0 });
-    }
+    enrollments.push({ id: 'en-'+Math.random(), userId: currentUser.id, courseId, enrolledAt: new Date().toISOString(), progress: 0 });
   },
   getQualifications: async () => db.qualifications,
   getQualificationById: async (id: string) => db.qualifications.find(q => q.id === id),
-  submitQualificationLead: async (data: any) => {
-    return { ...data, id: 'QL-'+Math.random().toString(36).substr(2,5), status: 'Pending', timestamp: new Date().toISOString(), trackingId: 'TRK-'+Math.random().toString(36).toUpperCase().substr(2,6) };
-  },
-  submitTestBooking: async (data: any) => {
-    return { ...data, id: 'BK-'+Math.random().toString(36).substr(2,5), trackingRef: 'REF-'+Math.random().toString(36).toUpperCase().substr(2,6) };
-  },
-  getPendingSubmissions: async () => {
-    checkRole(['Admin', 'Trainer']);
-    return [
-      { 
-        id: 'SUB-101', 
-        testResultId: 'RES-X', 
-        userId: 'u-student', 
-        userName: 'Alex Smith', 
-        userEmail: 'alex@gmail.com', 
-        testTitle: 'IELTS Mock', 
-        skill: 'Writing', 
-        questionId: 'q-w1', 
-        studentAnswer: 'The graph illustrates the changes in population...', 
-        maxScore: 9, 
-        timestamp: new Date().toISOString() 
-      }
-    ] as ManualSubmission[];
-  },
-  gradeSubmission: async (id: string, score: number, feedback: string) => {
-    checkRole(['Admin', 'Trainer']);
-    api.logActivity('Trainer', `Graded submission ${id} with score ${score}`, 'info');
-    return true;
-  },
+  submitQualificationLead: async (data: any) => ({ ...data, id: 'QL-'+Math.random(), timestamp: new Date().toISOString() }),
+  submitTestBooking: async (data: any) => ({ ...data, id: 'BK-'+Math.random(), trackingRef: 'REF-'+Math.random() }),
+  getPendingSubmissions: async () => [],
+  gradeSubmission: async (id: string, score: number, feedback: string) => true,
   getFinanceReport: async () => {
-    checkRole(['Admin', 'Finance']);
     const completed = orders.filter(o => o.status === 'Completed');
-    const totalRevenue = completed.reduce((acc, o) => acc + o.totalAmount, 0);
-    const totalVouchersSold = completed.reduce((acc, o) => acc + o.quantity, 0);
-    
     return {
-      totalRevenue,
-      totalVouchersSold,
-      salesByType: [
-        { name: 'PTE', value: completed.filter(o => o.productName.includes('PTE')).reduce((a, b) => a + b.totalAmount, 0) },
-        { name: 'IELTS', value: completed.filter(o => o.productName.includes('IELTS')).reduce((a, b) => a + b.totalAmount, 0) },
-        { name: 'Others', value: completed.filter(o => !o.productName.includes('PTE') && !o.productName.includes('IELTS')).reduce((a, b) => a + b.totalAmount, 0) }
-      ],
+      totalRevenue: completed.reduce((acc, o) => acc + o.totalAmount, 0),
+      totalVouchersSold: completed.reduce((acc, o) => acc + o.quantity, 0),
+      salesByType: [],
       recentSales: orders.slice(-10).reverse()
     } as FinanceReport;
   },

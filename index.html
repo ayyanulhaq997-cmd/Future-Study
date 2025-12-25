@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,14 +19,19 @@
             },
             colors: {
               primary: {
+                50: '#f0f9ff',
+                100: '#e0f2fe',
+                400: '#38bdf8',
                 500: '#0ea5e9',
                 600: '#0284c7',
+                950: '#082f49',
               },
               unicou: {
                 navy: '#004a61',
                 orange: '#f15a24',
               },
               slate: {
+                50: '#f8fafc',
                 950: '#020617',
               }
             }
@@ -36,32 +41,27 @@
     </script>
     <style>
       :root {
-        --nav-height: 120px;
-        --content-top: 160px; /* Increased for better clearance */
+        --nav-height: 100px;
+        --content-top: 180px; 
       }
 
       body {
-        background-color: #020617;
-        color: #f8fafc;
+        background-color: #f8fafc;
+        color: #0f172a;
         margin: 0;
         min-height: 100vh;
       }
+      
       .glass {
-        background: rgba(15, 23, 42, 0.7);
+        background: rgba(255, 255, 255, 0.85);
         backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(0, 74, 97, 0.1);
       }
+      
       .gradient-text {
-        background: linear-gradient(135deg, #38bdf8 0%, #f15a24 50%, #c084fc 100%);
+        background: linear-gradient(135deg, #0ea5e9 0%, #f15a24 50%, #c084fc 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-      }
-      .gradient-bg {
-        position: fixed;
-        inset: 0;
-        background: radial-gradient(circle at 50% -20%, rgba(14, 165, 233, 0.15), transparent 70%),
-                    radial-gradient(circle at 0% 100%, rgba(129, 140, 248, 0.1), transparent 50%);
-        z-index: -1;
       }
       
       .no-scrollbar::-webkit-scrollbar {
@@ -72,10 +72,19 @@
         scrollbar-width: none;
       }
       
-      /* View-specific container to prevent overlap */
       .view-container {
         padding-top: var(--content-top);
+        padding-bottom: 80px;
         min-height: 100vh;
+      }
+
+      @keyframes slide-up {
+        from { transform: translateY(20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+      }
+      
+      .animate-slide-up {
+        animation: slide-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       }
     </style>
 <script type="importmap">
@@ -86,6 +95,7 @@
     "react/": "https://esm.sh/react@^19.2.3/",
     "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
     "vite": "https://esm.sh/vite@^7.3.0",
+    "@google/generative-ai": "https://esm.sh/@google/generative-ai@^0.21.0",
     "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2"
   }
 }
@@ -93,7 +103,6 @@
 </head>
 <body class="font-sans antialiased overflow-x-hidden">
     <div id="root"></div>
-    <div class="gradient-bg"></div>
     <script type="module" src="index.tsx"></script>
 </body>
 </html>

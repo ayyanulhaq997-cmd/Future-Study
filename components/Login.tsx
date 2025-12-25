@@ -17,76 +17,71 @@ const Login: React.FC<LoginProps> = ({ onLogin, onNavigateToSignup }) => {
     setLoading(true);
     setError('');
     try {
+      // API call now uses case-insensitive matching internally
       const user = await api.login(email);
       onLogin(user);
     } catch (err: any) {
-      setError(err.message || 'Login failed. Check your credentials.');
+      setError(err.message || 'Verification node failed. Registry mismatch.');
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-md mx-auto py-20 px-4 animate-in fade-in duration-500">
-      <div className="glass p-10 rounded-[2.5rem] border border-slate-800 shadow-2xl relative">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary-500 via-indigo-600 to-primary-400 rounded-t-full" />
+    <div className="max-w-md mx-auto animate-slide-up">
+      <div className="bg-white p-12 rounded-[3rem] border border-slate-200 shadow-3xl relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-1.5 bg-unicou-navy" />
         
-        <div className="text-center mb-10">
-          <div className="w-16 h-16 bg-primary-600 rounded-2xl mx-auto flex items-center justify-center mb-6 shadow-lg shadow-primary-500/20 border border-white/10">
-            <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
+        <div className="text-center mb-12">
+          <div className="w-20 h-20 bg-slate-50 border border-slate-100 rounded-[2rem] mx-auto flex items-center justify-center mb-8 shadow-inner">
+            <svg className="w-10 h-10 text-unicou-navy" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A10.003 10.003 0 0012 21a10.003 10.003 0 008.384-4.562l.054.09c1.744-2.772 2.753-6.054 2.753-9.571 0-5.523-4.477-10-10-10S2 6.477 2 12c0 1.933.55 3.738 1.5 5.264" /></svg>
           </div>
-          <h2 className="text-3xl font-display font-bold">Secure <span className="text-primary-400">Access</span></h2>
-          <p className="text-slate-500 text-sm mt-2">Access your global education assets.</p>
+          <h2 className="text-4xl font-display font-bold text-slate-900">Nexus <span className="text-unicou-orange">Auth</span></h2>
+          <p className="text-slate-400 text-sm mt-3 font-medium uppercase tracking-widest">Global Identity Registry</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-8">
           <div>
-            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3">Professional Email</label>
+            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-3 ml-1">Identity (Email)</label>
             <input 
-              type="email"
-              required
-              value={email}
+              type="email" required value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="e.g. alex@unicou.uk"
-              className="w-full bg-slate-900 border border-slate-700 rounded-2xl p-5 text-slate-200 outline-none focus:border-primary-500 transition-all placeholder:text-slate-600"
+              placeholder="e.g. admin@unicou.uk"
+              className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-5 text-slate-900 outline-none focus:border-unicou-navy focus:bg-white transition-all shadow-inner"
             />
           </div>
 
           <div>
-             <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3">Security Key</label>
+             <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-3 ml-1">Security Key</label>
              <input 
-               type="password"
-               placeholder="••••••••"
-               className="w-full bg-slate-900 border border-slate-700 rounded-2xl p-5 text-slate-200 outline-none focus:border-primary-500 transition-all placeholder:text-slate-600"
+               type="password" placeholder="••••••••"
+               className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-5 text-slate-900 outline-none focus:border-unicou-navy focus:bg-white transition-all shadow-inner"
              />
           </div>
 
-          {error && <p className="text-red-400 text-xs font-bold bg-red-500/10 p-4 rounded-xl border border-red-500/20">{error}</p>}
+          {error && <div className="text-red-600 text-xs font-bold bg-red-50 p-4 rounded-xl border border-red-100 animate-pulse text-center">{error}</div>}
 
           <button 
-            type="submit"
-            disabled={loading}
-            className="w-full py-5 bg-primary-600 hover:bg-primary-500 text-white font-bold rounded-2xl transition-all flex items-center justify-center gap-2 shadow-xl shadow-primary-500/20 active:scale-95 disabled:opacity-50"
+            type="submit" disabled={loading}
+            className="w-full py-6 bg-unicou-navy hover:bg-slate-900 text-white font-black uppercase text-xs tracking-widest rounded-2xl transition-all shadow-xl shadow-slate-200 active:scale-95 disabled:opacity-50"
           >
-            {loading ? 'Authenticating...' : 'Establish Connection'}
+            {loading ? 'Decrypting Protocol...' : 'Initialize Session'}
           </button>
 
-          <p className="text-center text-sm text-slate-500 pt-4">
-            New to UNICOU?{' '}
-            <button 
-              type="button" 
-              onClick={onNavigateToSignup}
-              className="text-primary-400 font-bold hover:underline"
-            >
-              Create Account
-            </button>
-          </p>
+          <div className="text-center pt-4 border-t border-slate-50 mt-10">
+            <p className="text-sm text-slate-500">
+              New to UNICOU?{' '}
+              <button type="button" onClick={onNavigateToSignup} className="text-unicou-orange font-black hover:underline underline-offset-4">Create Registry</button>
+            </p>
+          </div>
         </form>
-
-        <div className="mt-8 pt-6 border-t border-slate-800/50 text-center">
-          <p className="text-[9px] text-slate-600 font-black uppercase tracking-[0.3em]">Authorized Access Nodes Only</p>
-        </div>
+      </div>
+      
+      <div className="mt-8 text-center p-8 glass rounded-[2rem] border-slate-200">
+         <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Demo Staff Credentials</h4>
+         <div className="grid grid-cols-2 gap-4 text-[11px] font-mono text-slate-500">
+            <div className="bg-white p-3 rounded-xl border border-slate-100">admin@unicou.uk</div>
+            <div className="bg-white p-3 rounded-xl border border-slate-100">finance@unicou.uk</div>
+         </div>
       </div>
     </div>
   );
