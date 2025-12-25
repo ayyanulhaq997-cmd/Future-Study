@@ -23,6 +23,10 @@ import AgentDashboard from './components/AgentDashboard';
 import PartnerShowcase from './components/PartnerShowcase';
 import CookieConsent from './components/CookieConsent';
 import CustomerDashboard from './components/CustomerDashboard';
+import LMSCoursePlayer from './components/LMSCoursePlayer';
+import LMSPracticeTest from './components/LMSPracticeTest';
+import QualificationCatalogue from './components/QualificationCatalogue';
+import ImmigrationGuide from './components/ImmigrationGuide';
 import { ViewState, User } from './types';
 import { api } from './services/apiService';
 import { LOGO_SRC } from './constants/assets';
@@ -88,8 +92,18 @@ const App: React.FC = () => {
         return <div className="view-container"><CountryList onNavigateToGuide={(slug) => navigateTo({ type: 'country-guide', slug })} /></div>;
       case 'country-guide':
         return <div className="view-container"><CountryGuide slug={view.slug} onViewUniversity={(uSlug) => navigateTo({ type: 'university', slug: uSlug })} onRegister={() => navigateTo({ type: 'apply', formType: 'student-apply', context: `Register: ${view.slug}` })} /></div>;
+      case 'immigration-guide':
+        return <div className="view-container"><ImmigrationGuide slug={view.slug} onConsult={() => navigateTo({ type: 'apply', formType: 'general', context: `Immigration: ${view.slug}` })} /></div>;
+      case 'university':
+        return <div className="view-container"><UniversityProfile slug={view.slug} /></div>;
       case 'lms-dashboard':
         return <div className="view-container">{user ? <CustomerDashboard user={user} /> : <LMSDashboard onNavigate={navigateTo} />}</div>;
+      case 'lms-course-player':
+        return <div className="min-h-screen bg-slate-950"><LMSCoursePlayer courseId={view.courseId} initialLessonId={view.initialLessonId} onNavigate={navigateTo} /></div>;
+      case 'lms-practice-test':
+        return <div className="min-h-screen bg-slate-950"><LMSPracticeTest testId={view.testId} onNavigate={navigateTo} /></div>;
+      case 'qualifications':
+        return <div className="view-container"><QualificationCatalogue onApply={(qid) => navigateTo({ type: 'apply', formType: 'general', context: `Qualification ID: ${qid}` })} /></div>;
       case 'course-catalogue':
         return <div className="view-container"><CourseCatalogue onCheckout={(p, q) => navigateTo({ type: 'checkout', productId: p, quantity: q })} /></div>;
       case 'checkout':
@@ -106,17 +120,18 @@ const App: React.FC = () => {
         return <div className="view-container"><Login onLogin={(u) => { setUser(u); navigateTo(['Admin', 'Finance'].includes(u.role) ? { type: 'admin' } : { type: 'lms-dashboard' }); }} onNavigateToSignup={() => navigateTo({ type: 'signup' })} /></div>;
       case 'signup':
         return <div className="view-container"><Signup onSuccess={(e) => navigateTo({ type: 'verification-pending', email: e })} onNavigateToLogin={() => navigateTo({ type: 'login' })} /></div>;
+      case 'verification-pending':
+        return <div className="view-container"><VerificationPending email={view.email} onVerified={() => navigateTo({ type: 'login' })} /></div>;
       case 'about':
         return (
           <div className="max-w-7xl mx-auto view-container px-6 animate-in fade-in pb-24 bg-white text-slate-950">
              <div className="text-center mb-24">
-                <span className="text-xs font-black text-unicou-orange uppercase tracking-[0.4em] mb-4 block">Our Institutional Narrative</span>
-                <h1 className="text-6xl md:text-[5rem] font-display font-black mb-6 tracking-tighter leading-none">About <span className="text-unicou-navy">UNICOU</span></h1>
+                <span className="text-xs font-black text-unicou-orange uppercase tracking-[0.4em] mb-4 block">Institutional Profile</span>
+                <h1 className="text-6xl md:text-[5rem] font-display font-black text-slate-950 mb-6 tracking-tighter leading-none">About <span className="text-unicou-navy">UNICOU</span></h1>
                 <div className="h-1.5 w-24 bg-unicou-orange mx-auto rounded-full" />
              </div>
 
              <div className="space-y-24">
-                {/* Founding & History */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
                    <div className="lg:col-span-7 space-y-8">
                       <h2 className="text-4xl font-black tracking-tight uppercase text-slate-900">Founded with Passion</h2>
@@ -160,7 +175,6 @@ const App: React.FC = () => {
                    </div>
                 </div>
 
-                {/* Vision & Mission */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                    <div className="bg-unicou-navy p-12 rounded-[3.5rem] text-white shadow-2xl relative overflow-hidden group">
                       <div className="absolute top-0 right-0 p-8 opacity-10 font-black text-7xl select-none">VISION</div>
@@ -178,7 +192,6 @@ const App: React.FC = () => {
                    </div>
                 </div>
 
-                {/* What We Do */}
                 <div className="space-y-12">
                   <div className="text-center">
                     <h2 className="text-4xl font-black uppercase tracking-tight text-slate-900">What We Do</h2>
@@ -187,29 +200,28 @@ const App: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
                     <div className="p-10 bg-slate-50 border border-slate-200 rounded-[3rem] shadow-lg">
                       <h4 className="text-xl font-black text-unicou-navy mb-4 uppercase">Study Abroad</h4>
-                      <p className="text-slate-800 font-medium leading-relaxed">Comprehensive guidance for destinations including the UK, USA, Canada, Australia, New Zealand, Ireland, Cyprus, Germany, Italy, Sweden, Finland, Europe, Dubai, Malaysia, and Turkey. From tailored university counseling to admissions and visa support.</p>
+                      <p className="text-slate-800 font-medium leading-relaxed">Comprehensive guidance for destinations including the UK, USA, Canada, Australia, New Zealand, Ireland, Cyprus, Germany, Italy, Sweden, Finland, Europe, Dubai, Malaysia, and Turkey.</p>
                     </div>
                     <div className="p-10 bg-slate-50 border border-slate-200 rounded-[3rem] shadow-lg">
                       <h4 className="text-xl font-black text-unicou-navy mb-4 uppercase">Immigration</h4>
-                      <p className="text-slate-800 font-medium leading-relaxed">Supporting skilled individuals, entrepreneurs, and remote professionals. Whether it’s skilled migration, business immigration, citizenship by investment, or digital nomad visas, we offer strategic advice aligned with your goals.</p>
+                      <p className="text-slate-800 font-medium leading-relaxed">Supporting skilled individuals, entrepreneurs, and remote professionals through skilled migration, business immigration, citizenship by investment, or digital nomad visas.</p>
                     </div>
                     <div className="p-10 bg-slate-50 border border-slate-200 rounded-[3rem] shadow-lg">
                       <h4 className="text-xl font-black text-unicou-navy mb-4 uppercase">Exam & E-Learning</h4>
-                      <p className="text-slate-800 font-medium leading-relaxed">Providing official vouchers and tools for IELTS, PTE, TOEFL iBT, LanguageCert, and Duolingo. Our e-learning resources help candidates enhance skills with flexible, effective study tools.</p>
+                      <p className="text-slate-800 font-medium leading-relaxed">Providing official vouchers and tools for IELTS, PTE, TOEFL iBT, LanguageCert, and Duolingo. Our e-learning resources help candidates enhance skills with flexible tools.</p>
                     </div>
                   </div>
                 </div>
 
-                {/* Why Work With Us & Corporate */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
                   <div className="lg:col-span-6 space-y-10">
                     <h3 className="text-3xl font-black text-slate-950 uppercase tracking-tight">Why Work With Us</h3>
                     <p className="text-lg text-slate-800 font-medium leading-relaxed">
-                      Choosing us means choosing experience—more than a decade of trusted service, a global perspective, and expert guidance. Our advisors are certified and trained by leading global organizations, ensuring high-quality counseling that is both ethical and effective.
+                      Choosing us means choosing experience—more than a decade of trusted service, a global perspective, and expert guidance. Our advisors are certified and trained by leading global organizations.
                     </p>
                     <div className="bg-unicou-navy/5 p-8 rounded-[2.5rem] border border-unicou-navy/10">
                        <h4 className="font-black text-slate-900 uppercase text-sm mb-4">Corporate Placement & Sponsors</h4>
-                       <p className="text-sm text-slate-700 leading-relaxed font-medium">We work alongside employers and corporate partners to match international talent with strategic opportunities, helping organizations navigate compliance and global talent acquisition.</p>
+                       <p className="text-sm text-slate-700 leading-relaxed font-medium">Matching international talent with strategic opportunities, helping organizations navigate compliance and global recruitment.</p>
                     </div>
                   </div>
                   <div className="lg:col-span-6 space-y-10">
@@ -219,14 +231,14 @@ const App: React.FC = () => {
                     </p>
                     <div className="bg-unicou-orange/5 p-8 rounded-[2.5rem] border border-unicou-orange/10">
                        <h4 className="font-black text-slate-900 uppercase text-sm mb-4">Institution Partnership</h4>
-                       <p className="text-sm text-slate-700 leading-relaxed font-medium">We collaborate with universities, colleges, agents, and preparation centers to support student recruitment, brand visibility, and international program success.</p>
+                       <p className="text-sm text-slate-700 leading-relaxed font-medium">Supporting student recruitment, brand visibility, and international program success for universities worldwide.</p>
                     </div>
                   </div>
                 </div>
              </div>
 
              <div className="mt-24 pt-16 border-t border-slate-100 text-center">
-                <button onClick={() => navigateTo({ type: 'apply', formType: 'general', context: 'Partnership Inquiry' })} className="px-16 py-6 bg-unicou-navy text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-slate-950 transition-all shadow-2xl active:scale-95">Establish Connection with Global Hub</button>
+                <button onClick={() => navigateTo({ type: 'apply', formType: 'general', context: 'Institutional Inquiry' })} className="px-16 py-6 bg-unicou-navy text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-slate-950 transition-all shadow-2xl active:scale-95">Establish Connection with Global Hub</button>
              </div>
           </div>
         );
