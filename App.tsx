@@ -190,12 +190,87 @@ const App: React.FC = () => {
         return <div className="pt-10"><VerificationPending email={view.email} onVerified={() => navigateTo({ type: 'login' })} /></div>;
       case 'about':
         return (
-          <div className="max-w-7xl mx-auto py-24 px-6 animate-in fade-in duration-700 text-center">
-            <h1 className="text-6xl font-display font-bold mb-8">About <span className="text-unicou-orange">UNICOU</span></h1>
-            <div className="glass p-12 rounded-[3rem] border-slate-800 shadow-2xl">
-              <p className="text-slate-300 text-xl leading-relaxed font-medium">
-                Founded with a passion for global education, we are a leading consultancy with deep roots in Pakistan and a growing presence in the UK and Dubai. Our mission is to simplify international pathways and build bridges between talent and opportunity.
-              </p>
+          <div className="max-w-7xl mx-auto py-24 px-6 animate-in fade-in duration-700">
+            <div className="text-center mb-20">
+               <h1 className="text-6xl md:text-8xl font-display font-bold mb-8 tracking-tighter">About <span className="text-unicou-orange">UNICOU</span></h1>
+               <div className="h-1.5 w-24 bg-unicou-orange mx-auto rounded-full" />
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-24">
+               <div className="lg:col-span-8">
+                  <div className="glass p-10 md:p-14 rounded-[3.5rem] border-slate-800 shadow-3xl">
+                     <h2 className="text-3xl font-bold mb-8 text-white">Our Legacy</h2>
+                     <p className="text-slate-300 text-xl leading-relaxed font-medium mb-8">
+                       Founded with a passion for global education and international opportunity, we are a leading international education and immigration consultancy with deep roots and a growing global footprint. Our journey began in 2009 in Pakistan, where we first opened our doors to support ambitious students and professionals in navigating the complexities of studying, living, and working abroad. Over the years, we have built a reputation rooted in transparency, integrity, and long-term success.
+                     </p>
+                     <p className="text-slate-400 text-lg leading-relaxed font-medium">
+                       As of 2023, we expanded our operations to include offices in the United Kingdom and Dubai, enhancing our ability to serve clients with localized expertise in two of the world’s most competitive education and migration markets. Our founder’s extensive professional training—including certifications from British Council UK agent training, ICEF Trained Agent Counsellor, AIRC enrollment management for U.S. education, and regional credentials such as Ireland Certified Counsellor—ensures that our guidance is both expert and trustworthy.
+                     </p>
+                  </div>
+               </div>
+               <div className="lg:col-span-4 flex flex-col gap-8">
+                  <div className="glass p-10 rounded-[2.5rem] border-primary-500/20 shadow-xl bg-primary-600/5">
+                     <h3 className="text-xl font-bold mb-4 text-primary-400">Our Vision</h3>
+                     <p className="text-slate-300 text-sm leading-relaxed italic">
+                       "To become the most trusted gateway for students, professionals, and institutions seeking global education and mobility solutions. We aspire to simplify international pathways, empower every client with informed choices, and build bridges between talent and opportunity across continents."
+                     </p>
+                  </div>
+                  <div className="glass p-10 rounded-[2.5rem] border-unicou-orange/20 shadow-xl bg-unicou-orange/5">
+                     <h3 className="text-xl font-bold mb-4 text-unicou-orange">Our Mission</h3>
+                     <p className="text-slate-300 text-sm leading-relaxed italic">
+                       "Guided by ethics, expertise, and personalized support, our mission is to streamline study abroad journeys, immigration pathways, and professional placements. We are dedicated to helping individuals realize their aspirations with confidence while fostering strong partnerships with educational institutions and global industry networks."
+                     </p>
+                  </div>
+               </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-24">
+               <div className="glass p-10 rounded-[3rem] border-slate-800">
+                  <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-6">Expertise</h3>
+                  <h4 className="text-2xl font-bold mb-4">What We Do</h4>
+                  <p className="text-slate-400 text-sm leading-relaxed mb-6">
+                    Comprehensive study abroad guidance for destinations including the UK, USA, Canada, Australia, NZ, Ireland, Europe, and more. From tailored university counseling to admissions and visa support, we manage every step with meticulous care.
+                  </p>
+                  <p className="text-slate-400 text-sm leading-relaxed">
+                    Our immigration services support skilled individuals, entrepreneurs, and remote professionals seeking relocation via skilled migration, business immigration, or digital nomad visas.
+                  </p>
+               </div>
+               <div className="glass p-10 rounded-[3rem] border-slate-800">
+                  <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-6">Advantage</h3>
+                  <h4 className="text-2xl font-bold mb-4">Why Work With Us</h4>
+                  <p className="text-slate-400 text-sm leading-relaxed mb-6">
+                    Choosing us means choosing experience—more than a decade of trusted service, a global perspective, and expert guidance. Our advisors are certified and trained by leading global organizations, ensuring ethical and effective counseling.
+                  </p>
+                  <ul className="text-xs text-slate-500 space-y-2 font-bold uppercase tracking-tighter">
+                    <li className="flex items-center gap-2"><span className="text-emerald-500">✓</span> UKVI Approved Center</li>
+                    <li className="flex items-center gap-2"><span className="text-emerald-500">✓</span> Pearson Approved Node</li>
+                    <li className="flex items-center gap-2"><span className="text-emerald-500">✓</span> Certified Global Advisors</li>
+                  </ul>
+               </div>
+               <div className="glass p-10 rounded-[3rem] border-slate-800">
+                  <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-6">Integration</h3>
+                  <h4 className="text-2xl font-bold mb-4">B2B & Corporate</h4>
+                  <p className="text-slate-400 text-sm leading-relaxed mb-6">
+                    Corporate Placement: We match international talent with strategic opportunities, helping organizations navigate compliance and talent acquisition.
+                  </p>
+                  <p className="text-slate-400 text-sm leading-relaxed">
+                    Institution Partnership: We collaborate with universities and training providers to support student recruitment and international program success.
+                  </p>
+               </div>
+            </div>
+
+            <div className="glass p-12 md:p-20 rounded-[4rem] border-primary-500/20 text-center relative overflow-hidden">
+               <div className="absolute top-0 right-0 p-12 opacity-5 font-black text-9xl">NEXT</div>
+               <div className="relative z-10">
+                  <h3 className="text-[10px] font-black text-primary-400 uppercase tracking-[0.4em] mb-6">Strategic Trajectory</h3>
+                  <h4 className="text-4xl md:text-6xl font-display font-bold mb-8">Looking <span className="text-primary-400">Ahead</span></h4>
+                  <p className="text-slate-300 text-xl leading-relaxed max-w-3xl mx-auto font-medium mb-12">
+                    Building on our strong legacy in Pakistan, the UK, and Dubai, we are actively planning expansion into the Middle East, India, China, Nepal, Bangladesh, Nigeria, and Ghana. This next phase will deepen our global network and create more opportunities worldwide.
+                  </p>
+                  <button onClick={() => navigateTo({ type: 'apply', formType: 'general', context: 'Strategic Partnership Inquiry' })} className="px-12 py-5 bg-white text-slate-950 rounded-2xl font-black uppercase text-sm tracking-widest hover:scale-105 transition-all shadow-2xl">
+                    Partner With Our Expansion
+                  </button>
+               </div>
             </div>
           </div>
         );

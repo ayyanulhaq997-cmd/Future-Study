@@ -61,10 +61,10 @@ const NAV_CONFIG: NavItem[] = [
     label: 'Connect',
     type: 'apply',
     subItems: [
-      { label: 'Apply Online', type: 'apply', formType: 'student-apply', context: 'Student Registration', icon: '🎓' },
-      { label: 'Become a Sub-Agent', type: 'apply', formType: 'agent-reg', context: 'Agent Membership', icon: '🤝' },
-      { label: 'Partner Training Center', type: 'apply', formType: 'prep-center-reg', context: 'Institutional Partner', icon: '🏫' },
-      { label: 'University Relations', type: 'apply', formType: 'institute-connect', context: 'Institution Connect', icon: '🏛️' },
+      { label: 'Apply Online', type: 'apply', formType: 'student-apply', context: 'Direct Student Application', icon: '🎓' },
+      { label: 'Become a Sub-Agent', type: 'apply', formType: 'agent-reg', context: 'Agency Partnership', icon: '🤝' },
+      { label: 'Partner Training Center', type: 'apply', formType: 'prep-center-reg', context: 'Training Center Registration', icon: '🏫' },
+      { label: 'University Relations', type: 'apply', formType: 'institute-connect', context: 'Institutional Collaboration', icon: '🏛️' },
     ]
   },
   { label: 'Resources', type: 'resources' },

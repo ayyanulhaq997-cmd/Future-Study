@@ -7,12 +7,15 @@ import {
 } from '../types';
 
 // ==========================================
-// PRODUCTION PAYMENT CONFIGURATION
+// PRODUCTION CONFIGURATION
 // ==========================================
-// Replace this with your LIVE Key from Razorpay Dashboard for real card payments
 const RAZORPAY_KEY_ID = 'rzp_test_UNICOU_DemoKey123'; 
 
-// Update these with your ACTUAL bank account details
+// For real emails, you would typically call a backend or a service like EmailJS/SendGrid
+// Change to 'production' when you have a backend endpoint ready
+const EMAIL_MODE: 'simulated' | 'production' = 'simulated';
+const EMAIL_API_ENDPOINT = 'https://api.unicou.uk/v1/dispatch-mail'; 
+
 export const BANK_DETAILS = {
   bankName: "UNICOU HUB INTERNATIONAL",
   accountName: "UniCou Ltd",
@@ -23,6 +26,25 @@ export const BANK_DETAILS = {
   referenceNote: "Use your Email as Reference"
 };
 // ==========================================
+
+const dispatchMail = async (to: string, subject: string, body: string) => {
+  if (EMAIL_MODE === 'simulated') {
+    console.log(`%c[SIMULATED EMAIL] To: ${to}\nSubject: ${subject}\nBody: ${body}`, 'color: #f15a24; font-weight: bold;');
+    return true;
+  }
+  
+  try {
+    const response = await fetch(EMAIL_API_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ to, subject, body, apiKey: process.env.MAIL_API_KEY })
+    });
+    return response.ok;
+  } catch (e) {
+    console.error("Email Dispatch Node Failure:", e);
+    return false;
+  }
+};
 
 let products = [...db.products];
 let codes = [...db.voucherCodes];
@@ -66,6 +88,14 @@ export const api = {
     }
     const newUser: User = { id: 'u-' + Math.random().toString(36).substr(2, 9), name: email.split('@')[0], email, role, verified: false, tier: role === 'Agent' ? 1 : undefined };
     users.push(newUser);
+    
+    // Dispatch Verification Email
+    await dispatchMail(
+      email, 
+      "Verify your UNICOU Identity", 
+      `Welcome to UNICOU. Your verification code is ${Math.floor(100000 + Math.random() * 900000)}. Please return to the portal to finalize setup.`
+    );
+    
     return newUser;
   },
   getUsers: async () => {
@@ -127,6 +157,10 @@ export const api = {
       bankRef 
     };
     orders.push(order);
+    
+    // Notify Admin of new transfer
+    dispatchMail("admin@unicou.uk", "New Settlement Awaiting Verification", `Order ${order.id} for ${email} requires teller review.`);
+    
     api.logActivity('Finance', `Bank reference ${bankRef} submitted for order ${order.id}`, 'info');
     return order;
   },
@@ -148,6 +182,14 @@ export const api = {
       }
 
       order.status = 'Completed';
+      
+      // Dispatch Vouchers via Email
+      dispatchMail(
+        order.customerEmail, 
+        "Voucher Procurement Successful - UNICOU", 
+        `Your vouchers for ${order.productName} are ready: \n\n${order.voucherCodes.join('\n')}\n\nKeep these codes secure.`
+      );
+
       api.logActivity('Verification', `Payment verified for ${orderId}. Vouchers released.`, 'info');
     }
     return order;
@@ -190,6 +232,10 @@ export const api = {
     await networkDelay(); 
     const lead = { ...data, id: 'L-'+Math.random().toString(36).substr(2, 5).toUpperCase(), status: 'New', timestamp: new Date().toISOString() };
     leadSubmissions.unshift(lead);
+    
+    // Notify Regional Counselors
+    dispatchMail("connect@unicou.uk", "New Study Abroad Lead", `Student ${lead.name} has requested guidance for ${lead.targetCountry}.`);
+    
     return lead; 
   },
   updateLeadStatus: async (id: string, status: string) => {
@@ -203,7 +249,11 @@ export const api = {
   gradeSubmission: async (id: string, score: number, fb: string) => {
     checkRole(['Trainer', 'Admin']);
     const s = manualSubmissions.find(x => x.id === id);
-    if (s) { s.score = score; s.feedback = fb; s.gradedBy = currentUser?.name; }
+    if (s) { 
+      s.score = score; s.feedback = fb; s.gradedBy = currentUser?.name; 
+      // Notify Student of Grade
+      dispatchMail(s.userEmail, "Exam Result Evaluated", `Your ${s.skill} submission for ${s.testTitle} has been graded. Result: ${score}/${s.maxScore}. Check your terminal for feedback.`);
+    }
   },
   getProducts: async () => products,
   getProductById: async (id: string) => products.find(p => p.id === id) || null,
