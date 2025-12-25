@@ -1,4 +1,3 @@
-
 import * as db from './db';
 import { 
   Product, VoucherCode, VoucherStatus, Order, User, ActivityLog, SecurityStatus, LMSCourse, 
@@ -11,6 +10,7 @@ import {
 // PRODUCTION CONFIGURATION
 // ==========================================
 const RAZORPAY_KEY_ID = 'rzp_test_UNICOU_DemoKey123'; 
+const SESSION_KEY = 'unicou_active_session';
 
 const EMAIL_MODE: 'simulated' | 'production' = 'simulated';
 const EMAIL_API_ENDPOINT = 'https://api.unicou.uk/v1/dispatch-mail'; 
@@ -53,6 +53,16 @@ let logs: ActivityLog[] = [];
 let enrollments: Enrollment[] = [...db.initialEnrollments];
 let currentUser: User | null = null;
 
+// Initialize session from localStorage
+const savedUser = localStorage.getItem(SESSION_KEY);
+if (savedUser) {
+  try {
+    currentUser = JSON.parse(savedUser);
+  } catch (e) {
+    localStorage.removeItem(SESSION_KEY);
+  }
+}
+
 const networkDelay = () => new Promise(resolve => setTimeout(resolve, Math.random() * 150 + 100));
 
 const checkRole = (allowedRoles: UserRole[]) => {
@@ -66,6 +76,7 @@ export const api = {
     const user = users.find(u => u.email === email);
     if (!user) throw new Error('User node not found. Please sign up first.');
     currentUser = user;
+    localStorage.setItem(SESSION_KEY, JSON.stringify(user));
     api.logActivity('Auth', `Identity connection established: ${user.email}`, 'info');
     return user;
   },
@@ -94,7 +105,10 @@ export const api = {
     if (user) user.verified = true;
     return user;
   },
-  logout: () => { currentUser = null; },
+  logout: () => { 
+    currentUser = null; 
+    localStorage.removeItem(SESSION_KEY);
+  },
   getCurrentUser: () => currentUser,
   logActivity: async (action: string, details: string, severity: 'info' | 'warning' | 'critical' = 'info') => {
     const log: ActivityLog = { 
@@ -129,13 +143,11 @@ export const api = {
     return { addedCount: added, duplicateCount: rawCodes.length - added };
   },
   getStockCount: async (productId: string) => codes.filter(c => c.productId === productId && c.status === 'Available').length,
-  // Fix: Added optional promoCode parameter to satisfy CheckoutProcess.tsx usage
   calculatePrice: async (productId: string, quantity: number, promoCode?: string) => {
     const product = products.find(p => p.id === productId);
     if (!product) throw new Error('Product not found');
     let total = product.basePrice * quantity;
     let disc = currentUser?.role === 'Agent' ? total * 0.05 : 0;
-    // Simple promo code logic example
     if (promoCode === 'UNICOU10') disc += total * 0.10;
     return { baseAmount: total, tierDiscount: disc, promoDiscount: 0, totalAmount: total - disc };
   },
@@ -192,7 +204,6 @@ export const api = {
   getUniversityBySlug: async (s: string) => db.universityBySlug(s),
   getCoursesByUniversity: async (id: string) => db.courses.filter(c => c.universityId === id),
   redeemCourseVoucher: async (c: string) => true,
-  // Fix: Implemented missing api methods
   getUniversities: async () => db.universities,
   createGatewayOrder: async (amount: number) => ({
     id: 'rzp_order_'+Math.random().toString(36).substr(2, 9),
@@ -208,7 +219,6 @@ export const api = {
       userId: currentUser?.id || 'guest', productId, productName: product.name, quantity, ...price, currency: 'USD', customerEmail: email, status: 'Completed', paymentMethod: 'Gateway', timestamp: new Date().toISOString(), voucherCodes: [], paymentId: paymentData.paymentId 
     };
     
-    // Auto-fulfill for gateway payments
     const available = codes.filter(c => c.productId === productId && c.status === 'Available');
     if (available.length >= quantity) {
         for (let i = 0; i < quantity; i++) {

@@ -25,6 +25,7 @@ import AdminDashboard from './components/AdminDashboard';
 import AgentDashboard from './components/AgentDashboard';
 import PartnerShowcase from './components/PartnerShowcase';
 import CookieConsent from './components/CookieConsent';
+import CustomerDashboard from './components/CustomerDashboard';
 import { ViewState, User } from './types';
 import { api } from './services/apiService';
 import { LOGO_SRC } from './constants/assets';
@@ -131,6 +132,12 @@ const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
 
+  // Restore session on mount
+  useEffect(() => {
+    const active = api.getCurrentUser();
+    if (active) setUser(active);
+  }, []);
+
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -153,22 +160,10 @@ const App: React.FC = () => {
             <div id="destination-directory" className="scroll-mt-32">
                <CountryList onNavigateToGuide={(slug) => navigateTo({ type: 'country-guide', slug })} />
             </div>
-            <section className="py-24 max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12">
-               <div className="glass p-16 rounded-[4rem] border-slate-800 shadow-3xl">
-                  <h2 className="text-4xl font-display font-bold mb-8">Academic <span className="text-unicou-orange">Excellence</span></h2>
-                  <p className="text-slate-400 text-xl leading-relaxed mb-10 italic">UNICOU provides a seamless bridge for global scholars. Automated infrastructure handling complex mobility routes.</p>
-                  <button onClick={() => navigateTo({ type: 'apply', formType: 'student-apply', context: 'Admission node' })} className="px-12 py-5 bg-primary-600 text-white rounded-2xl font-black uppercase text-xs tracking-widest hover:scale-105 transition-all shadow-2xl">Get Free Guidance</button>
-               </div>
-               <div className="glass p-16 rounded-[4rem] border-slate-800 bg-unicou-orange/5 shadow-3xl">
-                  <h2 className="text-4xl font-display font-bold mb-8">Voucher <span className="text-unicou-orange">Vault</span></h2>
-                  <p className="text-slate-400 text-xl leading-relaxed mb-10">Instant digital procurement for PTE, IELTS, and TOEFL. Fulfillment dispatched to verified email node.</p>
-                  <button onClick={() => navigateTo({ type: 'store' })} className="px-12 py-5 bg-unicou-orange text-white rounded-2xl font-black uppercase text-xs tracking-widest hover:scale-105 transition-all shadow-2xl">Enter Shop</button>
-               </div>
-            </section>
           </div>
         );
       case 'store':
-        return <div className="view-container animate-in fade-in duration-700"><VoucherStore onCheckout={(p, q) => navigateTo({ type: 'checkout', productId: p, quantity: q })} onBook={(p) => navigateTo({ type: 'apply', formType: 'student-apply', context: `Booking: ${p}` })} onNavigateToAgent={() => navigateTo({ type: 'agent' })} /></div>;
+        return <div className="view-container"><VoucherStore onCheckout={(p, q) => navigateTo({ type: 'checkout', productId: p, quantity: q })} onBook={(p) => navigateTo({ type: 'apply', formType: 'student-apply', context: `Booking: ${p}` })} onNavigateToAgent={() => navigateTo({ type: 'agent' })} /></div>;
       case 'apply':
         return <div className="max-w-4xl mx-auto view-container px-4"><ApplyForm type={view.formType} context={view.context} /></div>;
       case 'country-list':
@@ -176,15 +171,11 @@ const App: React.FC = () => {
       case 'country-guide':
         return <div className="view-container"><CountryGuide slug={view.slug} onViewUniversity={(uSlug) => navigateTo({ type: 'university', slug: uSlug })} onRegister={() => navigateTo({ type: 'apply', formType: 'student-apply', context: `Register: ${view.slug}` })} /></div>;
       case 'lms-dashboard':
-        return <div className="view-container"><LMSDashboard onNavigate={navigateTo} /></div>;
-      case 'course-catalogue':
-        return <div className="view-container"><CourseCatalogue onCheckout={(p, q) => navigateTo({ type: 'checkout', productId: p, quantity: q })} /></div>;
+        return <div className="view-container">{user ? <CustomerDashboard user={user} /> : <LMSDashboard onNavigate={navigateTo} />}</div>;
       case 'checkout':
-        return <div className="view-container min-h-[80vh]"><CheckoutProcess productId={view.productId} quantity={view.quantity} onSuccess={(oid) => navigateTo({ type: 'success', orderId: oid })} onCancel={() => navigateTo({ type: 'store' })} /></div>;
+        return <div className="view-container"><CheckoutProcess productId={view.productId} quantity={view.quantity} onSuccess={(oid) => navigateTo({ type: 'success', orderId: oid })} onCancel={() => navigateTo({ type: 'store' })} /></div>;
       case 'success':
         return <div className="view-container"><SuccessScreen orderId={view.orderId} onClose={() => navigateTo({ type: 'store' })} /></div>;
-      case 'university':
-        return <div className="view-container"><UniversityProfile slug={view.slug} /></div>;
       case 'admin':
         if (!user || !['Admin', 'Finance', 'Teller'].includes(user.role)) return <div className="view-container text-center text-red-500 font-bold">Access Authority Required.</div>;
         return <div className="view-container"><AdminDashboard /></div>;
@@ -192,7 +183,7 @@ const App: React.FC = () => {
         if (!user || user.role !== 'Agent') return <div className="view-container text-center">Please login with Partner Credentials.</div>;
         return <div className="view-container"><AgentDashboard user={user} onBuy={(p, q) => navigateTo({ type: 'checkout', productId: p, quantity: q })} /></div>;
       case 'login': 
-        return <div className="view-container"><Login onLogin={(u) => { setUser(u); navigateTo(u.role === 'Admin' || u.role === 'Finance' || u.role === 'Teller' ? { type: 'admin' } : u.role === 'Agent' ? { type: 'agent' } : { type: 'home' }); }} onNavigateToSignup={() => navigateTo({ type: 'signup' })} /></div>;
+        return <div className="view-container"><Login onLogin={(u) => { setUser(u); navigateTo(u.role === 'Admin' || u.role === 'Finance' || u.role === 'Teller' ? { type: 'admin' } : u.role === 'Agent' ? { type: 'agent' } : { type: 'lms-dashboard' }); }} onNavigateToSignup={() => navigateTo({ type: 'signup' })} /></div>;
       case 'signup':
         return <div className="view-container"><Signup onSuccess={(e) => navigateTo({ type: 'verification-pending', email: e })} onNavigateToLogin={() => navigateTo({ type: 'login' })} /></div>;
       case 'verification-pending':
@@ -225,7 +216,7 @@ const App: React.FC = () => {
                </div>
                <div className="lg:col-span-5 flex flex-col gap-8">
                   <div className="glass p-10 rounded-[3rem] border-primary-500/20 bg-primary-600/5 shadow-2xl relative overflow-hidden group">
-                     <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary-500/10 rounded-full blur-3xl group-hover:bg-primary-500/20 transition-all" />
+                     <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary-500/10 rounded-full blur-3xl" />
                      <h3 className="text-2xl font-display font-bold mb-4 text-primary-400 flex items-center gap-3">
                        <span className="w-10 h-10 rounded-xl bg-primary-400/10 flex items-center justify-center text-sm">👁️</span>
                        Vision
@@ -235,7 +226,7 @@ const App: React.FC = () => {
                      </p>
                   </div>
                   <div className="glass p-10 rounded-[3rem] border-unicou-orange/20 bg-unicou-orange/5 shadow-2xl relative overflow-hidden group">
-                     <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-unicou-orange/10 rounded-full blur-3xl group-hover:bg-unicou-orange/20 transition-all" />
+                     <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-unicou-orange/10 rounded-full blur-3xl" />
                      <h3 className="text-2xl font-display font-bold mb-4 text-unicou-orange flex items-center gap-3">
                        <span className="w-10 h-10 rounded-xl bg-unicou-orange/10 flex items-center justify-center text-sm">🚀</span>
                        Mission
@@ -261,15 +252,15 @@ const App: React.FC = () => {
                      <p className="text-slate-400 text-sm leading-relaxed mb-6">
                        Comprehensive guidance for destinations including the UK, USA, Canada, Australia, NZ, Ireland, Cyprus, Germany, Italy, Sweden, Finland, Europe Hub, Dubai, Malaysia, and Turkey.
                      </p>
-                     <p className="text-slate-500 text-xs italic font-medium">From tailored university counseling to admissions and visa support, we manage every step with meticulous care.</p>
+                     <p className="text-slate-500 text-xs italic font-medium">Tailored counseling to admissions and visa support.</p>
                   </div>
                   <div className="glass p-10 rounded-[3rem] border-slate-800 hover:border-primary-500/30 transition-all shadow-xl">
                      <div className="w-14 h-14 bg-primary-600/10 rounded-2xl flex items-center justify-center text-3xl mb-8">🛂</div>
                      <h4 className="text-2xl font-bold mb-4">Immigration</h4>
                      <p className="text-slate-400 text-sm leading-relaxed mb-6">
-                       Support for skilled individuals, entrepreneurs, and remote professionals. Strategic advice aligned with your long-term goals for residency or citizenship by investment.
+                       Support for skilled individuals, entrepreneurs, and remote professionals. Strategic advice for residency or citizenship by investment.
                      </p>
-                     <p className="text-slate-500 text-xs italic font-medium">Skilled migration, business immigration, digital nomad visas, and citizenship consultancy.</p>
+                     <p className="text-slate-500 text-xs italic font-medium">Skilled migration and business immigration tracks.</p>
                   </div>
                   <div className="glass p-10 rounded-[3rem] border-slate-800 hover:border-primary-500/30 transition-all shadow-xl">
                      <div className="w-14 h-14 bg-primary-600/10 rounded-2xl flex items-center justify-center text-3xl mb-8">💻</div>
@@ -277,59 +268,19 @@ const App: React.FC = () => {
                      <p className="text-slate-400 text-sm leading-relaxed mb-6">
                        Official vouchers and prep tools for IELTS, PTE, TOEFL, Skills for English, LanguageCert, Duolingo, ELLT, GRE, SAT, and GMAT.
                      </p>
-                     <p className="text-slate-500 text-xs italic font-medium">Flexible, effective study tools via our integrated digital library and learning hub.</p>
-                  </div>
-               </div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-32">
-               <div className="glass p-12 rounded-[4rem] border-slate-800 shadow-2xl flex flex-col justify-center">
-                  <h3 className="text-3xl font-display font-bold mb-6">Why Work <span className="text-unicou-orange">With Us</span></h3>
-                  <p className="text-slate-300 text-lg leading-relaxed font-medium mb-8">
-                    Choosing us means choosing experience—more than a decade of trusted service, a global perspective, and expert guidance that speaks both to your personal aspirations and to international standards.
-                  </p>
-                  <ul className="space-y-4">
-                     {[
-                       'Certified & Global-Trained Advisors',
-                       'Ethical & Effective Counseling Registry',
-                       'Long-term Institutional Partnerships',
-                       'Clarity and support through every node'
-                     ].map(item => (
-                       <li key={item} className="flex items-center gap-4 text-slate-400 font-bold uppercase text-[10px] tracking-widest">
-                         <span className="w-6 h-6 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center border border-emerald-500/20">✓</span>
-                         {item}
-                       </li>
-                     ))}
-                  </ul>
-               </div>
-               <div className="space-y-8">
-                  <div className="glass p-10 rounded-[3rem] border-slate-800 hover:bg-white/[0.02] transition-colors">
-                     <h4 className="text-xl font-bold mb-4 text-white">Corporate Placement & Sponsor Solutions</h4>
-                     <p className="text-slate-400 text-sm leading-relaxed">
-                       We work alongside employers and recruitment networks to match international talent with strategic opportunities, helping organizations navigate compliance and workforce planning.
-                     </p>
-                  </div>
-                  <div className="glass p-10 rounded-[3rem] border-slate-800 hover:bg-white/[0.02] transition-colors">
-                     <h4 className="text-xl font-bold mb-4 text-white">Institution Partnership</h4>
-                     <p className="text-slate-400 text-sm leading-relaxed">
-                       Collaborating with universities, colleges, and training providers to support student recruitment, brand visibility, and international program success through strategic engagement.
-                     </p>
+                     <p className="text-slate-500 text-xs italic font-medium">Flexible study tools via our integrated digital library.</p>
                   </div>
                </div>
             </div>
 
             <div className="glass p-12 md:p-24 rounded-[5rem] border border-primary-500/20 text-center relative overflow-hidden shadow-3xl">
-               <div className="absolute top-0 right-0 p-16 opacity-5 font-display font-black text-[12rem] tracking-tighter select-none pointer-events-none">NEXT</div>
-               <div className="relative z-10">
-                  <span className="text-[10px] font-black text-primary-400 uppercase tracking-[0.6em] mb-8 block">Projecting Success</span>
-                  <h2 className="text-4xl md:text-7xl font-display font-bold mb-8 tracking-tighter">Looking <span className="text-primary-400">Ahead</span></h2>
-                  <p className="text-slate-300 text-xl md:text-2xl leading-relaxed max-w-4xl mx-auto font-medium mb-12">
-                    Building on our strong legacy in Pakistan, the UK, and Dubai, we are actively planning expansion into the Middle East, India, China, Nepal, Bangladesh, Nigeria and Ghana. This next phase will deepen our global network and create more opportunities for students, agents, and preparation centers worldwide.
-                  </p>
-                  <button onClick={() => navigateTo({ type: 'apply', formType: 'general', context: 'Strategic Partnership Inquiry' })} className="px-12 py-6 bg-white text-slate-950 rounded-3xl font-black text-sm uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-2xl">
-                    Join Our Expansion Registry
-                  </button>
-               </div>
+               <h2 className="text-4xl md:text-7xl font-display font-bold mb-8 tracking-tighter">Looking <span className="text-primary-400">Ahead</span></h2>
+               <p className="text-slate-300 text-xl md:text-2xl leading-relaxed max-w-4xl mx-auto font-medium mb-12">
+                 Building on our legacy in Pakistan, UK, and Dubai, we are expanding into the Middle East, India, China, Nepal, Bangladesh, Nigeria and Ghana.
+               </p>
+               <button onClick={() => navigateTo({ type: 'apply', formType: 'general', context: 'Strategic Partnership Inquiry' })} className="px-12 py-6 bg-white text-slate-950 rounded-3xl font-black text-sm uppercase tracking-widest hover:scale-105 transition-all shadow-2xl">
+                 Join Our Expansion Registry
+               </button>
             </div>
           </div>
         );
@@ -361,7 +312,7 @@ const App: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-20 pb-20">
             <div className="md:col-span-1">
                <img src={LOGO_SRC} alt="UNICOU" className="h-32 w-auto mb-10" />
-               <p className="text-slate-600 text-[10px] font-black uppercase tracking-[0.3em] leading-relaxed">Unified Mobility Infrastructure v2.2<br />Authorized Fulfillment Center</p>
+               <p className="text-slate-600 text-[10px] font-black uppercase tracking-[0.3em] leading-relaxed">Unified Mobility Infrastructure v2.2</p>
             </div>
             <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-12">
               {OFFICE_LOCATIONS.map((loc, i) => (

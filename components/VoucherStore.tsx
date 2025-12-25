@@ -16,16 +16,25 @@ const VoucherStore: React.FC<VoucherStoreProps> = ({ onCheckout, onBook, onNavig
 
   useEffect(() => {
     const init = async () => {
-      const p = await api.getProducts();
-      const filtered = p.filter(x => x.type === 'Voucher');
-      setProducts(filtered);
-      
-      const counts: Record<string, number> = {};
-      for (const item of filtered) {
-        counts[item.id] = await api.getStockCount(item.id);
+      try {
+        const p = await api.getProducts();
+        const filtered = p.filter(x => x.type === 'Voucher');
+        setProducts(filtered);
+        
+        const counts: Record<string, number> = {};
+        for (const item of filtered) {
+          try {
+            counts[item.id] = await api.getStockCount(item.id);
+          } catch (e) {
+            counts[item.id] = 0; // Fallback to 0 if count node fails
+          }
+        }
+        setStockMap(counts);
+      } catch (e) {
+        console.error("Voucher Store Initialization Failure:", e);
+      } finally {
+        setLoading(false);
       }
-      setStockMap(counts);
-      setLoading(false);
     };
     init();
   }, []);
@@ -52,8 +61,7 @@ const VoucherStore: React.FC<VoucherStoreProps> = ({ onCheckout, onBook, onNavig
   ];
 
   return (
-    <div id="voucher-sale-node" className="max-w-7xl mx-auto px-4 py-12 scroll-mt-24">
-      {/* Header with specific feature callouts */}
+    <div id="voucher-sale-node" className="max-w-7xl mx-auto px-4 py-12 scroll-mt-24 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
         <div className="max-w-2xl">
           <div className="flex items-center gap-2 mb-4">
@@ -100,7 +108,6 @@ const VoucherStore: React.FC<VoucherStoreProps> = ({ onCheckout, onBook, onNavig
         </div>
       </div>
 
-      {/* Category Filter */}
       <div className="mb-12 flex flex-wrap gap-3">
         {categories.map(cat => (
           <button
@@ -176,37 +183,6 @@ const VoucherStore: React.FC<VoucherStoreProps> = ({ onCheckout, onBook, onNavig
             </div>
           );
         })}
-      </div>
-      
-      {/* Security/Access Policy section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 mt-32">
-         <div className="space-y-4">
-            <div className="w-12 h-12 bg-red-500/10 text-red-500 rounded-2xl flex items-center justify-center border border-red-500/20">
-               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-            </div>
-            <h4 className="text-xl font-bold">Encrypted Vault Access</h4>
-            <p className="text-slate-500 text-sm leading-relaxed">
-              Strict node isolation: **Support and sale teams have restricted access** and cannot view raw voucher codes. Only the verified purchaser and system admins can initiate code extraction.
-            </p>
-         </div>
-         <div className="space-y-4">
-            <div className="w-12 h-12 bg-unicou-orange/10 text-unicou-orange rounded-2xl flex items-center justify-center border border-unicou-orange/20">
-               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-            </div>
-            <h4 className="text-xl font-bold">Teller Verification Node</h4>
-            <p className="text-slate-500 text-sm leading-relaxed">
-              Manual bank transfers are routed to our **Teller verification desk**. Access is restricted to authorized finance nodes to ensure settlement integrity before voucher release.
-            </p>
-         </div>
-         <div className="space-y-4">
-            <div className="w-12 h-12 bg-emerald-500/10 text-emerald-500 rounded-2xl flex items-center justify-center border border-emerald-500/20">
-               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-            </div>
-            <h4 className="text-xl font-bold">Instant Dispatch Logic</h4>
-            <p className="text-slate-500 text-sm leading-relaxed">
-              Fulfillment occurs via **SMTP Secure Node**. Once payment triggers a "Verified" state, the encrypted voucher code is dispatched directly to the student’s provided email.
-            </p>
-         </div>
       </div>
     </div>
   );
