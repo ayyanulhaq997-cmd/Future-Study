@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/apiService';
 import { Qualification, QualificationLead } from '../types';
@@ -21,7 +20,8 @@ const QualificationLeadForm: React.FC<QualificationLeadFormProps> = ({ qualifica
   });
 
   useEffect(() => {
-    api.getQualificationById(qualificationId).then(setQual);
+    // Explicitly handle the potential 'undefined' from the API to match 'null | Qualification' state
+    api.getQualificationById(qualificationId).then(q => setQual(q || null));
   }, [qualificationId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
