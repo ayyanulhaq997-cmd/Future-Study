@@ -1,5 +1,5 @@
 export type UserRole = 'Admin' | 'Agent' | 'Customer' | 'Trainer' | 'Finance' | 'Teller';
-export type FormType = 'student-apply' | 'agent-reg' | 'prep-center-reg' | 'institute-connect' | 'careers' | 'general';
+export type FormType = 'student-apply' | 'agent-reg' | 'prep-center-reg' | 'institute-connect' | 'careers' | 'general' | 'immigration-consult';
 
 export interface User {
   id: string;
@@ -310,6 +310,7 @@ export type ViewState =
   | { type: 'library' }
   | { type: 'careers' }
   | { type: 'apply'; formType: FormType; context?: string }
+  | { type: 'join-hub' }
   | { type: 'country-list' }
   | { type: 'country-guide'; slug: string }
   | { type: 'immigration-guide'; slug: string }
