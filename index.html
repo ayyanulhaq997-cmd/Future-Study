@@ -24,7 +24,6 @@
         theme: {
           extend: {
             fontFamily: {
-              // Priority: DejaVu Sans (Bold) -> Tahoma -> Avenir Next LT Pro
               sans: ['"DejaVu Sans"', 'Tahoma', '"Avenir Next LT Pro"', 'ui-sans-serif', 'system-ui'],
               display: ['"DejaVu Sans"', 'Tahoma', 'sans-serif'],
             },
@@ -32,14 +31,15 @@
               unicou: {
                 navy: '#004a61',
                 orange: '#f15a24',
-                vibrant: '#00f2ff', // Eye-touching pop color (Cyan)
-                electric: '#fffc00', // Eye-touching pop color (Yellow)
+                vibrant: '#00f2ff',
+                electric: '#fffc00',
               }
             },
             boxShadow: {
               'premium': '0 20px 40px -15px rgba(0, 74, 97, 0.08)',
               'action': '0 15px 30px -10px rgba(241, 90, 36, 0.3)',
               'vibrant-glow': '0 0 25px rgba(0, 242, 255, 0.4)',
+              '3xl': '0 35px 60px -15px rgba(0, 0, 0, 0.3)',
             }
           }
         }
@@ -59,7 +59,30 @@
         overflow-x: hidden;
       }
       
-      /* Vibrant Decorative Accents (3-5% coverage) */
+      .view-container {
+        padding-top: var(--content-top);
+        min-height: calc(100vh - var(--nav-height));
+        transition: padding-top 0.5s ease-in-out;
+      }
+
+      .view-container.full-view {
+        padding-top: 40px;
+      }
+
+      .glass {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .glass-dark {
+        background: rgba(0, 74, 97, 0.9);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
       .pop-circle-cyan {
         position: fixed;
         top: 15%;
@@ -102,6 +125,13 @@
       }
       
       h1, h2, h3, h4, h5, h6 { font-weight: 700; letter-spacing: -0.015em; }
+      
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+      .navbar-fixed {
+        transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
+      }
     </style>
 <script type="importmap">
 {

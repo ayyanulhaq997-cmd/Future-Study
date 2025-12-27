@@ -9,9 +9,10 @@ interface NavbarProps {
   onNavigate: (view: ViewState) => void;
   onLogout: () => void;
   onOpenSearch: () => void;
+  isVisible: boolean;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLogout, onOpenSearch }) => {
+const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLogout, onOpenSearch, isVisible }) => {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
   const navigationItems = [
@@ -63,7 +64,7 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
   ];
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 ${scrolled ? 'py-3' : 'py-6'}`}>
+    <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 navbar-fixed ${isVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'} ${scrolled ? 'py-3' : 'py-6'}`}>
       <div className="max-w-7xl mx-auto px-6">
         <div className={`rounded-3xl px-8 py-4 flex items-center justify-between transition-all duration-500 ${
           scrolled ? 'shadow-premium bg-white border border-slate-100' : 'bg-white/90 border border-slate-100 backdrop-blur-md'
@@ -117,24 +118,24 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
           </div>
 
           <div className="flex items-center gap-3">
-            <button onClick={onOpenSearch} className="p-2.5 bg-slate-50 hover:bg-slate-100 rounded-xl text-unicou-navy transition-colors border border-slate-100" title="Search Platform">
+            <button onClick={(e) => { e.stopPropagation(); onOpenSearch(); }} className="p-2.5 bg-slate-50 hover:bg-slate-100 rounded-xl text-unicou-navy transition-colors border border-slate-100" title="Search Platform">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             </button>
 
             {user ? (
               <div className="flex items-center gap-2">
-                <button onClick={() => onNavigate(['Admin', 'Finance'].includes(user.role) ? { type: 'admin' } : { type: 'lms-dashboard' })} className="flex items-center gap-2 pl-2 pr-3 py-1.5 bg-unicou-navy rounded-full hover:bg-slate-900 transition-all shadow-md">
+                <button onClick={(e) => { e.stopPropagation(); onNavigate(['Admin', 'Finance'].includes(user.role) ? { type: 'admin' } : { type: 'lms-dashboard' }); }} className="flex items-center gap-2 pl-2 pr-3 py-1.5 bg-unicou-navy rounded-full hover:bg-slate-900 transition-all shadow-md">
                   <div className="w-6 h-6 rounded-full bg-unicou-orange flex items-center justify-center text-[10px] font-black text-white uppercase">{user.name.charAt(0)}</div>
                   <span className="text-[10px] font-black text-white uppercase tracking-widest">{user.name.split(' ')[0]}</span>
                 </button>
-                <button onClick={onLogout} className="p-2 text-slate-400 hover:text-red-500 transition-colors">
+                <button onClick={(e) => { e.stopPropagation(); onLogout(); }} className="p-2 text-slate-400 hover:text-red-500 transition-colors">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
                 </button>
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <button onClick={() => onNavigate({ type: 'login' })} className="px-4 py-2 text-[11px] font-black uppercase tracking-tight text-unicou-navy hover:text-unicou-orange transition-all">Login</button>
-                <button onClick={() => onNavigate({ type: 'signup' })} className="px-6 py-3 bg-unicou-orange text-white rounded-2xl font-black text-[11px] uppercase tracking-tight shadow-action hover:bg-orange-600 transition-all active:scale-95">Register</button>
+                <button onClick={(e) => { e.stopPropagation(); onNavigate({ type: 'login' }); }} className="px-4 py-2 text-[11px] font-black uppercase tracking-tight text-unicou-navy hover:text-unicou-orange transition-all">Login</button>
+                <button onClick={(e) => { e.stopPropagation(); onNavigate({ type: 'signup' }); }} className="px-6 py-3 bg-unicou-orange text-white rounded-2xl font-black text-[11px] uppercase tracking-tight shadow-action hover:bg-orange-600 transition-all active:scale-95">Register</button>
               </div>
             )}
           </div>

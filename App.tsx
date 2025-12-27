@@ -43,6 +43,7 @@ const App: React.FC = () => {
   const [view, setView] = useState<ViewState>({ type: 'home' });
   const [user, setUser] = useState<User | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [isNavbarVisible, setIsNavbarVisible] = useState(true);
 
   useEffect(() => {
     const active = api.getCurrentUser();
@@ -54,14 +55,27 @@ const App: React.FC = () => {
 
   const navigateTo = (newView: ViewState) => {
     setView(newView);
+    setIsNavbarVisible(true); // Always show navbar on navigation
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  const toggleNavbar = (e: React.MouseEvent) => {
+    // Only toggle if we're not clicking on interactive elements within the main view
+    const target = e.target as HTMLElement;
+    const isInteractive = target.closest('button') || target.closest('a') || target.closest('input') || target.closest('select') || target.closest('textarea');
+    
+    if (!isInteractive) {
+      setIsNavbarVisible(!isNavbarVisible);
+    }
+  };
+
+  const wrapperClass = `view-container ${!isNavbarVisible ? 'full-view' : ''}`;
 
   const renderContent = () => {
     switch (view.type) {
       case 'home':
         return (
-          <div className="animate-in fade-in duration-1000">
+          <div className={`animate-in fade-in duration-1000 ${!isNavbarVisible ? 'pt-10' : 'pt-0'}`}>
             <Hero onStart={() => navigateTo({ type: 'store' })} onApplyClick={() => navigateTo({ type: 'join-hub' })} />
             <Features />
             <PartnerShowcase />
@@ -71,22 +85,22 @@ const App: React.FC = () => {
           </div>
         );
       case 'store':
-        return <div className="view-container"><VoucherStore onCheckout={(p, q) => navigateTo({ type: 'checkout', productId: p, quantity: q })} onBook={(p) => navigateTo({ type: 'apply', formType: 'student-apply', context: `Booking: ${p}` })} onNavigateToAgent={() => navigateTo({ type: 'agent' })} /></div>;
+        return <div className={wrapperClass}><VoucherStore onCheckout={(p, q) => navigateTo({ type: 'checkout', productId: p, quantity: q })} onBook={(p) => navigateTo({ type: 'apply', formType: 'student-apply', context: `Booking: ${p}` })} onNavigateToAgent={() => navigateTo({ type: 'agent' })} /></div>;
       case 'join-hub':
-        return <div className="view-container"><ApplicationHub onNavigate={navigateTo} /></div>;
+        return <div className={wrapperClass}><ApplicationHub onNavigate={navigateTo} /></div>;
       case 'apply':
-        return <div className="max-w-4xl mx-auto view-container px-4"><ApplyForm type={view.formType} context={view.context} /></div>;
+        return <div className={`max-w-4xl mx-auto ${wrapperClass} px-4`}><ApplyForm type={view.formType} context={view.context} /></div>;
       case 'country-list':
-        return <div className="view-container"><CountryList onNavigateToGuide={(slug) => navigateTo({ type: 'country-guide', slug })} /></div>;
+        return <div className={wrapperClass}><CountryList onNavigateToGuide={(slug) => navigateTo({ type: 'country-guide', slug })} /></div>;
       case 'country-guide':
-        return <div className="view-container"><CountryGuide slug={view.slug} onViewUniversity={(uSlug) => navigateTo({ type: 'university', slug: uSlug })} onRegister={() => navigateTo({ type: 'join-hub' })} /></div>;
+        return <div className={wrapperClass}><CountryGuide slug={view.slug} onViewUniversity={(uSlug) => navigateTo({ type: 'university', slug: uSlug })} onRegister={() => navigateTo({ type: 'join-hub' })} /></div>;
       case 'university':
-        return <div className="view-container"><UniversityProfile slug={view.slug} /></div>;
+        return <div className={wrapperClass}><UniversityProfile slug={view.slug} /></div>;
       case 'lms-dashboard':
-        return <div className="view-container">{user ? <CustomerDashboard user={user} /> : <LMSDashboard onNavigate={navigateTo} />}</div>;
+        return <div className={wrapperClass}>{user ? <CustomerDashboard user={user} /> : <LMSDashboard onNavigate={navigateTo} />}</div>;
       case 'library':
         return (
-          <div className="max-w-7xl mx-auto view-container px-6 animate-in fade-in py-20">
+          <div className={`max-w-7xl mx-auto ${wrapperClass} px-6 animate-in fade-in py-20`}>
              <div className="text-center mb-16">
                <h2 className="text-5xl font-display font-black text-unicou-navy uppercase tracking-tighter mb-4">Digital <span className="text-unicou-orange">Library</span></h2>
                <p className="text-slate-500 font-bold italic">"Authorized access to global academic journals, prep material, and research nodes."</p>
@@ -104,18 +118,18 @@ const App: React.FC = () => {
           </div>
         );
       case 'qualifications':
-        return <div className="view-container"><QualificationCatalogue onApply={(qid) => navigateTo({ type: 'apply', formType: 'general', context: `Qualification ID: ${qid}` })} /></div>;
+        return <div className={wrapperClass}><QualificationCatalogue onApply={(qid) => navigateTo({ type: 'apply', formType: 'general', context: `Qualification ID: ${qid}` })} /></div>;
       case 'policy':
-        return <div className="view-container"><PolicyPage policyId={view.policyId} /></div>;
+        return <div className={wrapperClass}><PolicyPage policyId={view.policyId} /></div>;
       case 'resources':
-        return <div className="view-container"><Resources onNavigate={navigateTo} /></div>;
+        return <div className={wrapperClass}><Resources onNavigate={navigateTo} /></div>;
       case 'careers':
-        return <div className="view-container"><Careers /></div>;
+        return <div className={wrapperClass}><Careers /></div>;
       case 'guide':
-        return <div className="view-container"><UserGuide /></div>;
+        return <div className={wrapperClass}><UserGuide /></div>;
       case 'about':
         return (
-          <div className="max-w-7xl mx-auto view-container px-6 animate-in fade-in pb-32">
+          <div className={`max-w-7xl mx-auto ${wrapperClass} px-6 animate-in fade-in pb-32`}>
              <div className="text-center mb-24">
                 <span className="text-[11px] font-black text-unicou-orange uppercase tracking-[0.5em] mb-4 block">Institutional Core</span>
                 <h2 className="text-6xl md:text-[7rem] font-display font-black text-unicou-navy mb-8 tracking-tighter leading-none">The UNICOU <span className="text-unicou-orange">Legacy</span></h2>
@@ -154,7 +168,7 @@ const App: React.FC = () => {
                        <h3 className="text-2xl font-display font-black text-white uppercase mb-6 flex items-center gap-4">
                          <span className="text-unicou-navy">02</span> Our Mission
                        </h3>
-                       <p className="text-white text-lg font-black italic leading-relaxed">
+                       <p className="white text-lg font-black italic leading-relaxed">
                          "Guided by expertise and personalized support, we streamline study abroad journeys for every client."
                        </p>
                     </div>
@@ -182,21 +196,21 @@ const App: React.FC = () => {
           </div>
         );
       case 'login': 
-        return <div className="view-container"><Login onLogin={(u) => { setUser(u); navigateTo(['Admin', 'Finance'].includes(u.role) ? { type: 'admin' } : { type: 'lms-dashboard' }); }} onNavigateToSignup={() => navigateTo({ type: 'signup' })} /></div>;
+        return <div className={wrapperClass}><Login onLogin={(u) => { setUser(u); navigateTo(['Admin', 'Finance'].includes(u.role) ? { type: 'admin' } : { type: 'lms-dashboard' }); }} onNavigateToSignup={() => navigateTo({ type: 'signup' })} /></div>;
       case 'signup':
-        return <div className="view-container"><Signup onSuccess={(e) => navigateTo({ type: 'verification-pending', email: e })} onNavigateToLogin={() => navigateTo({ type: 'login' })} /></div>;
+        return <div className={wrapperClass}><Signup onSuccess={(e) => navigateTo({ type: 'verification-pending', email: e })} onNavigateToLogin={() => navigateTo({ type: 'login' })} /></div>;
       case 'verification-pending':
-        return <div className="view-container"><VerificationPending email={view.email} onVerified={() => navigateTo({ type: 'login' })} /></div>;
+        return <div className={wrapperClass}><VerificationPending email={view.email} onVerified={() => navigateTo({ type: 'login' })} /></div>;
       case 'checkout':
-        return <div className="view-container"><CheckoutProcess productId={view.productId} quantity={view.quantity} onSuccess={(oid) => navigateTo({ type: 'success', orderId: oid })} onCancel={() => navigateTo({ type: 'store' })} /></div>;
+        return <div className={wrapperClass}><CheckoutProcess productId={view.productId} quantity={view.quantity} onSuccess={(oid) => navigateTo({ type: 'success', orderId: oid })} onCancel={() => navigateTo({ type: 'store' })} /></div>;
       case 'success':
-        return <div className="view-container"><SuccessScreen orderId={view.orderId} onClose={() => navigateTo({ type: 'store' })} /></div>;
+        return <div className={wrapperClass}><SuccessScreen orderId={view.orderId} onClose={() => navigateTo({ type: 'store' })} /></div>;
       case 'admin':
         if (!user || !['Admin', 'Finance'].includes(user.role)) return <div className="view-container text-center pt-40 font-black uppercase text-slate-400">Restricted Access.</div>;
-        return <div className="view-container"><AdminDashboard /></div>;
+        return <div className={wrapperClass}><AdminDashboard /></div>;
       case 'agent':
         if (!user || user.role !== 'Agent') return <div className="view-container text-center pt-40 font-black uppercase text-slate-400">Agent Portal Restricted.</div>;
-        return <div className="view-container"><AgentDashboard user={user} onBuy={(p, q) => navigateTo({ type: 'checkout', productId: p, quantity: q })} /></div>;
+        return <div className={wrapperClass}><AgentDashboard user={user} onBuy={(p, q) => navigateTo({ type: 'checkout', productId: p, quantity: q })} /></div>;
       case 'lms-course-player':
         return <LMSCoursePlayer courseId={view.courseId} initialLessonId={view.initialLessonId} onNavigate={navigateTo} />;
       case 'lms-practice-test':
@@ -209,8 +223,26 @@ const App: React.FC = () => {
   const handleLogout = () => { api.logout(); setUser(null); navigateTo({ type: 'home' }); };
 
   return (
-    <div className="min-h-screen text-unicou-navy selection:bg-unicou-orange selection:text-white bg-white">
-      <Navbar view={view} user={user} scrolled={scrolled} onNavigate={navigateTo} onLogout={handleLogout} onOpenSearch={() => setSearchOpen(true)} />
+    <div 
+      className="min-h-screen text-unicou-navy selection:bg-unicou-orange selection:text-white bg-white relative"
+      onClick={toggleNavbar}
+    >
+      <Navbar 
+        view={view} 
+        user={user} 
+        scrolled={scrolled} 
+        onNavigate={navigateTo} 
+        onLogout={handleLogout} 
+        onOpenSearch={() => setSearchOpen(true)}
+        isVisible={isNavbarVisible}
+      />
+      
+      {!isNavbarVisible && (
+        <div className="fixed top-0 left-1/2 -translate-x-1/2 z-[101] bg-unicou-navy/10 hover:bg-unicou-navy/20 px-4 py-1 rounded-b-xl cursor-pointer animate-bounce mt-1">
+           <svg className="w-4 h-4 text-unicou-navy" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" /></svg>
+        </div>
+      )}
+
       <main className="relative z-0">
         {renderContent()}
       </main>
