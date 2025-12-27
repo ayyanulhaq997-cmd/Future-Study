@@ -13,5 +13,6 @@ export const EXAM_LOGOS: Record<string, string> = {
   'Duolingo': "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 40'%3E%3Ctext x='0' y='28' font-family='Arial' font-weight='900' font-size='20' fill='%2358cc02'%3Eduolingo%3C/text%3E%3C/svg%3E",
   'LanguageCert': "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 40'%3E%3Ctext x='0' y='28' font-family='Arial' font-weight='900' font-size='18' fill='%23004a61'%3ELanguageCert%3C/text%3E%3C/svg%3E",
   'ELLT': "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 40'%3E%3Ctext x='0' y='28' font-family='Arial' font-weight='900' font-size='18' fill='%23f15a24'%3EOXFORD%20ELLT%3C/text%3E%3C/svg%3E",
+  'Skills for English': "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 40'%3E%3Ctext x='0' y='28' font-family='Arial' font-weight='900' font-size='18' fill='%23004a61'%3ESkills%20for%20English%3C/text%3E%3C/svg%3E",
   'OTHER': "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 40'%3E%3Ctext x='0' y='28' font-family='Arial' font-weight='900' font-size='18' fill='%23004a61'%3EUNICOU%3C/text%3E%3C/svg%3E"
 };
