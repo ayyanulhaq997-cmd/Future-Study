@@ -56,16 +56,7 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
         { label: 'Qualifications', type: 'qualifications' },
       ]
     },
-    { 
-      label: 'Connect', 
-      type: 'join-hub',
-      subItems: [
-        { label: 'Student Terminal', type: 'apply', formType: 'student-apply' },
-        { label: 'Agent Partnership', type: 'apply', formType: 'agent-reg' },
-        { label: 'Prep Center Sync', type: 'apply', formType: 'prep-center-reg' },
-        { label: 'Immigration Node', type: 'apply', formType: 'immigration-consult' },
-      ]
-    },
+    { label: 'Resources', type: 'resources' },
     { label: 'About Us', type: 'about' }
   ];
 
