@@ -309,6 +309,7 @@ export type ViewState =
   | { type: 'resources' }
   | { type: 'library' }
   | { type: 'careers' }
+  | { type: 'guide' }
   | { type: 'apply'; formType: FormType; context?: string }
   | { type: 'join-hub' }
   | { type: 'country-list' }

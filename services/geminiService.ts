@@ -1,18 +1,14 @@
 import { GoogleGenAI, GenerateContentResponse, Type } from "@google/genai";
 
-const SYSTEM_INSTRUCTION = `You are the UNICOU Assistant, a highly sophisticated AI consultant for the UNICOU Immigration and Academic Mobility platform.
+const SYSTEM_INSTRUCTION = `You are the UNICOU Assistant, a professional AI consultant for the UNICOU International Education and Immigration platform.
 Your goal is to help users navigate our three main verticals:
-1. UNICOU Immigration: Settlement, PR pathways, and Visa consultation (uk, canada, australia).
-2. UNICOU Shop: Official Exam Vouchers (PTE, IELTS, TOEFL) and learning materials.
-3. UNICOU Learning Hub: Mastery Courses, Mock Tests, and Academic Qualifications (OTHM).
+1. Consultancy: University Admissions, Visa strategy, and PR pathways (UK, Australia, Canada, etc).
+2. Vouchers: Official Exam Vouchers (PTE, IELTS, TOEFL, etc) with instant delivery.
+3. Learning Hub: Preparation courses, Mock Tests, and OTHM Qualifications.
 
-Be professional, concise, and helpful. Use a polite and encouraging tone. Always refer to the platform as UNICOU.`;
+Be professional, concise, and helpful. Use a polite and encouraging tone. Always refer to the platform as UNICOU. Avoid any internal naming conventions like "Nexus".`;
 
 export class GeminiService {
-  /**
-   * Strictly follows the requirement to use process.env.API_KEY directly.
-   * Build tools like Vite will replace this literal string during deployment.
-   */
   static async generateText(prompt: string) {
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -25,8 +21,8 @@ export class GeminiService {
       });
       return response.text;
     } catch (error) {
-      console.error("Gemini Text Error:", error);
-      return "The UNICOU AI node is temporarily offline. Please verify the environment configuration.";
+      console.error("Gemini Error:", error);
+      return "The UNICOU AI service is currently initializing. Please try again in a moment.";
     }
   }
 
@@ -45,8 +41,8 @@ export class GeminiService {
         yield chunk.text;
       }
     } catch (error) {
-      console.error("Gemini Stream Error:", error);
-      yield "Connection to the UNICOU nexus was interrupted. Please check your API key deployment.";
+      console.error("Stream Error:", error);
+      yield "Communication interrupted. Please verify your connection to the UNICOU portal.";
     }
   }
 
@@ -55,9 +51,9 @@ export class GeminiService {
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
-        contents: `Search the UNICOU platform for: "${query}". Return relevant categories and specific items available.`,
+        contents: `Search for: "${query}".`,
         config: {
-          systemInstruction: "You are the platform's search engine. Analyze user queries and map them to: 'Vouchers', 'Learning Hub', 'Immigration', or 'Qualifications'. Be precise.",
+          systemInstruction: "You are the platform's search engine. Map queries to: 'Vouchers', 'Learning Hub', 'Consultancy', or 'Qualifications'. Return results as JSON.",
           responseMimeType: "application/json",
           responseSchema: {
             type: Type.OBJECT,
@@ -70,7 +66,7 @@ export class GeminiService {
                     title: { type: Type.STRING },
                     description: { type: Type.STRING },
                     category: { type: Type.STRING },
-                    linkType: { type: Type.STRING, description: "One of: store, academy, degree, global, immigration" }
+                    linkType: { type: Type.STRING, description: "One of: store, academy, degree, global" }
                   },
                   required: ["title", "description", "category", "linkType"]
                 }
@@ -81,7 +77,6 @@ export class GeminiService {
       });
       return JSON.parse(response.text || '{"results":[]}');
     } catch (e) {
-      console.error("Gemini Search Error:", e);
       return { results: [] };
     }
   }

@@ -4,47 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UNICOU | Global Academic Mobility</title>
+    
+    <!-- SEO Meta Tags - Resolved Audit Errors -->
+    <meta name="description" content="UNICOU is the premier global academic mobility platform. Providing official PTE/IELTS vouchers, university consultancy for 15+ countries, and OTHM professional qualifications.">
+    <meta name="keywords" content="study abroad, PTE vouchers, IELTS vouchers, student visa, UNICOU, academic mobility, OTHM qualifications, UK admissions">
+    <meta name="author" content="UNICOU International Ltd">
+    <meta name="publisher" content="UNICOU International Ltd">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://www.unicou.uk/">
+    
     <base href="/">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet">
     <script>
       tailwind.config = {
         darkMode: 'class',
         theme: {
           extend: {
             fontFamily: {
-              sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui'],
-              display: ['Bricolage Grotesque', 'sans-serif'],
+              // Priority: DejaVu Sans (Bold) -> Tahoma -> Avenir Next LT Pro
+              sans: ['"DejaVu Sans"', 'Tahoma', '"Avenir Next LT Pro"', 'ui-sans-serif', 'system-ui'],
+              display: ['"DejaVu Sans"', 'Tahoma', 'sans-serif'],
             },
             colors: {
-              primary: {
-                50: '#f0f9ff',
-                100: '#e0f2fe',
-                400: '#38bdf8',
-                500: '#0ea5e9',
-                600: '#0284c7',
-                950: '#082f49',
-              },
               unicou: {
                 navy: '#004a61',
                 orange: '#f15a24',
-                teal: '#008b8b',
-                gold: '#ffb347',
-              },
-              slate: {
-                50: '#f8fafc',
-                100: '#f1f5f9',
-                200: '#e2e8f0',
-                900: '#0f172a',
-                950: '#020617',
+                vibrant: '#00f2ff', // Eye-touching pop color (Cyan)
+                electric: '#fffc00', // Eye-touching pop color (Yellow)
               }
             },
             boxShadow: {
-              'vibrant': '0 20px 50px -12px rgba(241, 90, 36, 0.25)',
-              'nexus': '0 25px 60px -15px rgba(0, 74, 97, 0.15)',
+              'premium': '0 20px 40px -15px rgba(0, 74, 97, 0.08)',
+              'action': '0 15px 30px -10px rgba(241, 90, 36, 0.3)',
+              'vibrant-glow': '0 0 25px rgba(0, 242, 255, 0.4)',
             }
           }
         }
@@ -52,83 +47,61 @@
     </script>
     <style>
       :root {
-        --nav-height: 100px;
-        --content-top: 160px; 
+        --nav-height: 90px;
+        --content-top: 140px; 
       }
-
       body {
         background-color: #ffffff;
-        color: #0f172a;
+        color: #004a61;
         margin: 0;
         min-height: 100vh;
         -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
         overflow-x: hidden;
       }
       
-      .glass-card {
-        background: rgba(255, 255, 255, 0.7);
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.5);
-      }
-      
-      .gradient-text {
-        background: linear-gradient(135deg, #004a61 0%, #f15a24 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-      }
-
-      .bg-mesh {
+      /* Vibrant Decorative Accents (3-5% coverage) */
+      .pop-circle-cyan {
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
+        top: 15%;
+        right: -5%;
+        width: 280px;
+        height: 280px;
+        background: radial-gradient(circle, rgba(0, 242, 255, 0.1) 0%, transparent 75%);
         z-index: -1;
-        background-color: #ffffff;
-        background-image: 
-          radial-gradient(at 0% 0%, hsla(195,100%,95%,1) 0, transparent 50%), 
-          radial-gradient(at 100% 0%, hsla(15,100%,96%,1) 0, transparent 50%), 
-          radial-gradient(at 100% 100%, hsla(195,100%,97%,1) 0, transparent 50%), 
-          radial-gradient(at 0% 100%, hsla(15,100%,98%,1) 0, transparent 50%);
+        pointer-events: none;
       }
       
-      .no-scrollbar::-webkit-scrollbar {
-        display: none;
-      }
-      .no-scrollbar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-      }
-      
-      .view-container {
-        padding-top: var(--content-top);
-        padding-bottom: 100px;
-        min-height: 100vh;
+      .pop-circle-yellow {
+        position: fixed;
+        bottom: 10%;
+        left: -8%;
+        width: 350px;
+        height: 350px;
+        background: radial-gradient(circle, rgba(255, 252, 0, 0.08) 0%, transparent 75%);
+        z-index: -1;
+        pointer-events: none;
       }
 
-      @keyframes blob-animation {
-        0%, 100% { transform: translate(0, 0) scale(1); }
-        33% { transform: translate(30px, -50px) scale(1.1); }
-        66% { transform: translate(-20px, 20px) scale(0.9); }
-      }
-      
-      .animate-blob {
-        animation: blob-animation 10s infinite alternate cubic-bezier(0.45, 0.05, 0.55, 0.95);
+      .vibrant-strip {
+        height: 5px;
+        background: linear-gradient(90deg, #f15a24 0%, #fffc00 50%, #00f2ff 100%);
+        border-radius: 10px;
       }
 
       @keyframes slide-up {
-        from { transform: translateY(30px); opacity: 0; }
+        from { transform: translateY(25px); opacity: 0; }
         to { transform: translateY(0); opacity: 1; }
       }
-      
       .animate-slide-up {
-        animation: slide-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        animation: slide-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       }
-
-      h1, h2, h3, h4, h5, h6 {
-        letter-spacing: -0.03em;
+      
+      ::selection {
+        background-color: #f15a24;
+        color: white;
       }
+      
+      h1, h2, h3, h4, h5, h6 { font-weight: 700; letter-spacing: -0.015em; }
     </style>
 <script type="importmap">
 {
@@ -144,8 +117,9 @@
 }
 </script>
 </head>
-<body class="font-sans antialiased overflow-x-hidden">
-    <div class="bg-mesh"></div>
+<body class="font-sans antialiased">
+    <div class="pop-circle-cyan"></div>
+    <div class="pop-circle-yellow"></div>
     <div id="root"></div>
     <script type="module" src="index.tsx"></script>
 </body>

@@ -14,7 +14,7 @@ interface NavbarProps {
 const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLogout, onOpenSearch }) => {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
-  const businessVerticals = [
+  const navigationItems = [
     { 
       label: 'Consultancy', 
       type: 'country-list',
@@ -56,23 +56,23 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
         { label: 'Qualifications', type: 'qualifications' },
       ]
     },
-    { label: 'Resources', type: 'resources' },
+    { label: 'Operating Guide', type: 'guide' },
     { label: 'About Us', type: 'about' }
   ];
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-700 ${scrolled ? 'py-2' : 'py-5'}`}>
-      <div className="max-w-[1600px] mx-auto px-6">
-        <div className={`border rounded-[2.5rem] px-8 py-4 flex items-center justify-between transition-all duration-700 ${
-          scrolled ? 'shadow-2xl bg-white border-slate-200' : 'bg-white/80 border-slate-100 backdrop-blur-xl'
+    <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 ${scrolled ? 'py-3' : 'py-6'}`}>
+      <div className="max-w-7xl mx-auto px-6">
+        <div className={`rounded-3xl px-8 py-4 flex items-center justify-between transition-all duration-500 ${
+          scrolled ? 'shadow-premium bg-white border border-slate-100' : 'bg-white/90 border border-slate-100 backdrop-blur-md'
         }`}>
-          <div className="flex items-center gap-8">
-            <button onClick={() => onNavigate({ type: 'home' })} className="flex items-center transition-all hover:opacity-80 active:scale-95 shrink-0">
-              <img src={LOGO_SRC} alt="UNICOU" className="h-10 md:h-12 w-auto object-contain block" />
+          <div className="flex items-center gap-10">
+            <button onClick={() => onNavigate({ type: 'home' })} className="flex items-center transition-transform hover:scale-105 active:scale-95 shrink-0">
+              <img src={LOGO_SRC} alt="UNICOU" className="h-9 w-auto object-contain" />
             </button>
 
-            <div className="hidden xl:flex items-center gap-1">
-              {businessVerticals.map((item) => (
+            <div className="hidden lg:flex items-center gap-1">
+              {navigationItems.map((item) => (
                 <div 
                   key={item.label} 
                   className="relative group"
@@ -81,8 +81,8 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
                 >
                   <button
                     onClick={() => onNavigate({ type: item.type } as any)}
-                    className={`px-5 py-2.5 rounded-2xl text-[13px] font-black uppercase tracking-tight transition-all flex items-center gap-2 ${
-                      view.type === item.type ? 'bg-unicou-navy text-white shadow-xl' : 'text-slate-800 hover:text-unicou-orange hover:bg-slate-50'
+                    className={`px-4 py-2.5 rounded-xl text-[12px] font-black uppercase tracking-tight transition-all flex items-center gap-2 ${
+                      view.type === item.type ? 'text-white bg-unicou-navy shadow-lg' : 'text-unicou-navy hover:text-unicou-orange'
                     }`}
                   >
                     {item.label}
@@ -92,8 +92,8 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
                   </button>
 
                   {item.subItems && activeDropdown === item.label && (
-                    <div className="absolute top-full left-0 mt-2 w-64 bg-white border border-slate-100 rounded-[2rem] shadow-3xl p-5 animate-in fade-in slide-in-from-top-2 duration-200">
-                      <div className={`grid ${item.label === 'Consultancy' ? 'grid-cols-2 w-[450px]' : 'grid-cols-1'} gap-1`}>
+                    <div className="absolute top-full left-0 mt-2 w-64 bg-white border border-slate-100 rounded-2xl shadow-premium p-4 animate-in fade-in slide-in-from-top-1">
+                      <div className={`grid ${item.label === 'Consultancy' ? 'grid-cols-1' : 'grid-cols-1'} gap-1`}>
                         {item.subItems.map((sub: any) => (
                           <button
                             key={sub.label}
@@ -101,7 +101,7 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
                               if (sub.slug) onNavigate({ type: 'country-guide', slug: sub.slug });
                               else if (sub.type) onNavigate({ type: sub.type, formType: sub.formType } as any);
                             }}
-                            className="w-full text-left px-4 py-2.5 rounded-xl text-[10px] font-black text-slate-600 hover:text-unicou-navy hover:bg-slate-50 transition-all uppercase tracking-widest truncate"
+                            className="w-full text-left px-4 py-2 rounded-lg text-[10px] font-black text-slate-600 hover:text-unicou-navy hover:bg-slate-50 transition-all uppercase tracking-widest truncate"
                           >
                             {sub.label}
                           </button>
@@ -115,24 +115,24 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
           </div>
 
           <div className="flex items-center gap-4">
-            <button onClick={onOpenSearch} className="p-3.5 bg-slate-50 hover:bg-slate-100 rounded-2xl text-slate-900 transition-all border border-slate-200 shadow-sm" title="Nexus Search">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            <button onClick={onOpenSearch} className="p-3 bg-slate-50 hover:bg-slate-100 rounded-xl text-unicou-navy transition-colors border border-slate-100" title="Search Platform">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             </button>
 
             {user ? (
               <div className="flex items-center gap-3">
-                <button onClick={() => onNavigate(['Admin', 'Finance'].includes(user.role) ? { type: 'admin' } : { type: 'lms-dashboard' })} className="flex items-center gap-3 pl-2 pr-5 py-1.5 bg-slate-50 border border-slate-200 rounded-full hover:bg-slate-100 transition-all shadow-sm group">
-                  <div className="w-8 h-8 rounded-full bg-unicou-navy flex items-center justify-center text-[10px] font-black text-white group-hover:bg-unicou-orange transition-colors">{user.name.charAt(0).toUpperCase()}</div>
-                  <span className="text-[11px] font-black text-slate-950 uppercase tracking-widest">{user.name}</span>
+                <button onClick={() => onNavigate(['Admin', 'Finance'].includes(user.role) ? { type: 'admin' } : { type: 'lms-dashboard' })} className="flex items-center gap-2 pl-2 pr-4 py-1.5 bg-unicou-navy rounded-full hover:bg-slate-900 transition-all shadow-md">
+                  <div className="w-7 h-7 rounded-full bg-unicou-orange flex items-center justify-center text-[10px] font-black text-white uppercase">{user.name.charAt(0)}</div>
+                  <span className="text-[11px] font-black text-white uppercase tracking-widest">{user.name}</span>
                 </button>
-                <button onClick={onLogout} className="p-3 text-slate-400 hover:text-red-500 transition-colors" title="Deauthorize Session">
+                <button onClick={onLogout} className="p-2 text-slate-400 hover:text-red-500 transition-colors">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
                 </button>
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <button onClick={() => onNavigate({ type: 'login' })} className="px-6 py-2.5 text-[13px] font-black uppercase tracking-tight text-slate-800 hover:text-unicou-navy transition-all hidden sm:block">Log In</button>
-                <button onClick={() => onNavigate({ type: 'signup' })} className="px-8 py-4 bg-unicou-orange text-white rounded-3xl font-black text-[13px] uppercase tracking-tight shadow-xl hover:bg-orange-600 active:scale-95 transition-all">Join Platform</button>
+                <button onClick={() => onNavigate({ type: 'login' })} className="px-5 py-2 text-[12px] font-black uppercase tracking-tight text-unicou-navy hover:text-unicou-orange transition-all">Login</button>
+                <button onClick={() => onNavigate({ type: 'signup' })} className="px-7 py-3.5 bg-unicou-orange text-white rounded-2xl font-black text-[12px] uppercase tracking-tight shadow-action hover:bg-orange-600 transition-all active:scale-95">Register</button>
               </div>
             )}
           </div>
