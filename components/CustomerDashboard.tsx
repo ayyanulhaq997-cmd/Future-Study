@@ -30,7 +30,7 @@ const CustomerDashboard: React.FC<{ user: User }> = ({ user }) => {
     <div className="max-w-7xl mx-auto px-4 py-12">
       <div className="text-center mb-16 animate-in slide-in-from-top-4 duration-700">
         <h1 className="text-4xl md:text-5xl font-display font-bold mb-4 tracking-tight">Student <span className="text-primary-400">Terminal</span></h1>
-        <p className="text-slate-500 max-w-lg mx-auto leading-relaxed">Welcome back, {user.name}. Your academic assets and performance metrics are synced across the global nexus.</p>
+        <p className="text-slate-500 max-w-lg mx-auto leading-relaxed">Welcome back, {user.name}. Your academic assets and performance metrics are synced across the global hub.</p>
         
         <div className="flex justify-center mt-10">
           <div className="flex bg-slate-900/50 p-1.5 rounded-2xl border border-slate-800 backdrop-blur-md shadow-inner">

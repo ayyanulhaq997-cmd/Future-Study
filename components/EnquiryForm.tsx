@@ -30,7 +30,8 @@ const EnquiryForm: React.FC = () => {
     
     setLoading(true);
     try {
-      await api.submitLead(formData);
+      // Fixed: submitLead requires two arguments: type and data
+      await api.submitLead('student', formData);
       setSubmitted(true);
     } catch (err) {
       alert('Failed to submit enquiry. Please try again.');

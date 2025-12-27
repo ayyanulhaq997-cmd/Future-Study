@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/apiService';
-import { Product, VoucherCode, Order, ActivityLog, User, SecurityStatus } from '../types';
+import { Product, VoucherCode, Order, ActivityLog, User, SecurityStatus, Lead } from '../types';
 
 const AdminDashboard: React.FC = () => {
   const [data, setData] = useState<{
@@ -9,12 +9,13 @@ const AdminDashboard: React.FC = () => {
     orders: Order[],
     logs: ActivityLog[],
     users: User[],
+    leads: Lead[],
     security: SecurityStatus | null
   }>({
-    products: [], codes: [], orders: [], logs: [], users: [], security: null
+    products: [], codes: [], orders: [], logs: [], users: [], leads: [], security: null
   });
   
-  const [activeTab, setActiveTab] = useState<'inventory' | 'verification' | 'staff' | 'audit'>('verification');
+  const [activeTab, setActiveTab] = useState<'inventory' | 'verification' | 'staff' | 'audit' | 'leads'>('verification');
   const [loading, setLoading] = useState(true);
   const [importPid, setImportPid] = useState('');
   const [rawCodes, setRawCodes] = useState('');
@@ -22,15 +23,16 @@ const AdminDashboard: React.FC = () => {
 
   const fetchData = async () => {
     try {
-      const [p, c, o, l, u, s] = await Promise.all([
+      const [p, c, o, l, u, s, le] = await Promise.all([
         api.getProducts(), 
         api.getCodes().catch(() => []), 
         api.getOrders(), 
         api.getLogs().catch(() => []), 
         api.getUsers().catch(() => []),
-        api.getSecurityStatus()
+        api.getSecurityStatus(),
+        api.getLeads().catch(() => [])
       ]);
-      setData({ products: p, codes: c, orders: o, logs: l, users: u, security: s });
+      setData({ products: p, codes: c, orders: o, logs: l, users: u, leads: le, security: s });
     } catch (e) { console.error(e); } finally { setLoading(false); }
   };
 
@@ -78,13 +80,13 @@ const AdminDashboard: React.FC = () => {
           <p className="text-slate-500 mt-4 font-bold uppercase text-xs tracking-widest">Identity Auth: <span className="text-unicou-navy">{api.getCurrentUser()?.email}</span></p>
         </div>
         <div className="flex bg-slate-50 p-2 rounded-[2rem] border border-slate-200 shadow-inner overflow-x-auto no-scrollbar">
-          {(['verification', 'inventory', 'staff', 'audit'] as const).map(tab => (
+          {(['verification', 'inventory', 'leads', 'staff', 'audit'] as const).map(tab => (
             <button 
               key={tab}
               onClick={() => setActiveTab(tab)} 
               className={`px-8 py-3 rounded-2xl text-[10px] font-black tracking-widest transition-all whitespace-nowrap uppercase ${activeTab === tab ? 'bg-white text-unicou-navy shadow-xl border border-slate-200' : 'text-slate-400 hover:text-slate-900'}`}
             >
-              {tab === 'verification' ? 'TELLER DESK' : tab === 'inventory' ? 'STOCK VAULT' : tab === 'staff' ? 'TEAM CONTROL' : 'AUDIT TRAIL'}
+              {tab === 'verification' ? 'TELLER DESK' : tab === 'inventory' ? 'STOCK VAULT' : tab === 'leads' ? 'LEAD REGISTRY' : tab === 'staff' ? 'TEAM CONTROL' : 'AUDIT TRAIL'}
             </button>
           ))}
         </div>
@@ -170,10 +172,60 @@ const AdminDashboard: React.FC = () => {
           </div>
         )}
 
+        {activeTab === 'leads' && (
+          <div className="bg-white rounded-[4rem] border border-slate-200 overflow-hidden shadow-2xl">
+            <h2 className="px-12 py-10 text-2xl font-black text-slate-900 uppercase tracking-tighter border-b border-slate-100">Global Lead Registry</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="bg-slate-50 text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] border-b border-slate-100">
+                    <th className="px-8 py-6">Identity Node</th>
+                    <th className="px-8 py-6">Type</th>
+                    <th className="px-8 py-6">Submission Details</th>
+                    <th className="px-8 py-6">Timestamp</th>
+                    <th className="px-8 py-6 text-right">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {data.leads.map(lead => (
+                    <tr key={lead.id} className="hover:bg-slate-50">
+                      <td className="px-8 py-6">
+                        <div className="font-black text-slate-900 uppercase tracking-tight">{lead.data.name || lead.data.agency_name}</div>
+                        <div className="text-[10px] text-slate-500 font-mono italic">{lead.data.email}</div>
+                      </td>
+                      <td className="px-8 py-6">
+                        <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${lead.type === 'student' ? 'bg-blue-50 text-blue-600' : 'bg-orange-50 text-orange-600'}`}>
+                          {lead.type}
+                        </span>
+                      </td>
+                      <td className="px-8 py-6 max-w-xs">
+                        <p className="text-[11px] text-slate-600 font-medium italic line-clamp-2">
+                          {Object.entries(lead.data).map(([k, v]) => `${k}: ${v}`).join(' • ')}
+                        </p>
+                      </td>
+                      <td className="px-8 py-6 text-[10px] font-mono font-bold text-slate-400">
+                        {new Date(lead.timestamp).toLocaleString()}
+                      </td>
+                      <td className="px-8 py-6 text-right">
+                         <span className="px-3 py-1 bg-slate-50 border border-slate-200 rounded-full text-[9px] font-black uppercase text-slate-500">New Node</span>
+                      </td>
+                    </tr>
+                  ))}
+                  {data.leads.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="p-32 text-center text-slate-400 italic font-bold uppercase tracking-widest text-[11px]">No active leads in registry.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
         {activeTab === 'staff' && (
           <div className="bg-white rounded-[4rem] border border-slate-200 overflow-hidden shadow-2xl">
              <div className="p-12 border-b border-slate-100 bg-slate-50/50">
-               <h2 className="text-3xl font-display font-black text-slate-900 tracking-tighter">Team Authority Registry</h2>
+               <h2 className="text-3xl font-display font-black text-slate-900 tracking-tighter uppercase">Team Authority Registry</h2>
                <p className="text-slate-500 mt-2 font-bold uppercase text-xs tracking-widest">Assign access scopes to sales, finance, and support nodes.</p>
              </div>
              <table className="w-full text-left">

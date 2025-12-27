@@ -21,7 +21,7 @@ const CountryGuide: React.FC<{ slug: string; onViewUniversity: (slug: string) =>
     fetchData();
   }, [slug]);
 
-  if (loading) return <div className="p-20 text-center animate-pulse text-slate-800 font-black uppercase tracking-widest">Establishing Nexus Connection...</div>;
+  if (loading) return <div className="p-20 text-center animate-pulse text-slate-800 font-black uppercase tracking-widest">Establishing UNICOU Secure Link...</div>;
   if (!guide) return <div className="p-20 text-center">Guide node not found in registry.</div>;
 
   const renderContent = (text: string) => {

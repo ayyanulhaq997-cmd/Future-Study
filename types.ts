@@ -10,6 +10,14 @@ export interface User {
   verified?: boolean;
 }
 
+export interface Lead {
+  id: string;
+  type: 'student' | 'agent' | 'career' | 'general';
+  data: Record<string, string>;
+  status: 'New' | 'Contacted' | 'Processed';
+  timestamp: string;
+}
+
 export interface University {
   id: string;
   name: string;

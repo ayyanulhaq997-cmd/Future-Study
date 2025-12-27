@@ -1,12 +1,12 @@
 import { Product, VoucherCode, User, University, Course, CountryGuide, LMSCourse, LMSModule, LMSPracticeTest, Enrollment, CourseVoucher, Qualification, ImmigrationGuideData } from '../types';
 
 export const users: User[] = [
-  { id: 'u-admin', name: 'System Admin / Owner', email: 'admin@nexus.ai', role: 'Admin' },
-  { id: 'u-finance', name: 'Finance / Audit Team', email: 'finance@nexus.ai', role: 'Finance' },
-  { id: 'u-manager', name: 'Operations Manager', email: 'manager@nexus.ai', role: 'Admin' },
-  { id: 'u-trainer', name: 'Lead Trainer', email: 'trainer@nexus.ai', role: 'Trainer' },
-  { id: 'u-support', name: 'Support / Sales Node', email: 'support@nexus.ai', role: 'Admin' },
-  { id: 'u-agent', name: 'Agent Partner / Prep Center', email: 'partner@nexus.ai', role: 'Agent', tier: 2 },
+  { id: 'u-admin', name: 'System Admin / Owner', email: 'admin@unicou.uk', role: 'Admin' },
+  { id: 'u-finance', name: 'Finance / Audit Team', email: 'finance@unicou.uk', role: 'Finance' },
+  { id: 'u-manager', name: 'Operations Manager', email: 'manager@unicou.uk', role: 'Admin' },
+  { id: 'u-trainer', name: 'Lead Trainer', email: 'trainer@unicou.uk', role: 'Trainer' },
+  { id: 'u-support', name: 'Support / Sales Node', email: 'support@unicou.uk', role: 'Admin' },
+  { id: 'u-agent', name: 'Agent Partner / Prep Center', email: 'partner@unicou.uk', role: 'Agent', tier: 2 },
   { id: 'u-student', name: 'Alex Smith (Student)', email: 'alex@gmail.com', role: 'Customer' },
 ];
 
@@ -367,7 +367,7 @@ No official hour limit for students! However, courses are intense, so 10-15 hour
 
 ### High-Demand Careers
 - Battery Tech & Green Energy: Gigafactories in northern Sweden.
-- IT & Spotify ecosystem: Stockholm produces more unicorns per capita.
+- IT & Spotify ecosystem: Stockholm produces more eloquence per capita.
 
 Ready to take the first step? Registry: **connect@unicou.uk**.`, 
     heroImage: 'https://images.unsplash.com/photo-1509339022327-1e1e25360a41?w=1200', 

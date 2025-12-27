@@ -34,8 +34,8 @@ const Login: React.FC<LoginProps> = ({ onLogin, onNavigateToSignup }) => {
           <div className="w-20 h-20 bg-slate-50 border border-slate-100 rounded-[2.5rem] mx-auto flex items-center justify-center mb-8 shadow-inner">
             <svg className="w-10 h-10 text-unicou-navy" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A10.003 10.003 0 0012 21a10.003 10.003 0 008.384-4.562l.054.09c1.744-2.772 2.753-6.054 2.753-9.571 0-5.523-4.477-10-10-10S2 6.477 2 12c0 1.933.55 3.738 1.5 5.264" /></svg>
           </div>
-          <h2 className="text-4xl font-display font-black text-slate-900 tracking-tighter">Nexus <span className="text-unicou-orange">Auth</span></h2>
-          <p className="text-slate-400 text-[10px] mt-3 font-black uppercase tracking-[0.3em]">Global Identity Registry</p>
+          <h2 className="text-4xl font-display font-black text-slate-900 tracking-tighter">UNICOU <span className="text-unicou-orange">Identity</span></h2>
+          <p className="text-slate-400 text-[10px] mt-3 font-black uppercase tracking-[0.3em]">Global Student Registry</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
@@ -44,7 +44,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, onNavigateToSignup }) => {
             <input 
               type="email" required value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="e.g. admin@nexus.ai"
+              placeholder="e.g. admin@unicou.uk"
               className="w-full bg-slate-50 border border-slate-200 rounded-3xl p-5 text-slate-900 outline-none focus:border-unicou-navy focus:bg-white transition-all shadow-inner font-bold"
             />
           </div>
@@ -71,15 +71,15 @@ const Login: React.FC<LoginProps> = ({ onLogin, onNavigateToSignup }) => {
          <div className="grid grid-cols-1 gap-3 text-[11px] font-mono text-slate-500">
             <div className="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex justify-between px-6 items-center">
               <span className="font-black text-unicou-navy">SYSTEM ADMIN</span>
-              <span>admin@nexus.ai</span>
+              <span>admin@unicou.uk</span>
             </div>
             <div className="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex justify-between px-6 items-center">
               <span className="font-black text-emerald-600">FINANCE / TELLER</span>
-              <span>finance@nexus.ai</span>
+              <span>finance@unicou.uk</span>
             </div>
             <div className="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex justify-between px-6 items-center">
               <span className="font-black text-primary-500">LEAD TRAINER</span>
-              <span>trainer@nexus.ai</span>
+              <span>trainer@unicou.uk</span>
             </div>
          </div>
       </div>

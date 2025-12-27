@@ -3,7 +3,7 @@ import {
   Product, VoucherCode, VoucherStatus, Order, User, ActivityLog, SecurityStatus, LMSCourse, 
   LMSModule, LMSLesson, Enrollment, TestResult, CourseVoucher, Qualification, 
   QualificationLead, TestBooking, ManualSubmission, SkillScore, SkillType, LeadSubmission, 
-  LeadStatus, PromoCode, FinanceReport, UserRole, ImmigrationGuideData 
+  LeadStatus, PromoCode, FinanceReport, UserRole, ImmigrationGuideData, Lead 
 } from '../types';
 
 // ==========================================
@@ -11,6 +11,7 @@ import {
 // ==========================================
 const RAZORPAY_KEY_ID = 'rzp_test_UNICOU_DemoKey123'; 
 const SESSION_KEY = 'unicou_active_session_v4';
+const LEADS_KEY = 'unicou_leads_v1';
 
 export const BANK_DETAILS = {
   bankName: "UNICOU HUB INTERNATIONAL",
@@ -26,7 +27,7 @@ export const BANK_DETAILS = {
 // Global State
 let products = [...db.products];
 let codes = [...db.voucherCodes];
-let users = [...db.users]; // Strictly initialized from db.ts
+let users = [...db.users]; 
 let orders: Order[] = [];
 let logs: ActivityLog[] = [];
 let enrollments: Enrollment[] = [...db.initialEnrollments];
@@ -37,18 +38,23 @@ const savedUserStr = localStorage.getItem(SESSION_KEY);
 if (savedUserStr) {
   try {
     const parsed = JSON.parse(savedUserStr);
-    // Sync with memory registry
     const liveMatch = users.find(u => u.email.toLowerCase() === parsed.email.toLowerCase());
     if (liveMatch) {
         currentUser = liveMatch;
     } else {
-        // If not in seed, it might be a new signup
         users.push(parsed);
         currentUser = parsed;
     }
   } catch (e) {
     localStorage.removeItem(SESSION_KEY);
   }
+}
+
+// Leads Persistence
+let leads: Lead[] = [];
+const savedLeads = localStorage.getItem(LEADS_KEY);
+if (savedLeads) {
+  try { leads = JSON.parse(savedLeads); } catch (e) { leads = []; }
 }
 
 const networkDelay = () => new Promise(resolve => setTimeout(resolve, 400));
@@ -62,21 +68,12 @@ export const api = {
   login: async (email: string) => {
     await networkDelay();
     const cleanEmail = email.trim().toLowerCase();
-    
-    // Search the live registry
     let user = users.find(u => u.email.toLowerCase() === cleanEmail);
-    
     if (!user) {
-      // Fallback: check seeded DB again explicitly
       user = db.users.find(u => u.email.toLowerCase() === cleanEmail);
       if (user) users.push(user);
     }
-
-    if (!user) {
-      console.warn("Auth Failure. Registry dump:", users.map(u => u.email));
-      throw new Error('Identity Node Not Found. Please verify your credentials.');
-    }
-    
+    if (!user) throw new Error('Identity Node Not Found. Please verify your credentials.');
     currentUser = user;
     localStorage.setItem(SESSION_KEY, JSON.stringify(user));
     api.logActivity('Auth', `Identity established: ${user.role} [${user.email}]`, 'info');
@@ -86,7 +83,6 @@ export const api = {
     await networkDelay();
     const cleanEmail = email.trim().toLowerCase();
     if (users.find(u => u.email.toLowerCase() === cleanEmail)) throw new Error('Identity already exists.');
-    
     const newUser: User = { 
       id: 'u-' + Math.random().toString(36).substr(2, 9), 
       name: cleanEmail.split('@')[0], 
@@ -176,7 +172,21 @@ export const api = {
   getProducts: async () => products,
   getProductById: async (id: string) => products.find(p => p.id === id) || null,
   getSecurityStatus: async () => ({ uptime: '99.9%', rateLimitsTriggered: 0, activeSessions: 42, threatLevel: 'Low' } as SecurityStatus),
-  getLeads: async () => [],
+  getLeads: async () => { checkRole(['Admin']); return leads; },
+  submitLead: async (type: Lead['type'], data: Record<string, string>) => {
+    await networkDelay();
+    const newLead: Lead = {
+      id: 'LD-' + Math.random().toString(36).substr(2, 7).toUpperCase(),
+      type,
+      data,
+      status: 'New',
+      timestamp: new Date().toISOString()
+    };
+    leads.unshift(newLead);
+    localStorage.setItem(LEADS_KEY, JSON.stringify(leads));
+    api.logActivity('Lead', `New ${type} lead captured: ${data.email || 'N/A'}`, 'info');
+    return newLead;
+  },
   getAllLMSCourses: async () => db.lmsCourses,
   getEnrolledCourses: async () => { if (!currentUser) return []; const ids = enrollments.filter(e => e.userId === currentUser?.id).map(e => e.courseId); return db.lmsCourses.filter(c => ids.includes(c.id)); },
   getEnrollmentByCourse: async (cid: string) => enrollments.find(e => e.userId === currentUser?.id && e.courseId === cid),
@@ -205,7 +215,6 @@ export const api = {
     return order;
   },
   getTestResults: async () => [],
-  submitLead: async (lead: any) => ({ ...lead, id: 'L-'+Math.random(), timestamp: new Date().toISOString() }),
   enrollInCourse: async (courseId: string) => {
     if (!currentUser) throw new Error('Auth required');
     enrollments.push({ id: 'en-'+Math.random(), userId: currentUser.id, courseId, enrolledAt: new Date().toISOString(), progress: 0 });

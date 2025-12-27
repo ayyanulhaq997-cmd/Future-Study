@@ -84,6 +84,25 @@ const App: React.FC = () => {
         return <div className="view-container"><UniversityProfile slug={view.slug} /></div>;
       case 'lms-dashboard':
         return <div className="view-container">{user ? <CustomerDashboard user={user} /> : <LMSDashboard onNavigate={navigateTo} />}</div>;
+      case 'library':
+        return (
+          <div className="max-w-7xl mx-auto view-container px-6 animate-in fade-in py-20">
+             <div className="text-center mb-16">
+               <h2 className="text-5xl font-display font-black text-unicou-navy uppercase tracking-tighter mb-4">Digital <span className="text-unicou-orange">Library</span></h2>
+               <p className="text-slate-500 font-bold italic">"Authorized access to global academic journals, prep material, and research nodes."</p>
+             </div>
+             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+               {[1,2,3,4,5,6].map(i => (
+                 <div key={i} className="bg-slate-50 p-10 rounded-[2.5rem] border border-slate-100 flex flex-col items-center text-center group hover:bg-white hover:shadow-premium transition-all">
+                    <div className="text-4xl mb-6 grayscale group-hover:grayscale-0 transition-all">📚</div>
+                    <h3 className="font-black text-unicou-navy uppercase text-sm mb-2">Academic Node 0{i}</h3>
+                    <p className="text-xs text-slate-400 font-bold mb-8 italic">Encrypted educational resources for {i === 1 ? 'PTE' : 'General'} Mastery.</p>
+                    <button className="px-6 py-2.5 bg-unicou-navy text-white text-[10px] font-black uppercase tracking-widest rounded-xl">View Index</button>
+                 </div>
+               ))}
+             </div>
+          </div>
+        );
       case 'qualifications':
         return <div className="view-container"><QualificationCatalogue onApply={(qid) => navigateTo({ type: 'apply', formType: 'general', context: `Qualification ID: ${qid}` })} /></div>;
       case 'policy':
