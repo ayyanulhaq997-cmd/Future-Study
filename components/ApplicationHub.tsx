@@ -9,12 +9,16 @@ const ApplicationHub: React.FC<ApplicationHubProps> = ({ onNavigate }) => {
   return (
     <div className="max-w-7xl mx-auto px-6 py-20 animate-in fade-in duration-700 bg-white">
       <div className="text-center mb-24">
-        <span className="text-[11px] font-black text-unicou-orange uppercase tracking-[0.5em] mb-4 block">Global Connectivity Hub</span>
-        <h1 className="text-6xl md:text-[5.5rem] font-display font-black tracking-tighter text-slate-950 mb-8 leading-none uppercase">
-          CONNECT WITH <span className="text-unicou-navy">UNICOU.</span>
+        <span className="text-sm font-medium text-unicou-orange italic mb-6 block">
+          Your Gateway to International Excellence
+        </span>
+        <h1 className="text-5xl md:text-7xl font-display font-black tracking-tighter text-unicou-navy mb-8 leading-[1.1] uppercase">
+          Global Education Hub: <br />
+          <span className="text-unicou-orange">Study Abroad & Test Prep Specialist</span>
         </h1>
-        <p className="text-2xl text-slate-800 max-w-2xl mx-auto leading-relaxed font-bold italic border-b-2 border-slate-100 pb-12">
-          Initialize your path via our dedicated connection nodes. Select your profile type below to establish a secure registry entry.
+        <p className="text-xl text-slate-600 max-w-4xl mx-auto leading-relaxed font-bold italic border-b-2 border-slate-100 pb-12">
+          Secure your University Admission, Master your Exams with our LMS, and 
+          Save on Official Vouchers for IELTS, PTE, TOEFL, LanguageCert, Duolingo, GRE and more.
         </p>
       </div>
 
