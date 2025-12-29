@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/apiService';
 import { Product, TestBooking } from '../types';
@@ -20,7 +19,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ productId, onSucces
   });
 
   useEffect(() => {
-    api.getProductById(productId).then(setProduct);
+    api.getProductById(productId).then(p => setProduct(p || null));
   }, [productId]);
 
   const handleSubmit = async (e: React.FormEvent) => {

@@ -26,7 +26,7 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    api.getProductById(productId).then(setProduct);
+    api.getProductById(productId).then(p => setProduct(p || null));
     recalculatePrice();
   }, [productId, quantity]);
 
