@@ -28,7 +28,6 @@ import PolicyPage from './components/PolicyPage';
 import Resources from './components/Resources';
 import Careers from './components/Careers';
 import UserGuide from './components/UserGuide';
-import SystemMap from './components/SystemMap';
 import { ViewState, User } from './types';
 import { api } from './services/apiService';
 import { LOGO_SRC } from './constants/assets';
@@ -126,8 +125,6 @@ const App: React.FC = () => {
         return <div className={wrapperClass}><Careers /></div>;
       case 'guide':
         return <div className={wrapperClass}><UserGuide /></div>;
-      case 'system-map':
-        return <div className={wrapperClass}><SystemMap /></div>;
       case 'about':
         return (
           <div className={`max-w-7xl mx-auto ${wrapperClass} px-6 animate-in fade-in pb-32`}>
@@ -263,7 +260,7 @@ const App: React.FC = () => {
               <ul className="space-y-4 text-[12px] font-black text-unicou-navy uppercase tracking-widest">
                 <li><button onClick={() => navigateTo({ type: 'store' })} className="hover:text-unicou-orange transition-colors">Voucher Store</button></li>
                 <li><button onClick={() => navigateTo({ type: 'join-hub' })} className="hover:text-unicou-orange transition-colors">Apply Node</button></li>
-                <li><button onClick={() => navigateTo({ type: 'system-map' })} className="hover:text-unicou-orange transition-colors font-black">System Blueprint (PDF)</button></li>
+                <li><button onClick={() => navigateTo({ type: 'guide' })} className="hover:text-unicou-orange transition-colors">User Guide</button></li>
                 <li><button onClick={() => navigateTo({ type: 'policy', policyId: 'privacy' })} className="hover:text-unicou-orange transition-colors">Privacy Policy</button></li>
               </ul>
             </div>
