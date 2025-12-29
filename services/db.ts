@@ -23,7 +23,6 @@ export const products: Product[] = [
   { id: 'v-22', name: 'Password Skills Plus', category: 'OTHER', type: 'Voucher', basePrice: 95, currency: 'USD', description: 'Password Skills Plus Global assessment node.', icon: '🔑' }
 ];
 
-// Generate 100 initial vouchers for EVERY product to ensure high-volume demo readiness
 export const voucherCodes: VoucherCode[] = products.flatMap(p => 
   Array(100).fill(0).map((_, i) => ({
     id: `vc-${p.id}-${i}`,
@@ -70,11 +69,45 @@ export const lmsCourses: LMSCourse[] = [
 ];
 
 export const lmsModules: LMSModule[] = [
-  { id: 'm1-pte', courseId: 'pte-mastery', title: 'Module 1: Strategy', lessons: [] }
+  { 
+    id: 'm1-pte', 
+    courseId: 'pte-mastery', 
+    title: 'Module 1: Strategy & Architecture', 
+    lessons: [
+        { id: 'l1', title: 'PTE Introduction & Scoring Logic', type: 'Video', content: 'https://www.youtube.com/embed/dQw4w9WgXcQ' },
+        { id: 'l2', title: 'Academic Integrity Protocols', type: 'Text', content: '### Core Principles\n- Precision in response\n- Lexical variety\n- Grammatical range' },
+        { id: 'l3', title: 'Foundational Knowledge Quiz', type: 'Quiz', content: JSON.stringify([
+            { id: 'q1', question: 'What does PTE stand for?', options: ['Pearson Test of English', 'Professional Testing Engine', 'Primary Teaching Exam'], correct: 0 }
+        ])}
+    ] 
+  }
 ];
 
 export const lmsTests: LMSPracticeTest[] = [
-  { id: 'full-mock-1', title: 'IELTS/PTE Alpha Mock', sections: [] }
+  { 
+    id: 'full-mock-1', 
+    title: 'IELTS/PTE Alpha Mock', 
+    sections: [
+        {
+            id: 'sec-1',
+            skill: 'Reading',
+            title: 'Critical Content Analysis',
+            timeLimit: 20,
+            questions: [
+                { id: 'q-r1', text: 'Select the primary tone of the academic abstract provided.', type: 'MCQ', options: ['Objective', 'Persuasive', 'Critical'], skill: 'Reading', maxScore: 1 }
+            ]
+        },
+        {
+            id: 'sec-2',
+            skill: 'Writing',
+            title: 'Reflective Essay Node',
+            timeLimit: 40,
+            questions: [
+                { id: 'q-w1', text: 'Discuss the impact of AI on international education systems.', type: 'Essay', skill: 'Writing', maxScore: 9 }
+            ]
+        }
+    ] 
+  }
 ];
 
 export const qualifications: Qualification[] = [

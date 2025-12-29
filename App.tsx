@@ -18,6 +18,7 @@ import SuccessScreen from './components/SuccessScreen';
 import UniversityProfile from './components/UniversityProfile';
 import AdminDashboard from './components/AdminDashboard';
 import AgentDashboard from './components/AgentDashboard';
+import TrainerDashboard from './components/TrainerDashboard';
 import PartnerShowcase from './components/PartnerShowcase';
 import CookieConsent from './components/CookieConsent';
 import CustomerDashboard from './components/CustomerDashboard';
@@ -41,7 +42,8 @@ const OFFICE_LOCATIONS = [
 
 const App: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
-  const [view, setView] = useState<ViewState>({ type: 'home' } as any);
+  // View initialized correctly with home state
+  const [view, setView] = useState<ViewState>({ type: 'home' });
   const [user, setUser] = useState<User | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [isNavbarVisible, setIsNavbarVisible] = useState(true);
@@ -54,9 +56,10 @@ const App: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navigateTo = (newView: any) => {
+  // navigateTo now strictly expects ViewState for enhanced type safety
+  const navigateTo = (newView: ViewState) => {
     setView(newView);
-    setIsNavbarVisible(true); // Always show navbar on navigation
+    setIsNavbarVisible(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -191,7 +194,12 @@ const App: React.FC = () => {
           </div>
         );
       case 'login': 
-        return <div className={wrapperClass}><Login onLogin={(u) => { setUser(u); navigateTo(['Admin', 'Finance'].includes(u.role) ? { type: 'admin' } : { type: 'lms-dashboard' }); }} onNavigateToSignup={() => navigateTo({ type: 'signup' })} /></div>;
+        return <div className={wrapperClass}><Login onLogin={(u) => { 
+            setUser(u); 
+            if (['Admin', 'Finance'].includes(u.role)) navigateTo({ type: 'admin' });
+            else if (u.role === 'Trainer') navigateTo({ type: 'trainer' });
+            else navigateTo({ type: 'lms-dashboard' }); 
+        }} onNavigateToSignup={() => navigateTo({ type: 'signup' })} /></div>;
       case 'signup':
         return <div className={wrapperClass}><Signup onSuccess={(e) => navigateTo({ type: 'verification-pending', email: e })} onNavigateToLogin={() => navigateTo({ type: 'login' })} /></div>;
       case 'verification-pending':
@@ -203,6 +211,9 @@ const App: React.FC = () => {
       case 'admin':
         if (!user || !['Admin', 'Finance'].includes(user.role)) return <div className="view-container text-center pt-40 font-black uppercase text-slate-400">Restricted Access.</div>;
         return <div className={wrapperClass}><AdminDashboard /></div>;
+      case 'trainer':
+        if (!user || user.role !== 'Trainer') return <div className="view-container text-center pt-40 font-black uppercase text-slate-400">Trainer Access Only.</div>;
+        return <div className={wrapperClass}><TrainerDashboard user={user} /></div>;
       case 'agent':
         if (!user || user.role !== 'Agent') return <div className="view-container text-center pt-40 font-black uppercase text-slate-400">Agent Portal Restricted.</div>;
         return <div className={wrapperClass}><AgentDashboard user={user} onBuy={(p, q) => navigateTo({ type: 'checkout', productId: p, quantity: q })} /></div>;
@@ -215,7 +226,7 @@ const App: React.FC = () => {
     }
   };
 
-  const handleLogout = () => { api.logout(); setUser(null); navigateTo({ type: 'home' } as any); };
+  const handleLogout = () => { api.logout(); setUser(null); navigateTo({ type: 'home' }); };
 
   return (
     <div 

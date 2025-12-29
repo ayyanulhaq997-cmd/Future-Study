@@ -312,6 +312,7 @@ export type ViewState =
   | { type: 'store' } 
   | { type: 'admin' }
   | { type: 'agent' }
+  | { type: 'trainer' }
   | { type: 'login' }
   | { type: 'signup' }
   | { type: 'about' }
