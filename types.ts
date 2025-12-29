@@ -1,3 +1,4 @@
+
 export type UserRole = 'Admin' | 'Agent' | 'Customer' | 'Trainer' | 'Finance' | 'Teller';
 export type FormType = 'student-apply' | 'agent-reg' | 'prep-center-reg' | 'institute-connect' | 'careers' | 'general' | 'immigration-consult';
 
@@ -323,7 +324,7 @@ export type ViewState =
   | { type: 'country-list' }
   | { type: 'country-guide'; slug: string }
   | { type: 'immigration-guide'; slug: string }
-  | { type: 'lms-dashboard' }
+  | { type: 'lms-dashboard'; initialTab?: string }
   | { type: 'course-catalogue' }
   | { type: 'qualifications' }
   | { type: 'policy'; policyId: string }

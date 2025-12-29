@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ViewState, User } from '../types';
 import { LOGO_SRC } from '../constants/assets';
@@ -54,8 +55,8 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
       type: 'lms-dashboard',
       subItems: [
         { label: 'Library', type: 'library' },
-        { label: 'Mock Test Terminal', type: 'lms-dashboard' },
-        { label: 'Mastery Courses', type: 'lms-dashboard' },
+        { label: 'Mock Test Terminal', type: 'lms-dashboard', tab: 'results' },
+        { label: 'Mastery Courses', type: 'lms-dashboard', tab: 'academy' },
         { label: 'Qualifications', type: 'qualifications' },
       ]
     },
@@ -102,7 +103,7 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
                             key={sub.label}
                             onClick={() => {
                               if (sub.slug) onNavigate({ type: 'country-guide', slug: sub.slug });
-                              else if (sub.type) onNavigate({ type: sub.type } as any);
+                              else if (sub.type) onNavigate({ type: sub.type, initialTab: sub.tab } as any);
                             }}
                             className="w-full text-left px-4 py-2 rounded-lg text-[10px] font-black text-slate-600 hover:text-unicou-navy hover:bg-slate-50 transition-all uppercase tracking-widest truncate"
                           >

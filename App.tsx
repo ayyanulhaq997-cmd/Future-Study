@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Hero from './components/Hero';
 import Features from './components/Features';
@@ -95,7 +96,7 @@ const App: React.FC = () => {
       case 'university':
         return <div className={wrapperClass}><UniversityProfile slug={(view as any).slug} /></div>;
       case 'lms-dashboard':
-        return <div className={wrapperClass}>{user ? <CustomerDashboard user={user} /> : <LMSDashboard onNavigate={navigateTo} />}</div>;
+        return <div className={wrapperClass}>{user ? <CustomerDashboard user={user} onNavigate={navigateTo} initialTab={(view as any).initialTab} /> : <LMSDashboard onNavigate={navigateTo} />}</div>;
       case 'library':
         return (
           <div className={`max-w-7xl mx-auto ${wrapperClass} px-6 animate-in fade-in py-20`}>
@@ -109,7 +110,7 @@ const App: React.FC = () => {
                     <div className="text-4xl mb-6 grayscale group-hover:grayscale-0 transition-all">📚</div>
                     <h3 className="font-black text-unicou-navy uppercase text-sm mb-2">Academic Node 0{i}</h3>
                     <p className="text-xs text-slate-400 font-bold mb-8 italic">Encrypted educational resources for {i === 1 ? 'PTE' : 'General'} Mastery.</p>
-                    <button className="px-6 py-2.5 bg-unicou-navy text-white text-[10px] font-black uppercase tracking-widest rounded-xl">View Index</button>
+                    <button onClick={() => navigateTo({ type: 'lms-dashboard' })} className="px-6 py-2.5 bg-unicou-navy text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-unicou-orange transition-colors">View Index</button>
                  </div>
                ))}
              </div>
