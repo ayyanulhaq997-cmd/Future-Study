@@ -29,8 +29,14 @@ export const BANK_DETAILS = {
 // Simulated persistent state
 let localOrders: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
 let localLeads: Lead[] = JSON.parse(localStorage.getItem(LEADS_KEY) || '[]');
-let localCodes: VoucherCode[] = JSON.parse(localStorage.getItem(CODES_KEY) || '[]');
 let localUsers: User[] = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+
+// Unified Voucher Registry: Mixes DB defaults with local modifications
+let localCodes: VoucherCode[] = JSON.parse(localStorage.getItem(CODES_KEY) || '[]');
+if (localCodes.length === 0) {
+  localCodes = [...db.voucherCodes];
+  localStorage.setItem(CODES_KEY, JSON.stringify(localCodes));
+}
 
 export const api = {
   // Auth Node
@@ -41,7 +47,6 @@ export const api = {
 
   login: async (email: string): Promise<User> => {
     const cleanEmail = email.trim().toLowerCase();
-    // Search both static DB and Local Registry
     const allUsers = [...db.users, ...localUsers];
     const user = allUsers.find(u => u.email.toLowerCase() === cleanEmail);
     
@@ -70,9 +75,7 @@ export const api = {
     localStorage.setItem(USERS_KEY, JSON.stringify(localUsers));
   },
 
-  verifyEmail: async (email: string): Promise<void> => {
-    // Logic for demo verification
-  },
+  verifyEmail: async (email: string): Promise<void> => {},
 
   logout: () => {
     localStorage.removeItem(SESSION_KEY);
@@ -82,13 +85,11 @@ export const api = {
     const user = [...db.users, ...localUsers].find(u => u.id === uid);
     if (user) {
       user.role = role;
-      // Persist if it was a local user
       const localIdx = localUsers.findIndex(u => u.id === uid);
       if (localIdx > -1) {
         localUsers[localIdx].role = role;
         localStorage.setItem(USERS_KEY, JSON.stringify(localUsers));
       }
-      // Update session if it's current user
       const current = api.getCurrentUser();
       if (current?.id === uid) {
         localStorage.setItem(SESSION_KEY, JSON.stringify({ ...current, role }));
@@ -110,11 +111,10 @@ export const api = {
   getProducts: async () => db.products,
   getProductById: async (id: string) => db.products.find(p => p.id === id),
   
-  getCodes: async () => [...db.voucherCodes, ...localCodes],
+  getCodes: async () => localCodes,
   
   getStockCount: async (productId: string) => {
-    const all = [...db.voucherCodes, ...localCodes];
-    return all.filter(c => c.productId === productId && c.status === 'Available').length;
+    return localCodes.filter(c => c.productId === productId && c.status === 'Available').length;
   },
 
   importVouchers: async (productId: string, codes: string[]) => {
@@ -175,15 +175,25 @@ export const api = {
     const order = localOrders.find(o => o.id === orderId);
     if (!order) throw new Error('Order node not found.');
     
-    const available = [...db.voucherCodes, ...localCodes].filter(c => c.productId === order.productId && c.status === 'Available');
-    if (available.length < order.quantity) throw new Error('Insufficient vault inventory.');
+    const available = localCodes.filter(c => c.productId === order.productId && c.status === 'Available');
+    if (available.length < order.quantity) throw new Error('Insufficient vault inventory. Please restock.');
     
-    const assigned = available.slice(0, order.quantity);
-    assigned.forEach(c => c.status = 'Used');
+    // Assign codes and mark them as used
+    const assignedCodes: string[] = [];
+    for (let i = 0; i < order.quantity; i++) {
+        const voucher = available[i];
+        voucher.status = 'Used';
+        assignedCodes.push(voucher.code);
+    }
     
     order.status = 'Completed';
-    order.voucherCodes = assigned.map(c => c.code);
+    order.voucherCodes = assignedCodes;
+    
+    // Persist everything
+    localStorage.setItem(CODES_KEY, JSON.stringify(localCodes));
     localStorage.setItem(ORDERS_KEY, JSON.stringify(localOrders));
+    
+    return order;
   },
 
   createGatewayOrder: async (amount: number) => {
@@ -197,7 +207,7 @@ export const api = {
 
   processPayment: async (productId: string, quantity: number, email: string, paymentData: any): Promise<Order> => {
     const p = db.products.find(x => x.id === productId);
-    const available = [...db.voucherCodes, ...localCodes].filter(c => c.productId === productId && c.status === 'Available');
+    const available = localCodes.filter(c => c.productId === productId && c.status === 'Available');
     const assigned = available.slice(0, quantity);
     assigned.forEach(c => c.status = 'Used');
     const currentUser = api.getCurrentUser();
@@ -222,6 +232,7 @@ export const api = {
     };
     localOrders = [order, ...localOrders];
     localStorage.setItem(ORDERS_KEY, JSON.stringify(localOrders));
+    localStorage.setItem(CODES_KEY, JSON.stringify(localCodes));
     return order;
   },
 
@@ -254,12 +265,11 @@ export const api = {
   getEnrolledCourses: async () => {
     const user = api.getCurrentUser();
     if (!user) return [];
-    // For demo, return all courses if user is logged in
     return db.lmsCourses;
   },
   getCourseModules: async (courseId: string) => db.lmsModules.filter(m => m.courseId === courseId),
   getEnrollmentByCourse: async (courseId: string) => ({ id: 'enr-demo', userId: 'demo-user', courseId, enrolledAt: new Date().toISOString(), progress: 45 }),
-  updateCourseProgress: async (courseId: string, progress: number) => { /* Demo logic */ },
+  updateCourseProgress: async (courseId: string, progress: number) => {},
   redeemCourseVoucher: async (code: string) => {
     if (code !== 'UNICOU-FREE') throw new Error('Invalid authorization code.');
   },
@@ -289,7 +299,7 @@ export const api = {
   getPendingSubmissions: async (): Promise<ManualSubmission[]> => [
     { id: 'sub-demo-1', testResultId: 'res-demo-1', userId: 'u-student', userName: 'Alex Smith', userEmail: 'alex@gmail.com', testTitle: 'IELTS Alpha Mock', skill: 'Writing', questionId: 'q-w1', studentAnswer: 'The data indicates a significant shift...', maxScore: 9, timestamp: new Date().toISOString() }
   ],
-  gradeSubmission: async (id: string, score: number, feedback: string) => { /* Assessment logic */ },
+  gradeSubmission: async (id: string, score: number, feedback: string) => {},
 
   // Governance Node (Admin/Finance)
   getSecurityStatus: async (): Promise<SecurityStatus> => ({ uptime: '99.98%', rateLimitsTriggered: 14, activeSessions: 42, threatLevel: 'Secure' }),

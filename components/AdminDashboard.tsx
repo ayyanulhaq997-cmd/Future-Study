@@ -1,8 +1,12 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useMemo } from 'react';
 import { api } from '../services/apiService';
 import { Product, VoucherCode, Order, ActivityLog, User, SecurityStatus, Lead } from '../types';
 
 const AdminDashboard: React.FC = () => {
+  const currentUser = api.getCurrentUser();
+  const isAdmin = currentUser?.role === 'Admin';
+  
   const [data, setData] = useState<{
     products: Product[],
     codes: VoucherCode[],
@@ -46,6 +50,7 @@ const AdminDashboard: React.FC = () => {
     if (!confirm("Verify settlement and release vouchers?")) return;
     try {
       await api.verifyBankTransfer(orderId);
+      alert("Fulfillment Complete: Vouchers released to client dashboard.");
       fetchData();
     } catch (e: any) { alert(e.message); }
   };
@@ -70,6 +75,19 @@ const AdminDashboard: React.FC = () => {
     } catch (e: any) { alert(e.message); }
   };
 
+  const availableTabs = useMemo(() => {
+    const tabs = [
+        { id: 'verification', label: 'TELLER DESK' },
+        { id: 'inventory', label: 'STOCK VAULT' },
+        { id: 'leads', label: 'LEAD REGISTRY' }
+    ];
+    if (isAdmin) {
+        tabs.push({ id: 'staff', label: 'TEAM CONTROL' });
+        tabs.push({ id: 'audit', label: 'AUDIT TRAIL' });
+    }
+    return tabs;
+  }, [isAdmin]);
+
   if (loading) return <div className="p-40 text-center animate-pulse text-slate-800 font-black uppercase tracking-widest">Establishing Live Authority Node...</div>;
 
   return (
@@ -77,16 +95,16 @@ const AdminDashboard: React.FC = () => {
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 mb-16">
         <div>
           <h1 className="text-5xl font-display font-black tracking-tight text-slate-900 leading-none">System <span className="text-unicou-orange">Terminal</span></h1>
-          <p className="text-slate-500 mt-4 font-bold uppercase text-xs tracking-widest">Identity Auth: <span className="text-unicou-navy">{api.getCurrentUser()?.email}</span></p>
+          <p className="text-slate-500 mt-4 font-bold uppercase text-xs tracking-widest">Identity Auth: <span className="text-unicou-navy">{currentUser?.email}</span> • Scope: <span className="text-unicou-orange">{currentUser?.role}</span></p>
         </div>
         <div className="flex bg-slate-50 p-2 rounded-[2rem] border border-slate-200 shadow-inner overflow-x-auto no-scrollbar">
-          {(['verification', 'inventory', 'leads', 'staff', 'audit'] as const).map(tab => (
+          {availableTabs.map(tab => (
             <button 
-              key={tab}
-              onClick={() => setActiveTab(tab)} 
-              className={`px-8 py-3 rounded-2xl text-[10px] font-black tracking-widest transition-all whitespace-nowrap uppercase ${activeTab === tab ? 'bg-white text-unicou-navy shadow-xl border border-slate-200' : 'text-slate-400 hover:text-slate-900'}`}
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)} 
+              className={`px-8 py-3 rounded-2xl text-[10px] font-black tracking-widest transition-all whitespace-nowrap uppercase ${activeTab === tab.id ? 'bg-white text-unicou-navy shadow-xl border border-slate-200' : 'text-slate-400 hover:text-slate-900'}`}
             >
-              {tab === 'verification' ? 'TELLER DESK' : tab === 'inventory' ? 'STOCK VAULT' : tab === 'leads' ? 'LEAD REGISTRY' : tab === 'staff' ? 'TEAM CONTROL' : 'AUDIT TRAIL'}
+              {tab.label}
             </button>
           ))}
         </div>
@@ -222,7 +240,7 @@ const AdminDashboard: React.FC = () => {
           </div>
         )}
 
-        {activeTab === 'staff' && (
+        {isAdmin && activeTab === 'staff' && (
           <div className="bg-white rounded-[4rem] border border-slate-200 overflow-hidden shadow-2xl">
              <div className="p-12 border-b border-slate-100 bg-slate-50/50">
                <h2 className="text-3xl font-display font-black text-slate-900 tracking-tighter uppercase">Team Authority Registry</h2>
@@ -253,7 +271,7 @@ const AdminDashboard: React.FC = () => {
           </div>
         )}
 
-        {activeTab === 'audit' && (
+        {isAdmin && activeTab === 'audit' && (
           <div className="bg-white rounded-[4rem] border border-slate-200 overflow-hidden shadow-2xl">
             <table className="w-full text-left">
               <thead className="bg-slate-50 text-[10px] font-black uppercase text-slate-500 tracking-widest border-b border-slate-100">
