@@ -21,6 +21,7 @@ const AdminDashboard: React.FC = () => {
   
   const [activeTab, setActiveTab] = useState<'inventory' | 'verification' | 'staff' | 'audit' | 'leads'>('verification');
   const [loading, setLoading] = useState(true);
+  const [verifyingId, setVerifyingId] = useState<string | null>(null);
   const [importPid, setImportPid] = useState('');
   const [rawCodes, setRawCodes] = useState('');
   const [processing, setProcessing] = useState(false);
@@ -48,11 +49,12 @@ const AdminDashboard: React.FC = () => {
 
   const handleVerify = async (orderId: string) => {
     if (!confirm("Verify settlement and release vouchers?")) return;
+    setVerifyingId(orderId);
     try {
       await api.verifyBankTransfer(orderId);
       alert("Fulfillment Complete: Vouchers released to client dashboard.");
-      fetchData();
-    } catch (e: any) { alert(e.message); }
+      await fetchData();
+    } catch (e: any) { alert(e.message); } finally { setVerifyingId(null); }
   };
 
   const handleImport = async (e: React.FormEvent) => {
@@ -66,6 +68,13 @@ const AdminDashboard: React.FC = () => {
       setRawCodes('');
       fetchData();
     } catch (e: any) { alert(e.message); } finally { setProcessing(false); }
+  };
+
+  const handleResetRegistry = () => {
+    if (confirm("CRITICAL: Wipe local storage registries? This will clear all demo orders and leads.")) {
+        localStorage.clear();
+        window.location.reload();
+    }
   };
 
   const handleRoleUpdate = async (uid: string, role: any) => {
@@ -95,18 +104,23 @@ const AdminDashboard: React.FC = () => {
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 mb-16">
         <div>
           <h1 className="text-5xl font-display font-black tracking-tight text-slate-900 leading-none">System <span className="text-unicou-orange">Terminal</span></h1>
-          <p className="text-slate-500 mt-4 font-bold uppercase text-xs tracking-widest">Identity Auth: <span className="text-unicou-navy">{currentUser?.email}</span> • Scope: <span className="text-unicou-orange">{currentUser?.role}</span></p>
+          <p className="text-slate-500 mt-4 font-bold uppercase text-xs tracking-widest">Identity Auth: <span className="text-unicou-navy font-black">{currentUser?.email}</span> • Scope: <span className="text-unicou-orange">{currentUser?.role}</span></p>
         </div>
-        <div className="flex bg-slate-50 p-2 rounded-[2rem] border border-slate-200 shadow-inner overflow-x-auto no-scrollbar">
-          {availableTabs.map(tab => (
-            <button 
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)} 
-              className={`px-8 py-3 rounded-2xl text-[10px] font-black tracking-widest transition-all whitespace-nowrap uppercase ${activeTab === tab.id ? 'bg-white text-unicou-navy shadow-xl border border-slate-200' : 'text-slate-400 hover:text-slate-900'}`}
-            >
-              {tab.label}
-            </button>
-          ))}
+        <div className="flex flex-wrap gap-4 items-center">
+            {isAdmin && (
+                <button onClick={handleResetRegistry} className="px-5 py-2.5 border border-red-200 text-red-500 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-red-50 transition-all">Clear System Data</button>
+            )}
+            <div className="flex bg-slate-50 p-2 rounded-[2rem] border border-slate-200 shadow-inner overflow-x-auto no-scrollbar">
+                {availableTabs.map(tab => (
+                    <button 
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as any)} 
+                    className={`px-8 py-3 rounded-2xl text-[10px] font-black tracking-widest transition-all whitespace-nowrap uppercase ${activeTab === tab.id ? 'bg-white text-unicou-navy shadow-xl border border-slate-200' : 'text-slate-400 hover:text-slate-900'}`}
+                    >
+                    {tab.label}
+                    </button>
+                ))}
+            </div>
         </div>
       </div>
 
@@ -120,23 +134,46 @@ const AdminDashboard: React.FC = () => {
                    <tr className="bg-slate-50 text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] border-y border-slate-100">
                      <th className="px-8 py-6">Order node</th>
                      <th className="px-8 py-6">Client / Email</th>
-                     <th className="px-8 py-6">Bank Ref</th>
-                     <th className="px-8 py-6">Total</th>
+                     <th className="px-8 py-6">Product & Stock</th>
+                     <th className="px-8 py-6">Settlement</th>
                      <th className="px-8 py-6 text-right">Action</th>
                    </tr>
                  </thead>
                  <tbody className="divide-y divide-slate-100">
-                   {data.orders.filter(o => o.status === 'Pending').map(o => (
-                     <tr key={o.id} className="hover:bg-slate-50 transition-all group">
-                       <td className="px-8 py-6"><span className="font-mono text-unicou-navy font-black">{o.id}</span></td>
-                       <td className="px-8 py-6 text-slate-800 font-bold">{o.customerEmail}</td>
-                       <td className="px-8 py-6"><span className="px-4 py-2 bg-slate-50 rounded-xl text-xs font-mono font-black text-slate-400 border border-slate-100">{o.bankRef || 'N/A'}</span></td>
-                       <td className="px-8 py-6 font-display font-black text-slate-900">${o.totalAmount}</td>
-                       <td className="px-8 py-6 text-right">
-                         <button onClick={() => handleVerify(o.id)} className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl transition-all active:scale-95">VERIFY & DISPATCH</button>
-                       </td>
-                     </tr>
-                   ))}
+                   {data.orders.filter(o => o.status === 'Pending').map(o => {
+                     const stock = data.codes.filter(c => c.productId === o.productId && c.status === 'Available').length;
+                     const isReady = stock >= o.quantity;
+                     const isVerifying = verifyingId === o.id;
+                     
+                     return (
+                        <tr key={o.id} className="hover:bg-slate-50 transition-all group">
+                        <td className="px-8 py-6">
+                            <span className="font-mono text-unicou-navy font-black block">{o.id}</span>
+                            <span className="text-[9px] text-slate-400 font-bold uppercase">{o.bankRef || 'NO REF'}</span>
+                        </td>
+                        <td className="px-8 py-6 text-slate-800 font-bold">{o.customerEmail}</td>
+                        <td className="px-8 py-6">
+                            <div className="text-[11px] font-black text-slate-900 mb-1 uppercase truncate max-w-[180px]">{o.productName}</div>
+                            <div className={`text-[9px] font-bold uppercase tracking-widest ${isReady ? 'text-emerald-500' : 'text-orange-500'}`}>
+                                {isReady ? `Vault Stock: ${stock} Units` : `Low Stock: ${stock} Units (Will Replenish)`}
+                            </div>
+                        </td>
+                        <td className="px-8 py-6 font-display font-black text-slate-900">${o.totalAmount}</td>
+                        <td className="px-8 py-6 text-right">
+                            <button 
+                            onClick={() => handleVerify(o.id)} 
+                            disabled={isVerifying}
+                            className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl transition-all active:scale-95 flex items-center justify-center gap-2 ml-auto ${
+                                isVerifying ? 'bg-slate-400 text-white cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                            }`}
+                            >
+                                {isVerifying && <div className="w-3 h-3 border-2 border-white/20 border-t-white rounded-full animate-spin" />}
+                                {isVerifying ? 'SYNCING...' : 'VERIFY & DISPATCH'}
+                            </button>
+                        </td>
+                        </tr>
+                     );
+                   })}
                  </tbody>
                </table>
                {data.orders.filter(o => o.status === 'Pending').length === 0 && (

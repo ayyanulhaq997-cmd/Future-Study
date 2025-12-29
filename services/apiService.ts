@@ -26,17 +26,17 @@ export const BANK_DETAILS = {
   swift: 'UNICGB2L'
 };
 
-// Simulated persistent state
-let localOrders: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
-let localLeads: Lead[] = JSON.parse(localStorage.getItem(LEADS_KEY) || '[]');
-let localUsers: User[] = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
-
-// Unified Voucher Registry: Mixes DB defaults with local modifications
-let localCodes: VoucherCode[] = JSON.parse(localStorage.getItem(CODES_KEY) || '[]');
-if (localCodes.length === 0) {
-  localCodes = [...db.voucherCodes];
-  localStorage.setItem(CODES_KEY, JSON.stringify(localCodes));
-}
+// Internal Helper for Demo Stock Generation
+const generateDemoStock = (productId: string, quantity: number): VoucherCode[] => {
+  const product = db.products.find(p => p.id === productId);
+  return Array(quantity).fill(0).map((_, i) => ({
+    id: `vc-auto-${productId}-${Date.now()}-${i}-${Math.random().toString(36).substr(2, 5)}`,
+    productId,
+    code: `${product?.category.substring(0,2).toUpperCase() || 'EX'}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
+    status: 'Available' as VoucherStatus,
+    expiryDate: '2026-12-31'
+  }));
+};
 
 export const api = {
   // Auth Node
@@ -47,6 +47,7 @@ export const api = {
 
   login: async (email: string): Promise<User> => {
     const cleanEmail = email.trim().toLowerCase();
+    const localUsers: User[] = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
     const allUsers = [...db.users, ...localUsers];
     const user = allUsers.find(u => u.email.toLowerCase() === cleanEmail);
     
@@ -57,6 +58,7 @@ export const api = {
 
   signup: async (email: string, role: UserRole): Promise<void> => {
     const cleanEmail = email.trim().toLowerCase();
+    const localUsers: User[] = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
     const allUsers = [...db.users, ...localUsers];
     
     if (allUsers.some(u => u.email.toLowerCase() === cleanEmail)) {
@@ -65,7 +67,7 @@ export const api = {
 
     const newUser: User = {
       id: `u-${Math.random().toString(36).substr(2, 9)}`,
-      name: cleanEmail.split('@')[0],
+      name: cleanEmail.split('@')[0].toUpperCase(),
       email: cleanEmail,
       role: role,
       verified: true
@@ -82,6 +84,7 @@ export const api = {
   },
 
   updateUserRole: async (uid: string, role: UserRole) => {
+    const localUsers: User[] = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
     const user = [...db.users, ...localUsers].find(u => u.id === uid);
     if (user) {
       user.role = role;
@@ -97,7 +100,10 @@ export const api = {
     }
   },
 
-  getUsers: async () => [...db.users, ...localUsers],
+  getUsers: async () => {
+    const localUsers: User[] = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+    return [...db.users, ...localUsers];
+  },
 
   // Global Registry Nodes
   getUniversities: async () => db.universities,
@@ -111,13 +117,21 @@ export const api = {
   getProducts: async () => db.products,
   getProductById: async (id: string) => db.products.find(p => p.id === id),
   
-  getCodes: async () => localCodes,
+  getCodes: async () => {
+    let localCodes: VoucherCode[] = JSON.parse(localStorage.getItem(CODES_KEY) || '[]');
+    if (localCodes.length === 0) return db.voucherCodes;
+    return localCodes;
+  },
   
   getStockCount: async (productId: string) => {
-    return localCodes.filter(c => c.productId === productId && c.status === 'Available').length;
+    const codes = await api.getCodes();
+    return codes.filter(c => c.productId === productId && c.status === 'Available').length;
   },
 
   importVouchers: async (productId: string, codes: string[]) => {
+    let localCodes: VoucherCode[] = JSON.parse(localStorage.getItem(CODES_KEY) || '[]');
+    if (localCodes.length === 0) localCodes = [...db.voucherCodes];
+
     const newCodes = codes.map(c => ({
       id: `vc-${productId}-${Math.random().toString(36).substr(2, 6)}`,
       productId,
@@ -131,8 +145,11 @@ export const api = {
   },
 
   // Settlement Engine
-  getOrders: async () => localOrders,
-  getOrderById: async (id: string) => localOrders.find(o => o.id === id) || null,
+  getOrders: async () => JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]'),
+  getOrderById: async (id: string) => {
+    const orders: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
+    return orders.find(o => o.id === id) || null;
+  },
   
   calculatePrice: async (productId: string, quantity: number, promoCode?: string) => {
     const p = db.products.find(x => x.id === productId);
@@ -148,6 +165,8 @@ export const api = {
   submitBankTransfer: async (productId: string, quantity: number, email: string, bankRef: string): Promise<Order> => {
     const p = db.products.find(x => x.id === productId);
     const currentUser = api.getCurrentUser();
+    const orders: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
+    
     const order: Order = {
       id: `UNICOU-${Math.random().toString(36).substr(2, 7).toUpperCase()}`,
       userId: currentUser?.id || 'guest-node',
@@ -166,19 +185,31 @@ export const api = {
       voucherCodes: [],
       bankRef
     };
-    localOrders = [order, ...localOrders];
-    localStorage.setItem(ORDERS_KEY, JSON.stringify(localOrders));
+    
+    const updatedOrders = [order, ...orders];
+    localStorage.setItem(ORDERS_KEY, JSON.stringify(updatedOrders));
     return order;
   },
 
   verifyBankTransfer: async (orderId: string) => {
-    const order = localOrders.find(o => o.id === orderId);
-    if (!order) throw new Error('Order node not found.');
+    // 1. Fetch latest data from storage
+    const orders: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
+    let codes: VoucherCode[] = JSON.parse(localStorage.getItem(CODES_KEY) || '[]');
+    if (codes.length === 0) codes = [...db.voucherCodes];
+
+    const orderIdx = orders.findIndex(o => o.id === orderId);
+    if (orderIdx === -1) throw new Error('Order node not found.');
+    const order = orders[orderIdx];
     
-    const available = localCodes.filter(c => c.productId === order.productId && c.status === 'Available');
-    if (available.length < order.quantity) throw new Error('Insufficient vault inventory. Please restock.');
+    // 2. Stock Check & Auto-Replenishment
+    let available = codes.filter(c => c.productId === order.productId && c.status === 'Available');
+    if (available.length < order.quantity) {
+      const replenishment = generateDemoStock(order.productId, 20);
+      codes = [...codes, ...replenishment];
+      available = codes.filter(c => c.productId === order.productId && c.status === 'Available');
+    }
     
-    // Assign codes and mark them as used
+    // 3. Assignment
     const assignedCodes: string[] = [];
     for (let i = 0; i < order.quantity; i++) {
         const voucher = available[i];
@@ -186,12 +217,12 @@ export const api = {
         assignedCodes.push(voucher.code);
     }
     
+    // 4. Update and Persist
     order.status = 'Completed';
     order.voucherCodes = assignedCodes;
     
-    // Persist everything
-    localStorage.setItem(CODES_KEY, JSON.stringify(localCodes));
-    localStorage.setItem(ORDERS_KEY, JSON.stringify(localOrders));
+    localStorage.setItem(CODES_KEY, JSON.stringify(codes));
+    localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
     
     return order;
   },
@@ -207,9 +238,21 @@ export const api = {
 
   processPayment: async (productId: string, quantity: number, email: string, paymentData: any): Promise<Order> => {
     const p = db.products.find(x => x.id === productId);
-    const available = localCodes.filter(c => c.productId === productId && c.status === 'Available');
+    let codes: VoucherCode[] = JSON.parse(localStorage.getItem(CODES_KEY) || '[]');
+    if (codes.length === 0) codes = [...db.voucherCodes];
+
+    // Ensure stock exists
+    let available = codes.filter(c => c.productId === productId && c.status === 'Available');
+    if (available.length < quantity) {
+      const replenishment = generateDemoStock(productId, 20);
+      codes = [...codes, ...replenishment];
+      available = codes.filter(c => c.productId === productId && c.status === 'Available');
+    }
+
     const assigned = available.slice(0, quantity);
     assigned.forEach(c => c.status = 'Used');
+    
+    const orders: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
     const currentUser = api.getCurrentUser();
 
     const order: Order = {
@@ -230,15 +273,16 @@ export const api = {
       voucherCodes: assigned.map(c => c.code),
       paymentId: paymentData.paymentId
     };
-    localOrders = [order, ...localOrders];
-    localStorage.setItem(ORDERS_KEY, JSON.stringify(localOrders));
-    localStorage.setItem(CODES_KEY, JSON.stringify(localCodes));
+    
+    localStorage.setItem(ORDERS_KEY, JSON.stringify([order, ...orders]));
+    localStorage.setItem(CODES_KEY, JSON.stringify(codes));
     return order;
   },
 
   // CRM & Leads
-  getLeads: async () => localLeads,
+  getLeads: async () => JSON.parse(localStorage.getItem(LEADS_KEY) || '[]'),
   submitLead: async (type: 'student' | 'agent' | 'career' | 'general', data: Record<string, string>) => {
+    const leads: Lead[] = JSON.parse(localStorage.getItem(LEADS_KEY) || '[]');
     const lead: Lead = {
       id: `LD-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
       type,
@@ -246,8 +290,7 @@ export const api = {
       status: 'New',
       timestamp: new Date().toISOString()
     };
-    localLeads = [lead, ...localLeads];
-    localStorage.setItem(LEADS_KEY, JSON.stringify(localLeads));
+    localStorage.setItem(LEADS_KEY, JSON.stringify([lead, ...leads]));
     return lead;
   },
 
@@ -262,11 +305,7 @@ export const api = {
 
   // Study Hub Node (LMS)
   getAllLMSCourses: async () => db.lmsCourses,
-  getEnrolledCourses: async () => {
-    const user = api.getCurrentUser();
-    if (!user) return [];
-    return db.lmsCourses;
-  },
+  getEnrolledCourses: async () => db.lmsCourses,
   getCourseModules: async (courseId: string) => db.lmsModules.filter(m => m.courseId === courseId),
   getEnrollmentByCourse: async (courseId: string) => ({ id: 'enr-demo', userId: 'demo-user', courseId, enrolledAt: new Date().toISOString(), progress: 45 }),
   updateCourseProgress: async (courseId: string, progress: number) => {},
@@ -306,16 +345,20 @@ export const api = {
   getLogs: async (): Promise<ActivityLog[]> => [
     { id: 'log-1', timestamp: new Date().toISOString(), userId: 'u-admin', userEmail: 'admin@unicou.uk', action: 'NODE_AUTH', details: 'Authorized new staff session.', ip: '127.0.0.1', country: 'UK', severity: 'info' }
   ],
-  getFinanceReport: async (): Promise<FinanceReport> => ({
-    totalRevenue: 28450,
-    totalVouchersSold: 189,
-    salesByType: [
-      { name: 'PTE Academic', value: 15400 },
-      { name: 'IELTS Academic', value: 9200 },
-      { name: 'LanguageCert', value: 3850 }
-    ],
-    recentSales: localOrders.slice(0, 15)
-  }),
+  getFinanceReport: async (): Promise<FinanceReport> => {
+    const orders = await api.getOrders();
+    const completed = orders.filter((o: any) => o.status === 'Completed');
+    return {
+        totalRevenue: completed.reduce((acc: number, o: any) => acc + o.totalAmount, 0),
+        totalVouchersSold: completed.reduce((acc: number, o: any) => acc + o.quantity, 0),
+        salesByType: [
+            { name: 'PTE Academic', value: 15400 },
+            { name: 'IELTS Academic', value: 9200 },
+            { name: 'LanguageCert', value: 3850 }
+        ],
+        recentSales: orders.slice(0, 15)
+    };
+  },
 
   // Qualification Registry
   getQualifications: async () => db.qualifications,
