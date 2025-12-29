@@ -15,9 +15,8 @@ const SESSION_KEY = 'unicou_active_session_v4';
 const LEADS_KEY = 'unicou_leads_v1';
 const ORDERS_KEY = 'unicou_orders_v1';
 const CODES_KEY = 'unicou_codes_v1';
+const USERS_KEY = 'unicou_local_users_v1';
 
-// Fix for line 18: 'const' declarations must be initialized.
-// Added missing export for BANK_DETAILS
 export const BANK_DETAILS = {
   bankName: 'UNICOU Central Finance (UK)',
   accountName: 'UNICOU INTERNATIONAL LTD',
@@ -31,8 +30,8 @@ export const BANK_DETAILS = {
 let localOrders: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
 let localLeads: Lead[] = JSON.parse(localStorage.getItem(LEADS_KEY) || '[]');
 let localCodes: VoucherCode[] = JSON.parse(localStorage.getItem(CODES_KEY) || '[]');
+let localUsers: User[] = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
 
-// Exporting the api object to fix multiple module errors
 export const api = {
   // Auth Node
   getCurrentUser: (): User | null => {
@@ -41,19 +40,38 @@ export const api = {
   },
 
   login: async (email: string): Promise<User> => {
-    const user = db.users.find(u => u.email === email);
+    const cleanEmail = email.trim().toLowerCase();
+    // Search both static DB and Local Registry
+    const allUsers = [...db.users, ...localUsers];
+    const user = allUsers.find(u => u.email.toLowerCase() === cleanEmail);
+    
     if (!user) throw new Error('Identity mismatch. Registry node not found.');
     localStorage.setItem(SESSION_KEY, JSON.stringify(user));
     return user;
   },
 
   signup: async (email: string, role: UserRole): Promise<void> => {
-    if (db.users.some(u => u.email === email)) throw new Error('Identity already exists.');
-    // In demo, we just allow progression to verification
+    const cleanEmail = email.trim().toLowerCase();
+    const allUsers = [...db.users, ...localUsers];
+    
+    if (allUsers.some(u => u.email.toLowerCase() === cleanEmail)) {
+      throw new Error('Identity already exists in global registry.');
+    }
+
+    const newUser: User = {
+      id: `u-${Math.random().toString(36).substr(2, 9)}`,
+      name: cleanEmail.split('@')[0],
+      email: cleanEmail,
+      role: role,
+      verified: true
+    };
+
+    localUsers.push(newUser);
+    localStorage.setItem(USERS_KEY, JSON.stringify(localUsers));
   },
 
   verifyEmail: async (email: string): Promise<void> => {
-    // Demo verification success
+    // Logic for demo verification
   },
 
   logout: () => {
@@ -61,10 +79,16 @@ export const api = {
   },
 
   updateUserRole: async (uid: string, role: UserRole) => {
-    const user = db.users.find(u => u.id === uid);
+    const user = [...db.users, ...localUsers].find(u => u.id === uid);
     if (user) {
       user.role = role;
-      // If updating current user, update session
+      // Persist if it was a local user
+      const localIdx = localUsers.findIndex(u => u.id === uid);
+      if (localIdx > -1) {
+        localUsers[localIdx].role = role;
+        localStorage.setItem(USERS_KEY, JSON.stringify(localUsers));
+      }
+      // Update session if it's current user
       const current = api.getCurrentUser();
       if (current?.id === uid) {
         localStorage.setItem(SESSION_KEY, JSON.stringify({ ...current, role }));
@@ -72,9 +96,9 @@ export const api = {
     }
   },
 
-  getUsers: async () => db.users,
+  getUsers: async () => [...db.users, ...localUsers],
 
-  // Global Registry Nodes (Universities & Countries)
+  // Global Registry Nodes
   getUniversities: async () => db.universities,
   getUniversityBySlug: async (slug: string) => db.universities.find(u => u.slug === slug) || null,
   getUniversitiesByCountry: async (countryId: string) => db.universities.filter(u => u.countryId === countryId),
@@ -82,7 +106,7 @@ export const api = {
   getGuideBySlug: async (slug: string) => db.countryGuides.find(g => g.slug === slug) || null,
   getImmigrationGuides: async (): Promise<ImmigrationGuideData[]> => db.immigrationGuides,
 
-  // Procurement Node (Voucher Store)
+  // Procurement Node
   getProducts: async () => db.products,
   getProductById: async (id: string) => db.products.find(p => p.id === id),
   
@@ -123,9 +147,10 @@ export const api = {
 
   submitBankTransfer: async (productId: string, quantity: number, email: string, bankRef: string): Promise<Order> => {
     const p = db.products.find(x => x.id === productId);
+    const currentUser = api.getCurrentUser();
     const order: Order = {
       id: `UNICOU-${Math.random().toString(36).substr(2, 7).toUpperCase()}`,
-      userId: 'guest-node',
+      userId: currentUser?.id || 'guest-node',
       productId,
       productName: p?.name || 'Academic Voucher',
       quantity,
@@ -175,10 +200,11 @@ export const api = {
     const available = [...db.voucherCodes, ...localCodes].filter(c => c.productId === productId && c.status === 'Available');
     const assigned = available.slice(0, quantity);
     assigned.forEach(c => c.status = 'Used');
+    const currentUser = api.getCurrentUser();
 
     const order: Order = {
       id: `UNICOU-${Math.random().toString(36).substr(2, 7).toUpperCase()}`,
-      userId: 'guest-node',
+      userId: currentUser?.id || 'guest-node',
       productId,
       productName: p?.name || 'Academic Voucher',
       quantity,
@@ -225,7 +251,12 @@ export const api = {
 
   // Study Hub Node (LMS)
   getAllLMSCourses: async () => db.lmsCourses,
-  getEnrolledCourses: async () => db.lmsCourses, // For demo, allow access to all
+  getEnrolledCourses: async () => {
+    const user = api.getCurrentUser();
+    if (!user) return [];
+    // For demo, return all courses if user is logged in
+    return db.lmsCourses;
+  },
   getCourseModules: async (courseId: string) => db.lmsModules.filter(m => m.courseId === courseId),
   getEnrollmentByCourse: async (courseId: string) => ({ id: 'enr-demo', userId: 'demo-user', courseId, enrolledAt: new Date().toISOString(), progress: 45 }),
   updateCourseProgress: async (courseId: string, progress: number) => { /* Demo logic */ },
@@ -236,7 +267,7 @@ export const api = {
   submitTestResult: async (testId: string, answers: any, timeTaken: number): Promise<TestResult> => {
     return {
       id: `TR-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
-      userId: 'student-node',
+      userId: api.getCurrentUser()?.id || 'student-node',
       testId,
       testTitle: 'Alpha Mock Test',
       skillScores: [
