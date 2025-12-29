@@ -28,6 +28,7 @@ import PolicyPage from './components/PolicyPage';
 import Resources from './components/Resources';
 import Careers from './components/Careers';
 import UserGuide from './components/UserGuide';
+import SystemMap from './components/SystemMap';
 import { ViewState, User } from './types';
 import { api } from './services/apiService';
 import { LOGO_SRC } from './constants/assets';
@@ -40,7 +41,7 @@ const OFFICE_LOCATIONS = [
 
 const App: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
-  const [view, setView] = useState<ViewState>({ type: 'home' });
+  const [view, setView] = useState<ViewState>({ type: 'home' } as any);
   const [user, setUser] = useState<User | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [isNavbarVisible, setIsNavbarVisible] = useState(true);
@@ -53,17 +54,15 @@ const App: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navigateTo = (newView: ViewState) => {
+  const navigateTo = (newView: any) => {
     setView(newView);
     setIsNavbarVisible(true); // Always show navbar on navigation
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const toggleNavbar = (e: React.MouseEvent) => {
-    // Only toggle if we're not clicking on interactive elements within the main view
     const target = e.target as HTMLElement;
     const isInteractive = target.closest('button') || target.closest('a') || target.closest('input') || target.closest('select') || target.closest('textarea');
-    
     if (!isInteractive) {
       setIsNavbarVisible(!isNavbarVisible);
     }
@@ -89,13 +88,13 @@ const App: React.FC = () => {
       case 'join-hub':
         return <div className={wrapperClass}><ApplicationHub onNavigate={navigateTo} /></div>;
       case 'apply':
-        return <div className={`max-w-4xl mx-auto ${wrapperClass} px-4`}><ApplyForm type={view.formType} context={view.context} /></div>;
+        return <div className={`max-w-4xl mx-auto ${wrapperClass} px-4`}><ApplyForm type={(view as any).formType} context={(view as any).context} /></div>;
       case 'country-list':
         return <div className={wrapperClass}><CountryList onNavigateToGuide={(slug) => navigateTo({ type: 'country-guide', slug })} /></div>;
       case 'country-guide':
-        return <div className={wrapperClass}><CountryGuide slug={view.slug} onViewUniversity={(uSlug) => navigateTo({ type: 'university', slug: uSlug })} onRegister={() => navigateTo({ type: 'join-hub' })} /></div>;
+        return <div className={wrapperClass}><CountryGuide slug={(view as any).slug} onViewUniversity={(uSlug) => navigateTo({ type: 'university', slug: uSlug })} onRegister={() => navigateTo({ type: 'join-hub' })} /></div>;
       case 'university':
-        return <div className={wrapperClass}><UniversityProfile slug={view.slug} /></div>;
+        return <div className={wrapperClass}><UniversityProfile slug={(view as any).slug} /></div>;
       case 'lms-dashboard':
         return <div className={wrapperClass}>{user ? <CustomerDashboard user={user} /> : <LMSDashboard onNavigate={navigateTo} />}</div>;
       case 'library':
@@ -120,13 +119,15 @@ const App: React.FC = () => {
       case 'qualifications':
         return <div className={wrapperClass}><QualificationCatalogue onApply={(qid) => navigateTo({ type: 'apply', formType: 'general', context: `Qualification ID: ${qid}` })} /></div>;
       case 'policy':
-        return <div className={wrapperClass}><PolicyPage policyId={view.policyId} /></div>;
+        return <div className={wrapperClass}><PolicyPage policyId={(view as any).policyId} /></div>;
       case 'resources':
         return <div className={wrapperClass}><Resources onNavigate={navigateTo} /></div>;
       case 'careers':
         return <div className={wrapperClass}><Careers /></div>;
       case 'guide':
         return <div className={wrapperClass}><UserGuide /></div>;
+      case 'system-map':
+        return <div className={wrapperClass}><SystemMap /></div>;
       case 'about':
         return (
           <div className={`max-w-7xl mx-auto ${wrapperClass} px-6 animate-in fade-in pb-32`}>
@@ -135,7 +136,6 @@ const App: React.FC = () => {
                 <h2 className="text-6xl md:text-[7rem] font-display font-black text-unicou-navy mb-8 tracking-tighter leading-none">The UNICOU <span className="text-unicou-orange">Legacy</span></h2>
                 <div className="h-2 w-32 bg-unicou-navy mx-auto rounded-full" />
              </div>
-             
              <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
                <div className="lg:col-span-8 space-y-16">
                  <section className="bg-white p-12 md:p-16 rounded-3xl border border-slate-100 shadow-premium relative overflow-hidden">
@@ -154,7 +154,6 @@ const App: React.FC = () => {
                      </div>
                    </div>
                  </section>
-
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="bg-unicou-navy p-10 rounded-3xl shadow-premium group transition-all hover:scale-[1.02]">
                        <h3 className="text-2xl font-display font-black text-white uppercase mb-6 flex items-center gap-4">
@@ -168,13 +167,12 @@ const App: React.FC = () => {
                        <h3 className="text-2xl font-display font-black text-white uppercase mb-6 flex items-center gap-4">
                          <span className="text-unicou-navy">02</span> Our Mission
                        </h3>
-                       <p className="white text-lg font-black italic leading-relaxed">
+                       <p className="text-white text-lg font-black italic leading-relaxed">
                          "Guided by expertise and personalized support, we streamline study abroad journeys for every client."
                        </p>
                     </div>
                  </div>
                </div>
-
                <div className="lg:col-span-4 space-y-8 sticky top-36">
                  <div className="bg-white p-10 rounded-3xl border border-slate-100 shadow-premium">
                    <h3 className="text-xl font-display font-black mb-8 uppercase text-unicou-navy">Why Partner With Us</h3>
@@ -187,7 +185,6 @@ const App: React.FC = () => {
                       ))}
                    </ul>
                  </div>
-
                  <button onClick={() => navigateTo({ type: 'join-hub' })} className="w-full py-8 bg-unicou-navy hover:bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-premium transition-all active:scale-95">
                    START YOUR JOURNEY
                  </button>
@@ -200,11 +197,11 @@ const App: React.FC = () => {
       case 'signup':
         return <div className={wrapperClass}><Signup onSuccess={(e) => navigateTo({ type: 'verification-pending', email: e })} onNavigateToLogin={() => navigateTo({ type: 'login' })} /></div>;
       case 'verification-pending':
-        return <div className={wrapperClass}><VerificationPending email={view.email} onVerified={() => navigateTo({ type: 'login' })} /></div>;
+        return <div className={wrapperClass}><VerificationPending email={(view as any).email} onVerified={() => navigateTo({ type: 'login' })} /></div>;
       case 'checkout':
-        return <div className={wrapperClass}><CheckoutProcess productId={view.productId} quantity={view.quantity} onSuccess={(oid) => navigateTo({ type: 'success', orderId: oid })} onCancel={() => navigateTo({ type: 'store' })} /></div>;
+        return <div className={wrapperClass}><CheckoutProcess productId={(view as any).productId} quantity={(view as any).quantity} onSuccess={(oid) => navigateTo({ type: 'success', orderId: oid })} onCancel={() => navigateTo({ type: 'store' })} /></div>;
       case 'success':
-        return <div className={wrapperClass}><SuccessScreen orderId={view.orderId} onClose={() => navigateTo({ type: 'store' })} /></div>;
+        return <div className={wrapperClass}><SuccessScreen orderId={(view as any).orderId} onClose={() => navigateTo({ type: 'store' })} /></div>;
       case 'admin':
         if (!user || !['Admin', 'Finance'].includes(user.role)) return <div className="view-container text-center pt-40 font-black uppercase text-slate-400">Restricted Access.</div>;
         return <div className={wrapperClass}><AdminDashboard /></div>;
@@ -212,15 +209,15 @@ const App: React.FC = () => {
         if (!user || user.role !== 'Agent') return <div className="view-container text-center pt-40 font-black uppercase text-slate-400">Agent Portal Restricted.</div>;
         return <div className={wrapperClass}><AgentDashboard user={user} onBuy={(p, q) => navigateTo({ type: 'checkout', productId: p, quantity: q })} /></div>;
       case 'lms-course-player':
-        return <LMSCoursePlayer courseId={view.courseId} initialLessonId={view.initialLessonId} onNavigate={navigateTo} />;
+        return <LMSCoursePlayer courseId={(view as any).courseId} initialLessonId={(view as any).initialLessonId} onNavigate={navigateTo} />;
       case 'lms-practice-test':
-        return <LMSPracticeTest testId={view.testId} onNavigate={navigateTo} />;
+        return <LMSPracticeTest testId={(view as any).testId} onNavigate={navigateTo} />;
       default:
         return <div className="view-container text-center pt-40 font-black uppercase text-slate-400 italic">Endpoint unmapped.</div>;
     }
   };
 
-  const handleLogout = () => { api.logout(); setUser(null); navigateTo({ type: 'home' }); };
+  const handleLogout = () => { api.logout(); setUser(null); navigateTo({ type: 'home' } as any); };
 
   return (
     <div 
@@ -228,7 +225,7 @@ const App: React.FC = () => {
       onClick={toggleNavbar}
     >
       <Navbar 
-        view={view} 
+        view={view as any} 
         user={user} 
         scrolled={scrolled} 
         onNavigate={navigateTo} 
@@ -238,7 +235,7 @@ const App: React.FC = () => {
       />
       
       {!isNavbarVisible && (
-        <div className="fixed top-0 left-1/2 -translate-x-1/2 z-[101] bg-unicou-navy/10 hover:bg-unicou-navy/20 px-4 py-1 rounded-b-xl cursor-pointer animate-bounce mt-1">
+        <div className="fixed top-0 left-1/2 -translate-x-1/2 z-[101] bg-unicou-navy/10 hover:bg-unicou-navy/20 px-4 py-1 rounded-b-xl cursor-pointer animate-bounce mt-1 print:hidden">
            <svg className="w-4 h-4 text-unicou-navy" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" /></svg>
         </div>
       )}
@@ -246,7 +243,7 @@ const App: React.FC = () => {
       <main className="relative z-0">
         {renderContent()}
       </main>
-      <footer className="bg-slate-50 border-t border-slate-100 py-24 mt-auto">
+      <footer className="bg-slate-50 border-t border-slate-100 py-24 mt-auto print:hidden">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-16 pb-16 border-b border-slate-200">
             <div className="md:col-span-1">
@@ -266,7 +263,7 @@ const App: React.FC = () => {
               <ul className="space-y-4 text-[12px] font-black text-unicou-navy uppercase tracking-widest">
                 <li><button onClick={() => navigateTo({ type: 'store' })} className="hover:text-unicou-orange transition-colors">Voucher Store</button></li>
                 <li><button onClick={() => navigateTo({ type: 'join-hub' })} className="hover:text-unicou-orange transition-colors">Apply Node</button></li>
-                <li><button onClick={() => navigateTo({ type: 'guide' })} className="hover:text-unicou-orange transition-colors">User Guide</button></li>
+                <li><button onClick={() => navigateTo({ type: 'system-map' })} className="hover:text-unicou-orange transition-colors font-black">System Blueprint (PDF)</button></li>
                 <li><button onClick={() => navigateTo({ type: 'policy', policyId: 'privacy' })} className="hover:text-unicou-orange transition-colors">Privacy Policy</button></li>
               </ul>
             </div>
