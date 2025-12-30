@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Hero from './components/Hero';
 import Features from './components/Features';
@@ -147,7 +146,7 @@ const App: React.FC = () => {
                      </p>
                      <div className="space-y-6 text-lg text-slate-600 leading-relaxed font-bold italic">
                        <p>Our journey began in 2009 in Pakistan. As of 2023, we expanded our operations to include offices in the United Kingdom and Dubai, enhancing our ability to serve clients with localized expertise in competitive markets.</p>
-                       <div className="flex flex-wrap gap-2 pt-4">
+                       <div className="flex wrap gap-2 pt-4">
                          {["British Council", "ICEF", "AIRC", "LanguageCert", "TOEFL", "Duolingo", "Pearson"].map(tag => (
                            <span key={tag} className="px-4 py-2 bg-slate-50 text-unicou-navy text-[10px] font-black uppercase tracking-widest rounded-lg border border-slate-100">{tag} Certified</span>
                          ))}
@@ -198,6 +197,7 @@ const App: React.FC = () => {
             setUser(u); 
             if (['Admin', 'Finance'].includes(u.role)) navigateTo({ type: 'admin' });
             else if (u.role === 'Trainer') navigateTo({ type: 'trainer' });
+            else if (u.role === 'Agent') navigateTo({ type: 'agent' });
             else navigateTo({ type: 'lms-dashboard' }); 
         }} onNavigateToSignup={() => navigateTo({ type: 'signup' })} /></div>;
       case 'signup':
@@ -277,7 +277,7 @@ const App: React.FC = () => {
               </ul>
             </div>
           </div>
-          <div className="pt-10 flex flex-wrap gap-8 text-[10px] font-black uppercase tracking-widest text-slate-400">
+          <div className="pt-10 flex wrap gap-8 text-[10px] font-black uppercase tracking-widest text-slate-400">
              <button onClick={() => navigateTo({ type: 'policy', policyId: 'modern-slavery' })} className="hover:text-unicou-navy transition-colors">Modern Slavery Policy</button>
              <button onClick={() => navigateTo({ type: 'policy', policyId: 'accessibility' })} className="hover:text-unicou-navy transition-colors">Accessibility</button>
              <button onClick={() => navigateTo({ type: 'policy', policyId: 'cookies' })} className="hover:text-unicou-navy transition-colors">Cookie Strategy</button>

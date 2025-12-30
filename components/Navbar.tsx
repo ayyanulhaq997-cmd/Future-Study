@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ViewState, User } from '../types';
 import { LOGO_SRC } from '../constants/assets';
@@ -64,6 +63,21 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
     { label: 'Connect', type: 'join-hub' }
   ];
 
+  const handleProfileClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!user) return;
+    
+    if (['Admin', 'Finance'].includes(user.role)) {
+      onNavigate({ type: 'admin' });
+    } else if (user.role === 'Agent') {
+      onNavigate({ type: 'agent' });
+    } else if (user.role === 'Trainer') {
+      onNavigate({ type: 'trainer' });
+    } else {
+      onNavigate({ type: 'lms-dashboard' });
+    }
+  };
+
   return (
     <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 navbar-fixed ${isVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'} ${scrolled ? 'py-3' : 'py-6'}`}>
       <div className="max-w-7xl mx-auto px-6">
@@ -125,7 +139,7 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
 
             {user ? (
               <div className="flex items-center gap-2">
-                <button onClick={(e) => { e.stopPropagation(); onNavigate(['Admin', 'Finance'].includes(user.role) ? { type: 'admin' } : { type: 'lms-dashboard' }); }} className="flex items-center gap-2 pl-2 pr-3 py-1.5 bg-unicou-navy rounded-full hover:bg-slate-900 transition-all shadow-md">
+                <button onClick={handleProfileClick} className="flex items-center gap-2 pl-2 pr-3 py-1.5 bg-unicou-navy rounded-full hover:bg-slate-900 transition-all shadow-md">
                   <div className="w-6 h-6 rounded-full bg-unicou-orange flex items-center justify-center text-[10px] font-black text-white uppercase">{user.name.charAt(0)}</div>
                   <span className="text-[10px] font-black text-white uppercase tracking-widest">{user.name.split(' ')[0]}</span>
                 </button>
