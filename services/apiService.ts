@@ -1,4 +1,3 @@
-
 import * as db from './db';
 import { 
   Product, VoucherCode, VoucherStatus, Order, User, ActivityLog, SecurityStatus, LMSCourse, 
@@ -353,23 +352,27 @@ export const api = {
       reviews: []
     };
 
-    // Inject manual submissions into Trainer Queue with CORRECT USER DATA
-    const skillsToGrade = ['Writing', 'Speaking'];
-    skillsToGrade.forEach(skill => {
-        const sub: ManualSubmission = {
+    // Correctly discover and inject manual submissions from the actual test structure
+    test?.sections.forEach(section => {
+      section.questions.forEach(q => {
+        if (q.type === 'Essay' || q.type === 'Audio-Record') {
+          const sub: ManualSubmission = {
             id: `SUB-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
             testResultId: newResult.id,
             userId: activeUser.id,
             userName: activeUser.name,
             userEmail: activeUser.email,
             testTitle: test?.title || 'Mock Test',
-            skill,
-            questionId: `q-${skill.toLowerCase()}`,
-            studentAnswer: answers[`q-${skill.toLowerCase()}`] || "No response provided.",
-            maxScore: 9,
+            skill: q.skill,
+            questionId: q.id,
+            questionText: q.text,
+            studentAnswer: String(answers[q.id] || "No response provided by student."),
+            maxScore: q.maxScore,
             timestamp: new Date().toISOString()
-        };
-        manualSubs.push(sub);
+          };
+          manualSubs.push(sub);
+        }
+      });
     });
 
     results.unshift(newResult);

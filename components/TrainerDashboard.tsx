@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/apiService';
 import { ManualSubmission, User } from '../types';
@@ -155,10 +154,18 @@ const TrainerDashboard: React.FC<{ user: User }> = ({ user }) => {
                </div>
 
                <div className="space-y-12 relative z-10">
+                  {/* Added Question Context section */}
+                  <div className="space-y-4">
+                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Question Context / Prompt</h4>
+                    <div className="bg-unicou-navy/5 border border-unicou-navy/10 rounded-3xl p-8 leading-relaxed text-unicou-navy font-bold italic text-base">
+                      {selectedItem.questionText || "No context provided."}
+                    </div>
+                  </div>
+
                   <div className="space-y-4">
                      <div className="flex justify-between items-center px-2">
-                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Submission Core (Raw Content)</h4>
-                        <span className="text-[10px] font-black text-slate-900 uppercase font-mono bg-slate-50 px-3 py-1 rounded-full border border-slate-100">{selectedItem.studentAnswer.split(' ').length} Word Count</span>
+                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Student Response Core</h4>
+                        <span className="text-[10px] font-black text-slate-900 uppercase font-mono bg-slate-50 px-3 py-1 rounded-full border border-slate-100">{selectedItem.studentAnswer.split(/\s+/).length} Word Count</span>
                      </div>
                      <div className="bg-slate-50 border border-slate-100 rounded-[3rem] p-12 min-h-[300px] leading-relaxed text-slate-800 italic text-xl shadow-inner whitespace-pre-wrap">
                        "{selectedItem.studentAnswer}"

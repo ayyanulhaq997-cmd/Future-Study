@@ -1,4 +1,3 @@
-
 export type UserRole = 'Admin' | 'Agent' | 'Customer' | 'Trainer' | 'Finance' | 'Teller';
 export type FormType = 'student-apply' | 'agent-reg' | 'prep-center-reg' | 'institute-connect' | 'careers' | 'general' | 'immigration-consult';
 
@@ -135,6 +134,7 @@ export interface ManualSubmission {
   testTitle: string;
   skill: string;
   questionId: string;
+  questionText: string;
   studentAnswer: string;
   maxScore: number;
   timestamp: string;
