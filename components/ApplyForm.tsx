@@ -36,6 +36,7 @@ const ApplyForm: React.FC<ApplyFormProps> = ({ type, context, onSuccess }) => {
     setSubmitting(true);
     try {
       const leadType = type === 'student-apply' ? 'student' : type === 'agent-reg' ? 'agent' : 'general';
+      // In a real production scenario, the apiService would handle the email dispatch to connect@unicou.uk
       await api.submitLead(leadType as any, formData);
       
       setSubmitting(false);
@@ -56,7 +57,7 @@ const ApplyForm: React.FC<ApplyFormProps> = ({ type, context, onSuccess }) => {
         </div>
         <h3 className="text-4xl font-display font-bold text-unicou-navy mb-4 tracking-tighter uppercase">NODE SYNCHRONIZED</h3>
         <p className="text-slate-600 text-lg mb-10 leading-relaxed font-medium italic max-w-md mx-auto">
-          "Your data has been successfully transmitted to the UNICOU Global Registry. A designated node manager will initialize contact shortly."
+          "Your application has been logged and dispatched to our central desk (connect@unicou.uk). A node manager will initialize contact within 24 operational hours."
         </p>
         <button onClick={() => { setDone(false); setAgreeTerms(false); setFormData({}); }} className="px-12 py-5 bg-unicou-navy text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:bg-slate-950 transition-all active:scale-95">NEW REGISTRATION</button>
       </div>
@@ -71,44 +72,97 @@ const ApplyForm: React.FC<ApplyFormProps> = ({ type, context, onSuccess }) => {
       <div className="relative z-10 mb-12">
         <div className="flex items-center gap-3 mb-4">
            <div className="vibrant-strip w-12"></div>
-           <span className="text-[10px] font-black text-unicou-orange uppercase tracking-[0.4em]">{context || 'REGISTRY PROTOCOL'}</span>
+           <span className="text-[10px] font-black text-unicou-orange uppercase tracking-[0.4em]">{context || 'GLOBAL HUB REGISTRY'}</span>
         </div>
         <h2 className="text-4xl md:text-5xl font-display font-bold text-unicou-navy tracking-tight leading-none mb-4 uppercase">
-          {type === 'student-apply' ? 'STUDENT REGISTRY' : 'PARTNER PROTOCOL'}
+          {type === 'student-apply' ? 'STUDENT APPLY ONLINE' : 'AGENT & PARTNER MEMBERSHIP'}
         </h2>
-        <p className="text-slate-500 font-medium italic">Authorized field entry required for secure node establishment.</p>
+        <p className="text-slate-500 font-medium italic">Authorized field entry required for secure node establishment. All data transmitted to connect@unicou.uk</p>
       </div>
 
       <form onSubmit={handleSubmit} className="relative z-10 space-y-8">
         {type === 'student-apply' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-            <Input label="Student Full Name (Passport)" placeholder="Legal Name" required value={formData.name || ''} onChange={(v: string) => handleFieldChange('name', v)} />
-            <Input label="Guardian / Father's Name" placeholder="Full Name" required value={formData.guardian || ''} onChange={(v: string) => handleFieldChange('guardian', v)} />
-            <Input label="Primary WhatsApp" placeholder="+00 000 0000" required value={formData.whatsapp || ''} onChange={(v: string) => handleFieldChange('whatsapp', v)} />
-            <Input label="Identity Email" type="email" placeholder="student@email.com" required value={formData.email || ''} onChange={(v: string) => handleFieldChange('email', v)} />
-            <Input label="City of Residence" placeholder="Current Location" required value={formData.city || ''} onChange={(v: string) => handleFieldChange('city', v)} />
-            <Select label="Priority Destination" options={[
-              'United Kingdom', 'USA', 'Canada', 'Australia', 'New Zealand', 'Europe Hub', 'Dubai (UAE)'
-            ]} value={formData.destination || ''} onChange={(v: string) => handleFieldChange('destination', v)} />
-            <Input label="Last Qualification" placeholder="e.g. Master, Bachelor" required value={formData.qualification || ''} onChange={(v: string) => handleFieldChange('qualification', v)} />
-            <Input label="Academic Merit (GPA/%)" placeholder="e.g. 3.8 / 85%" required value={formData.merit || ''} onChange={(v: string) => handleFieldChange('merit', v)} />
-            <Select label="English Proficiency" options={[
-              'IELTS Academic', 'PTE Academic', 'Oxford ELLT', 'LanguageCert', 'TOEFL iBT', 'Duolingo'
-            ]} value={formData.english || ''} onChange={(v: string) => handleFieldChange('english', v)} />
-            <Select label="Target Intake" options={['September 2025', 'January 2026', 'May 2026']} value={formData.intake || ''} onChange={(v: string) => handleFieldChange('intake', v)} />
+          <div className="space-y-12">
+            {/* Personal Section */}
+            <div>
+              <h4 className="text-[10px] font-black text-unicou-navy uppercase tracking-[0.3em] mb-6 pb-2 border-b border-slate-100">Section 01: Personal Profile</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                <Input label="Full Name" placeholder="As per Passport" required value={formData.name || ''} onChange={(v: string) => handleFieldChange('name', v)} />
+                <Input label="Father / Guardian Name" placeholder="Full Name" required value={formData.guardian || ''} onChange={(v: string) => handleFieldChange('guardian', v)} />
+                <Input label="Date of Birth" type="date" required value={formData.dob || ''} onChange={(v: string) => handleFieldChange('dob', v)} />
+                <Select label="Gender" options={['Male', 'Female', 'Other']} value={formData.gender || ''} onChange={(v: string) => handleFieldChange('gender', v)} />
+              </div>
+            </div>
+
+            {/* Contact Section */}
+            <div>
+              <h4 className="text-[10px] font-black text-unicou-navy uppercase tracking-[0.3em] mb-6 pb-2 border-b border-slate-100">Section 02: Connectivity Data</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                <Input label="Email Address" type="email" placeholder="student@email.com" required value={formData.email || ''} onChange={(v: string) => handleFieldChange('email', v)} />
+                <Input label="WhatsApp / Mobile" placeholder="+00 000 0000" required value={formData.whatsapp || ''} onChange={(v: string) => handleFieldChange('whatsapp', v)} />
+                <Input label="City" placeholder="Current Residence" required value={formData.city || ''} onChange={(v: string) => handleFieldChange('city', v)} />
+                <Input label="Full Mailing Address" placeholder="Street, Area, Zip" required value={formData.address || ''} onChange={(v: string) => handleFieldChange('address', v)} />
+              </div>
+            </div>
+
+            {/* Academic Section */}
+            <div>
+              <h4 className="text-[10px] font-black text-unicou-navy uppercase tracking-[0.3em] mb-6 pb-2 border-b border-slate-100">Section 03: Academic History</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                <Input label="Last Degree / Qualification" placeholder="e.g. Master, Bachelor, A-Levels" required value={formData.qualification || ''} onChange={(v: string) => handleFieldChange('qualification', v)} />
+                <Input label="Previous Institution / Board" placeholder="University or College Name" required value={formData.last_school || ''} onChange={(v: string) => handleFieldChange('last_school', v)} />
+                <Input label="CGPA / Percentage" placeholder="e.g. 3.5 or 82%" required value={formData.merit || ''} onChange={(v: string) => handleFieldChange('merit', v)} />
+                <Select label="English Proficiency Test" options={['IELTS', 'PTE', 'Oxford ELLT', 'TOEFL', 'Duolingo', 'None / Planning']} value={formData.english_test || ''} onChange={(v: string) => handleFieldChange('english_test', v)} />
+              </div>
+            </div>
+
+            {/* Interest Section */}
+            <div>
+              <h4 className="text-[10px] font-black text-unicou-navy uppercase tracking-[0.3em] mb-6 pb-2 border-b border-slate-100">Section 04: Destination Mapping</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                <Select label="Target Country" options={['UK', 'Australia', 'Canada', 'USA', 'New Zealand', 'Germany', 'Italy', 'Sweden', 'Finland', 'Dubai (UAE)', 'Turkey', 'Malaysia']} value={formData.destination || ''} onChange={(v: string) => handleFieldChange('destination', v)} />
+                <Input label="Preferred Course / Field" placeholder="e.g. MBA, Data Science, Nursing" required value={formData.course || ''} onChange={(v: string) => handleFieldChange('course', v)} />
+                <Select label="Intended Intake" options={['Sept 2025', 'Jan 2026', 'May 2026']} value={formData.intake || ''} onChange={(v: string) => handleFieldChange('intake', v)} />
+                <Select label="How did you hear about UNICOU?" options={['Social Media', 'Google Search', 'Friend/Referral', 'Newspaper/Flyer', 'Campus Event']} value={formData.source || ''} onChange={(v: string) => handleFieldChange('source', v)} />
+              </div>
+            </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-            <Input label="Agency Legal Entity" placeholder="Company Name" required value={formData.agency_name || ''} onChange={(v: string) => handleFieldChange('agency_name', v)} />
-            <Input label="Managing Director / CEO" placeholder="Full Name" required value={formData.ceo_name || ''} onChange={(v: string) => handleFieldChange('ceo_name', v)} />
-            <Input label="Professional Email" type="email" placeholder="partnership@agency.com" required value={formData.email || ''} onChange={(v: string) => handleFieldChange('email', v)} />
-            <Input label="Business WhatsApp" placeholder="+00 000 0000" required value={formData.whatsapp || ''} onChange={(v: string) => handleFieldChange('whatsapp', v)} />
-            <Input label="Years of Industry Presence" type="number" placeholder="e.g. 8" required value={formData.years_presence || ''} onChange={(v: string) => handleFieldChange('years_presence', v)} />
-            <Select label="Core Specialization" options={[
-              'Education Consultancy', 'English Training', 'Visa Support', 'Global Recruitment'
-            ]} value={formData.specialization || ''} onChange={(v: string) => handleFieldChange('specialization', v)} />
-            <div className="md:col-span-2">
-              <Input label="Full Operational Address" placeholder="Headquarters Location" required value={formData.address || ''} onChange={(v: string) => handleFieldChange('address', v)} />
+          <div className="space-y-12">
+            {/* Business Profile */}
+            <div>
+              <h4 className="text-[10px] font-black text-unicou-navy uppercase tracking-[0.3em] mb-6 pb-2 border-b border-slate-100">Section 01: Agency Core Identity</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                <Input label="Agency / Company Name" placeholder="Legal Entity Name" required value={formData.agency_name || ''} onChange={(v: string) => handleFieldChange('agency_name', v)} />
+                <Input label="Managing Director / CEO" placeholder="Full Name" required value={formData.ceo_name || ''} onChange={(v: string) => handleFieldChange('ceo_name', v)} />
+                <Input label="Company Registration / NTN" placeholder="Business License No." value={formData.reg_no || ''} onChange={(v: string) => handleFieldChange('reg_no', v)} />
+                <Input label="Year Established" type="number" placeholder="e.g. 2015" required value={formData.year_established || ''} onChange={(v: string) => handleFieldChange('year_established', v)} />
+              </div>
+            </div>
+
+            {/* Business Contact */}
+            <div>
+              <h4 className="text-[10px] font-black text-unicou-navy uppercase tracking-[0.3em] mb-6 pb-2 border-b border-slate-100">Section 02: Operational Connect</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                <Input label="Official Email" type="email" placeholder="partnership@agency.com" required value={formData.email || ''} onChange={(v: string) => handleFieldChange('email', v)} />
+                <Input label="Mobile / WhatsApp" placeholder="+00 000 0000" required value={formData.whatsapp || ''} onChange={(v: string) => handleFieldChange('whatsapp', v)} />
+                <Input label="Office Landline" placeholder="+00 00 0000" value={formData.landline || ''} onChange={(v: string) => handleFieldChange('landline', v)} />
+                <Input label="Website / Social URL" placeholder="https://..." value={formData.website || ''} onChange={(v: string) => handleFieldChange('website', v)} />
+                <div className="md:col-span-2">
+                  <Input label="Full Operational Address" placeholder="Street, City, Country" required value={formData.address || ''} onChange={(v: string) => handleFieldChange('address', v)} />
+                </div>
+              </div>
+            </div>
+
+            {/* Business Focus */}
+            <div>
+              <h4 className="text-[10px] font-black text-unicou-navy uppercase tracking-[0.3em] mb-6 pb-2 border-b border-slate-100">Section 03: Strategic Specialization</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                <Select label="Core Service" options={['Education Consultancy', 'English Prep Center', 'Immigration Support', 'Global Recruitment Hub']} value={formData.core_service || ''} onChange={(v: string) => handleFieldChange('core_service', v)} />
+                <Input label="Current Student Flow (Annual)" placeholder="e.g. 50-100 Students" value={formData.student_flow || ''} onChange={(v: string) => handleFieldChange('student_flow', v)} />
+                <Input label="Primary Target Countries" placeholder="UK, Australia, etc." required value={formData.target_countries || ''} onChange={(v: string) => handleFieldChange('target_countries', v)} />
+                <Select label="Primary Interest" options={['Direct Voucher Bulk Purchase', 'Student Recruitment Partnership', 'LMS Licensing', 'Franchise Node']} value={formData.partnership_type || ''} onChange={(v: string) => handleFieldChange('partnership_type', v)} />
+              </div>
             </div>
           </div>
         )}
@@ -125,7 +179,7 @@ const ApplyForm: React.FC<ApplyFormProps> = ({ type, context, onSuccess }) => {
                 />
               </div>
               <span className="text-[11px] text-slate-500 leading-relaxed font-bold italic group-hover:text-slate-700 transition-colors">
-                I authorize UNICOU International Ltd to process my data under the <strong>Global Privacy Framework</strong>.
+                I authorize UNICOU International Ltd to process my application under the <strong>Global Privacy Framework</strong>. I understand that this data will be used to initialize my academic/business roadmap.
               </span>
            </label>
         </div>
@@ -137,11 +191,11 @@ const ApplyForm: React.FC<ApplyFormProps> = ({ type, context, onSuccess }) => {
           {submitting ? (
             <>
               <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-              TRANSMITTING DATA...
+              TRANSMITTING TO HUB...
             </>
           ) : (
             <>
-              ESTABLISH HUB CONNECTION
+              SUBMIT REGISTRY RECORD
               <svg className="w-6 h-6 group-hover/btn:translate-x-2 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
             </>
           )}
