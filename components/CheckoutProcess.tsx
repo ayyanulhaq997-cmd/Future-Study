@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { api, BANK_DETAILS } from '../services/apiService';
 import { Product, User } from '../types';
@@ -75,7 +76,7 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
     if (!email || !pricing || !product) return;
 
     if (!policyAccepted) {
-      alert("Verification Required: Items are NON-REFUNDABLE and Non-Replicable. Please accept the terms to proceed.");
+      alert("Verification Required: Please review and accept the Terms of Purchase (Annex A) to proceed.");
       return;
     }
 
@@ -279,9 +280,14 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
                         checked={policyAccepted}
                         onChange={(e) => setPolicyAccepted(e.target.checked)}
                       />
-                      <span className="text-[11px] text-slate-500 font-bold italic leading-relaxed">
-                        I confirm that student email verification has been initialized. Items are <span className="text-red-600 uppercase font-black">NON-REFUNDABLE</span> and Non-Replicable once fulfillment commences as per Annex A.
-                      </span>
+                      <div className="text-[11px] text-slate-500 font-bold italic leading-relaxed">
+                        By completing this purchase, I acknowledge and agree that:
+                        <ul className="list-disc ml-4 mt-2 space-y-1">
+                          <li>Once the voucher code is delivered, it cannot be refunded, replaced, or exchanged.</li>
+                          <li>I accept the website’s data privacy policy and consent to the use of my information as described therein.</li>
+                          <li>I shall be liable for any payment obligations, including cases of refund, return, cancellation, exam cancellation, related charges, or legal action.</li>
+                        </ul>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -310,7 +316,7 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
                   </div>
                 </div>
                 <p className="text-center text-[9px] text-slate-400 font-black uppercase tracking-[0.2em] mt-6">
-                  Annex B Notification: Fulfillment proceeds immediately upon node verification.
+                  Fulfillment proceeds immediately upon node verification.
                 </p>
               </form>
             ) : (

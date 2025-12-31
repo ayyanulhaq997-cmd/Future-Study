@@ -42,44 +42,46 @@ const SuccessScreen: React.FC<SuccessScreenProps> = ({ orderId, onClose }) => {
 
   if (!order) return null;
 
-  // SYSTEM LOGIC: "payment only verified when admin approve it otherwise it show pending"
+  // SYSTEM LOGIC: ANNEX B Update
   if (order.status === 'Pending') {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-20 text-center animate-in fade-in duration-700">
+      <div className="max-w-4xl mx-auto px-4 py-20 text-center animate-in fade-in duration-700 bg-white min-h-[80vh] flex flex-col items-center justify-center">
         <div className="mb-12 inline-flex items-center justify-center w-24 h-24 bg-orange-500/10 text-orange-400 rounded-full border border-orange-500/20 shadow-2xl animate-pulse">
           <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
         </div>
 
-        <h1 className="text-4xl md:text-6xl font-display font-bold mb-6">Settlement <span className="text-orange-400">Pending.</span></h1>
-        <p className="text-xl text-slate-400 mb-12 max-w-2xl mx-auto">
-            Your payment for order <strong>{order.id}</strong> has been received and is currently in the <strong>Verification Node</strong>. 
-            Once an administrator approves the settlement, your vouchers will be released here and via email.
+        <h1 className="text-5xl md:text-7xl font-display font-black mb-8 tracking-tighter text-slate-900 leading-none">
+          Settlement <span className="text-unicou-orange">Pending.</span>
+        </h1>
+        <p className="text-lg text-slate-500 font-bold mb-16 max-w-2xl mx-auto leading-relaxed">
+            Your payment for order <span className="text-unicou-navy font-black">{order.id}</span> has been received and is currently in the <span className="text-unicou-navy font-black">Verification Node</span>. Once an administrator approves the settlement, your vouchers will be released here and via email.
         </p>
 
-        <div className="glass p-10 rounded-[3rem] border border-slate-800 mb-12 max-w-xl mx-auto">
-            <div className="flex items-center justify-between mb-4">
-                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Protocol Status</span>
-                <span className="text-[10px] font-black text-orange-400 uppercase tracking-widest bg-orange-400/10 px-3 py-1 rounded-full">Awaiting Approval</span>
+        <div className="bg-white p-12 rounded-[3.5rem] border border-slate-200 mb-16 max-w-2xl mx-auto shadow-premium w-full text-left relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-orange-500/20" />
+            <div className="flex items-center justify-between mb-10">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Protocol Status</span>
+                <span className="text-[10px] font-black text-unicou-orange uppercase tracking-widest bg-orange-50 px-4 py-2 rounded-full border border-orange-100">Awaiting Approval</span>
             </div>
-            <p className="text-slate-500 text-sm italic leading-relaxed">
+            <p className="text-slate-500 text-base italic leading-relaxed font-semibold text-center px-4">
                 Verification usually takes between 10-60 minutes during standard operating hours. You can safely close this page; your assets will also appear in your student dashboard.
             </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row justify-center gap-4">
+        <div className="flex flex-col sm:flex-row justify-center gap-6 w-full max-w-md">
             <button 
               onClick={fetchOrder}
               disabled={refreshing}
-              className="px-10 py-5 bg-primary-600 hover:bg-primary-500 text-white rounded-2xl font-bold transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+              className="w-full px-12 py-6 bg-unicou-navy text-white rounded-3xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-4 disabled:opacity-50 shadow-3xl hover:bg-slate-950 active:scale-95"
             >
-              {refreshing ? <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : null}
-              Check Status
+              {refreshing ? <div className="w-5 h-5 border-4 border-white/20 border-t-white rounded-full animate-spin" /> : null}
+              CHECK VERIFICATION STATUS
             </button>
             <button 
               onClick={onClose}
-              className="px-10 py-5 glass hover:bg-slate-800 text-white rounded-2xl font-bold transition-all border border-slate-800"
+              className="w-full px-12 py-6 bg-white border-2 border-slate-200 text-slate-900 rounded-3xl font-black text-xs uppercase tracking-widest transition-all hover:bg-slate-50 active:scale-95"
             >
-              Back to Store
+              BACK TO STORE
             </button>
         </div>
       </div>
@@ -94,31 +96,31 @@ const SuccessScreen: React.FC<SuccessScreenProps> = ({ orderId, onClose }) => {
       </div>
 
       <h1 className="text-4xl md:text-6xl font-display font-bold mb-6">Payment <span className="text-emerald-500">Verified.</span></h1>
-      <p className="text-xl text-slate-400 mb-12 max-w-2xl mx-auto">
+      <p className="text-xl text-slate-600 mb-12 max-w-2xl mx-auto font-medium">
         Your order <strong>{order.id}</strong> was approved. 
         Your secure vouchers are listed below and have been dispatched to <strong>{order.customerEmail}</strong>.
       </p>
 
       <div className="grid grid-cols-1 gap-6 mb-12 max-w-2xl mx-auto">
         {order.voucherCodes.map((code, idx) => (
-          <div key={idx} className="glass group relative p-8 rounded-3xl border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-6 hover:border-primary-500/30 transition-all overflow-hidden">
-            <div className="absolute top-0 left-0 w-1 h-full bg-primary-500 opacity-20 group-hover:opacity-100 transition-opacity" />
+          <div key={idx} className="bg-white group relative p-10 rounded-[3rem] border border-slate-100 flex flex-col md:flex-row items-center justify-between gap-6 hover:border-unicou-vibrant/30 transition-all overflow-hidden shadow-xl">
+            <div className="absolute top-0 left-0 w-1.5 h-full bg-unicou-vibrant opacity-20 group-hover:opacity-100 transition-opacity" />
             <div className="text-left">
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1 block">Voucher {idx + 1} of {order.quantity}</span>
-              <p className="text-slate-400 font-bold text-sm">{order.productName}</p>
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 block">Voucher {idx + 1} of {order.quantity}</span>
+              <p className="text-slate-900 font-black text-lg">{order.productName}</p>
             </div>
             
-            <div className="flex items-center gap-4 bg-slate-950 px-6 py-4 rounded-2xl border border-slate-800 shadow-inner w-full md:w-auto justify-center md:justify-start">
-              <span className="font-mono text-2xl font-bold text-primary-400 tracking-wider">{code}</span>
+            <div className="flex items-center gap-4 bg-slate-50 px-8 py-5 rounded-2xl border border-slate-100 shadow-inner w-full md:w-auto justify-center md:justify-start group-hover:bg-unicou-navy group-hover:text-white transition-all">
+              <span className="font-mono text-3xl font-black tracking-widest">{code}</span>
               <button 
                 onClick={() => copyToClipboard(code)}
-                className="p-2 text-slate-500 hover:text-white transition-colors"
+                className="p-2 text-slate-300 hover:text-unicou-orange transition-colors"
                 title="Copy to Clipboard"
               >
                 {copied === code ? (
-                  <svg className="w-5 h-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                  <svg className="w-6 h-6 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                 ) : (
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                 )}
               </button>
             </div>
@@ -126,24 +128,24 @@ const SuccessScreen: React.FC<SuccessScreenProps> = ({ orderId, onClose }) => {
         ))}
       </div>
 
-      <div className="flex flex-col sm:flex-row justify-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-center gap-6">
         <button 
           onClick={onClose}
-          className="px-10 py-5 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-bold transition-all border border-slate-800"
+          className="px-10 py-5 bg-unicou-navy hover:bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl"
         >
-          Back to Store
+          BACK TO STORE
         </button>
         <button 
           onClick={simulateInvoiceDownload}
           disabled={downloading}
-          className="px-10 py-5 glass hover:bg-slate-800 text-white rounded-2xl font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+          className="px-10 py-5 bg-white border-2 border-slate-200 text-slate-800 rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-3 disabled:opacity-50"
         >
           {downloading ? (
-            <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+            <div className="w-5 h-5 border-2 border-slate-400 border-t-slate-900 rounded-full animate-spin" />
           ) : (
             <>
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
-              Download Invoice
+              DOWNLOAD INVOICE
             </>
           )}
         </button>

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/apiService';
 import { ManualSubmission, User } from '../types';
@@ -72,7 +73,7 @@ const TrainerDashboard: React.FC<{ user: User }> = ({ user }) => {
 
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 mb-16">
         <div>
-          <h1 className="text-5xl font-display font-black tracking-tight text-slate-900 leading-none">Trainer <span className="text-unicou-orange">Portal</span></h1>
+          <h1 className="text-5xl font-display font-black tracking-tight text-slate-900 leading-none">Sales Executive <span className="text-unicou-orange">Portal</span></h1>
           <p className="text-slate-500 mt-4 font-bold uppercase text-xs tracking-widest">Operator: <span className="text-unicou-navy font-black">{user.email}</span> • Registry: <span className="text-unicou-orange">Manual Evaluation Node</span></p>
         </div>
         <div className="flex items-center gap-4">
@@ -206,7 +207,7 @@ const TrainerDashboard: React.FC<{ user: User }> = ({ user }) => {
                      </div>
 
                      <div className="md:col-span-7 flex flex-col h-full">
-                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 ml-2">Academic Trainer Feedback</label>
+                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 ml-2">Academic Assessment Feedback</label>
                         <textarea 
                           className="w-full bg-slate-50 border border-slate-200 rounded-[3rem] p-10 text-slate-900 min-h-[300px] h-full resize-none outline-none focus:border-unicou-navy focus:bg-white transition-all leading-relaxed text-lg shadow-inner placeholder:text-slate-300 font-bold"
                           placeholder="Provide actionable feedback for improvement..."

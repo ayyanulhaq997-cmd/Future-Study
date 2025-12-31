@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Hero from './components/Hero';
 import Features from './components/Features';
@@ -194,7 +195,7 @@ const App: React.FC = () => {
         return <div className={wrapperClass}><Login onLogin={(u) => { 
             setUser(u); 
             if (['Admin', 'Finance'].includes(u.role)) navigateTo({ type: 'admin' });
-            else if (u.role === 'Trainer') navigateTo({ type: 'trainer' });
+            else if (u.role === 'Sales Executive') navigateTo({ type: 'sales-exec' });
             else if (u.role === 'Agent') navigateTo({ type: 'agent' });
             else navigateTo({ type: 'lms-dashboard' }); 
         }} onNavigateToSignup={() => navigateTo({ type: 'signup' })} /></div>;
@@ -209,8 +210,8 @@ const App: React.FC = () => {
       case 'admin':
         if (!user || !['Admin', 'Finance'].includes(user.role)) return <div className="view-container text-center pt-40 font-black uppercase text-slate-400">Restricted Access.</div>;
         return <div className={wrapperClass}><AdminDashboard /></div>;
-      case 'trainer':
-        if (!user || user.role !== 'Trainer') return <div className="view-container text-center pt-40 font-black uppercase text-slate-400">Trainer Access Only.</div>;
+      case 'sales-exec':
+        if (!user || user.role !== 'Sales Executive') return <div className="view-container text-center pt-40 font-black uppercase text-slate-400">Sales Executive Access Only.</div>;
         return <div className={wrapperClass}><TrainerDashboard user={user} /></div>;
       case 'agent':
         if (!user || user.role !== 'Agent') return <div className="view-container text-center pt-40 font-black uppercase text-slate-400">Agent Portal Restricted.</div>;

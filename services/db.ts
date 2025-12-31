@@ -1,10 +1,11 @@
+
 import { Product, VoucherCode, User, University, Course, CountryGuide, LMSCourse, LMSModule, LMSPracticeTest, Enrollment, CourseVoucher, Qualification, ImmigrationGuideData } from '../types';
 
 export const users: User[] = [
   { id: 'u-admin', name: 'System Admin / Owner', email: 'admin@unicou.uk', role: 'Admin' },
   { id: 'u-finance', name: 'Finance / Audit Team', email: 'finance@unicou.uk', role: 'Finance' },
   { id: 'u-manager', name: 'Operations Manager', email: 'manager@unicou.uk', role: 'Manager' },
-  { id: 'u-trainer', name: 'Lead Trainer', email: 'trainer@unicou.uk', role: 'Trainer' },
+  { id: 'u-sales-exec', name: 'Global Sales Executive', email: 'sales@unicou.uk', role: 'Sales Executive' },
   { id: 'u-support', name: 'Support / Sales Node', email: 'support@unicou.uk', role: 'Support' },
   { id: 'u-agent', name: 'Agent Partner / Prep Center', email: 'partner@unicou.uk', role: 'Agent', tier: 2 },
   { id: 'u-student', name: 'Alex Smith (Student)', email: 'alex@gmail.com', role: 'Customer' },

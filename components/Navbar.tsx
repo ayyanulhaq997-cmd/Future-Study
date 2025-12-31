@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ViewState, User } from '../types';
 import { LOGO_SRC } from '../constants/assets';
@@ -71,8 +72,8 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
       onNavigate({ type: 'admin' });
     } else if (user.role === 'Agent') {
       onNavigate({ type: 'agent' });
-    } else if (user.role === 'Trainer') {
-      onNavigate({ type: 'trainer' });
+    } else if (user.role === 'Sales Executive') {
+      onNavigate({ type: 'sales-exec' });
     } else {
       onNavigate({ type: 'lms-dashboard' });
     }

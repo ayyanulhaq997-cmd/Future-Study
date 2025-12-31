@@ -1,4 +1,5 @@
-export type UserRole = 'Admin' | 'Agent' | 'Customer' | 'Trainer' | 'Finance' | 'Manager' | 'Support';
+
+export type UserRole = 'Admin' | 'Agent' | 'Customer' | 'Sales Executive' | 'Finance' | 'Manager' | 'Support';
 export type FormType = 'student-apply' | 'agent-reg' | 'prep-center-reg' | 'institute-connect' | 'careers' | 'general' | 'immigration-consult';
 
 export interface User {
@@ -63,6 +64,8 @@ export interface VoucherCode {
   code: string;
   status: VoucherStatus;
   expiryDate: string;
+  /* Added uploadDate property to VoucherCode interface */
+  uploadDate?: string;
 }
 
 export interface Order {
@@ -314,7 +317,7 @@ export type ViewState =
   | { type: 'store' } 
   | { type: 'admin' }
   | { type: 'agent' }
-  | { type: 'trainer' }
+  | { type: 'sales-exec' }
   | { type: 'login' }
   | { type: 'signup' }
   | { type: 'about' }
