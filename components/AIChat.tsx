@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { GeminiService } from '../services/geminiService';
 
@@ -9,7 +10,7 @@ interface Message {
 const CHAT_HISTORY_KEY = 'unicou_chat_v3';
 const INITIAL_MESSAGE: Message = { 
   role: 'model', 
-  text: "Establishing secure link... Welcome to UNICOU Unified Support. I am your AI consultant for Academic Mobility. I can guide you through Voucher procurement, degree tracks, or country-specific visa protocols. How may I assist you today?" 
+  text: "Hello! Welcome to UniCou International Ltd. I'm your AI study abroad consultant. How can I help you today? I can guide you through exam vouchers, university admissions, or visa requirements for different countries." 
 };
 
 const AIChat: React.FC = () => {
@@ -58,7 +59,7 @@ const AIChat: React.FC = () => {
         });
       }
     } catch (error) {
-      setMessages(prev => [...prev, { role: 'model', text: "Support node latency detected. Please connect via WhatsApp +44 700 UNICOU." }]);
+      setMessages(prev => [...prev, { role: 'model', text: "I'm having a slight technical glitch. Please reach out to us on WhatsApp at +44 700 UNICOU for immediate help!" }]);
     } finally {
       setIsTyping(false);
     }
@@ -84,10 +85,10 @@ const AIChat: React.FC = () => {
           <div className="p-8 bg-unicou-navy flex items-center gap-4 border-b border-slate-100">
             <div className="w-12 h-12 rounded-xl bg-unicou-orange flex items-center justify-center text-2xl">🤖</div>
             <div>
-              <h3 className="text-white font-bold text-lg leading-none">UNICOU Support</h3>
+              <h3 className="text-white font-bold text-lg leading-none">UniCou Assistant</h3>
               <div className="flex items-center gap-2 mt-1.5">
                  <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                 <p className="text-emerald-400 text-[9px] font-bold uppercase tracking-widest">System Online</p>
+                 <p className="text-emerald-400 text-[9px] font-bold uppercase tracking-widest">Online</p>
               </div>
             </div>
           </div>
@@ -116,7 +117,7 @@ const AIChat: React.FC = () => {
           <form onSubmit={handleSend} className="p-6 bg-white border-t border-slate-100 flex gap-3">
             <input
               type="text" value={input} onChange={(e) => setInput(e.target.value)}
-              placeholder="Type your question..."
+              placeholder="Ask me anything..."
               className="flex-grow bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-unicou-navy transition-all"
             />
             <button

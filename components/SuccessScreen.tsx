@@ -32,20 +32,20 @@ const SuccessScreen: React.FC<SuccessScreenProps> = ({ orderId, onClose }) => {
         </div>
 
         <h1 className="text-5xl md:text-7xl font-display font-black mb-8 tracking-tighter text-slate-900 leading-none">
-          Settlement <span className="text-unicou-orange">Pending.</span>
+          Settlement <span className="text-unicou-orange">Received.</span>
         </h1>
         <p className="text-lg text-slate-500 font-bold mb-16 max-w-2xl mx-auto leading-relaxed">
-            Your payment for order <span className="text-unicou-navy font-black">{order.id}</span> is in the <span className="text-unicou-navy font-black">Verification Node (Annex-B)</span>. Notification will be dispatched to your registered email upon release.
+            Your payment for order <span className="text-unicou-navy font-black">{order.id}</span> has been logged (Annex-B). Verification node is active. Voucher codes will appear in your dashboard upon settlement release.
         </p>
 
         <div className="flex flex-col sm:flex-row justify-center gap-6 w-full max-w-md">
             <button 
               onClick={fetchOrder} disabled={refreshing}
-              className="w-full px-12 py-6 bg-unicou-orange text-white rounded-3xl font-black text-xs uppercase tracking-widest shadow-3xl transition-all"
+              className="w-full px-12 py-6 bg-unicou-navy text-white rounded-3xl font-black text-xs uppercase tracking-widest shadow-3xl transition-all"
             >
-              {refreshing ? 'Refreshing...' : 'CHECK STATUS'}
+              {refreshing ? 'Refreshing...' : 'CHECK SYNC STATUS'}
             </button>
-            <button onClick={onClose} className="w-full px-12 py-6 bg-unicou-navy text-white rounded-3xl font-black text-xs uppercase tracking-widest shadow-3xl hover:bg-slate-900 transition-colors">BACK TO STUDENT PORTAL</button>
+            <button onClick={onClose} className="w-full px-12 py-6 bg-unicou-orange text-white rounded-3xl font-black text-xs uppercase tracking-widest shadow-3xl hover:bg-orange-600 transition-colors">BACK TO STUDENT HUB</button>
         </div>
       </div>
     );
@@ -56,8 +56,8 @@ const SuccessScreen: React.FC<SuccessScreenProps> = ({ orderId, onClose }) => {
       <div className="mb-12 inline-flex items-center justify-center w-24 h-24 bg-emerald-500/10 text-emerald-500 rounded-full">
         <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
       </div>
-      <h1 className="text-4xl md:text-6xl font-display font-bold mb-6">Payment <span className="text-emerald-500">Verified.</span></h1>
-      <p className="text-xl text-slate-600 mb-12 max-w-2xl mx-auto font-medium italic">"Annex-C Fulfillment Synchronized. Your assets are active below."</p>
+      <h1 className="text-4xl md:text-6xl font-display font-bold mb-6">Fulfillment <span className="text-emerald-500">Verified.</span></h1>
+      <p className="text-xl text-slate-600 mb-12 max-w-2xl mx-auto font-medium italic">"Annex-C Synchronization Complete. Your codes are active below."</p>
       <div className="grid grid-cols-1 gap-6 mb-12 max-w-2xl mx-auto">
         {order.voucherCodes.map((code, idx) => (
           <div key={idx} className="bg-white p-10 rounded-[3rem] border border-slate-100 flex justify-between items-center shadow-xl">
@@ -65,7 +65,7 @@ const SuccessScreen: React.FC<SuccessScreenProps> = ({ orderId, onClose }) => {
           </div>
         ))}
       </div>
-      <button onClick={onClose} className="px-12 py-6 bg-unicou-navy text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-900 transition-colors">RETURN TO STUDENT PORTAL</button>
+      <button onClick={onClose} className="px-12 py-6 bg-unicou-orange text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-orange-600 transition-colors">RETURN TO STUDENT HUB</button>
     </div>
   );
 };

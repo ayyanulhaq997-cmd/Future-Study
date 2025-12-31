@@ -19,7 +19,7 @@ const QUAL_LEADS_KEY = 'unicou_qual_leads_v1';
 const TEST_BOOKINGS_KEY = 'unicou_test_bookings_v1';
 
 export const BANK_DETAILS = {
-  bankName: 'UNICOU Central Finance (UK)',
+  bankName: 'UniCou International Ltd Central Finance (UK)',
   accountName: 'UNICOU INTERNATIONAL LTD',
   accountNumber: '88772299',
   sortCode: '20-44-12',
@@ -28,7 +28,7 @@ export const BANK_DETAILS = {
 };
 
 const dispatchOrderConfirmationEmail = (email: string, orderId: string, customerName: string) => {
-  const subject = `Order No ${orderId}: Annex-B Notification - Your Order is Received`;
+  const subject = `Your UniCou Order Confirmation: #${orderId} 🚀`;
   const body = `
 Hi ${customerName},
 
@@ -37,13 +37,20 @@ Thank you for your purchase! We’ve received your order, and our team is curren
 Order Summary
 Status: Processing 
 Item: Exam Voucher as per order description
-Delivery Method: Secure Email Delivery (Annex-B Protocol)
+Delivery Method: Secure Email Delivery
 
 What Happens Next?
 Your exam voucher will be delivered to this email address shortly after payment verification.
 
+Why the wait? To ensure the highest level of security for your digital assets, we perform a quick verification on all transactions. This extra layer of protection ensures your voucher code reaches you safely.
+
+💡 Pro-Tip: If you don't see our email in your main inbox within the hour, please check your Promotions or Spam folder.
+
+Need Help?
+If you have any questions about your order, simply reply to this email or visit our [Help Center].
+
 Best regards, 
-The UniCou Team
+The UniCou International Team
   `;
   console.log(`[EMAIL DISPATCH] To: ${email}\nSubject: ${subject}\nBody: ${body}`);
 };
@@ -55,7 +62,7 @@ const dispatchAnnexEmail = (email: string, annex: 'C' | 'D' | 'E', orderId: stri
 
   if (annex === 'C') {
     const { productName, voucherCodes, expiryDate } = extraData || {};
-    subject = `Order No ${orderId}: Annex-C - Your Exam Voucher is Delivered`;
+    subject = `Order No ${orderId}: Your Exam Voucher is Delivered – Please Read Important Terms`;
     body = `
 Dear ${customerName},
 
@@ -65,35 +72,58 @@ Voucher Details:
 * Exam: ${productName || 'International Exam'}
 * Voucher Code: ${voucherCodes ? voucherCodes.join(', ') : 'N/A'}
 * Valid Until: ${expiryDate || '2026-12-31'}
+* Redemption Instructions: Please log in to the official exam provider portal (Pearson/British Council/IDP) to apply this code during booking.
 
-Important Conditions:
+Important Purchase Conditions:
+By receiving this voucher, you acknowledge and agree that:
 1. Once the voucher code is delivered, it cannot be refunded, replaced, or exchanged.
-2. You accept the website’s data privacy policy.
-3. You shall be liable for any payment obligations.
+2. You accept the website’s data privacy policy and consent to the use of your information as described therein.
+3. You shall be liable for any payment obligations, including cases of refund, return, cancellation, exam cancellation, related charges, or legal action.
+
+Please keep your voucher secure and do not share it publicly.
+
+If you require assistance, our support team is here to help via our Support ChatBot or email.
+
+We wish you success in your upcoming exam and your global education journey.
 
 Kind regards,
 UniCou Team
     `;
   } else if (annex === 'D') {
-    subject = `Order No ${orderId}: Annex-D - Payment Verification Required`;
+    subject = `Order No ${orderId}: Update on Your Voucher Order – Payment Verification in Progress`;
     body = `
 Dear ${customerName},
 
-We would like to inform you that your voucher delivery is currently delayed due to ongoing payment verification (Annex-D Protocol).
+Thank you for your order with UniCou.
 
-Once verification is successfully completed, your voucher will be delivered immediately.
+We would like to inform you that your voucher delivery is currently delayed due to ongoing payment verification.
 
-If you need any assistance: connect@unicou.uk
+Our team is completing the required security and compliance checks to ensure a safe transaction. Once verification is successfully completed, your voucher will be delivered immediately.
+
+We sincerely apologize for the inconvenience and appreciate your patience and understanding.
+
+If you need any assistance or have questions, please contact our support team:
+Support Email: connect@unicou.uk
+Support Portal: https://www.unicou.uk/
+
+Thank you for your cooperation.
 
 Kind regards,
 UniCou Team
     `;
   } else if (annex === 'E') {
-    subject = `Order No ${orderId}: Annex-E - Order Cancellation Notice`;
+    subject = `Order No ${orderId} Cancellation Notice`;
     body = `
 Dear ${customerName},
 
-We regret to inform you that your order ${orderId} has been cancelled due to payment verification or security compliance reasons. 
+We regret to inform you that your order ${orderId} has been cancelled due to payment verification or security compliance reasons. We sincerely apologize for the inconvenience caused.
+
+If any amount has been deducted, please contact your bank or payment provider for a refund as per their policy.
+
+For further assistance or clarification, please feel free to contact our support team:
+Support Team: Chatbot
+
+Thank you for your understanding and cooperation.
 
 Kind regards,
 UniCou Team
@@ -126,7 +156,7 @@ export const api = {
     const localUsers: User[] = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
     const allUsers = [...db.users, ...localUsers];
     const user = allUsers.find(u => u.email.toLowerCase() === cleanEmail);
-    if (!user) throw new Error('Identity mismatch. Registry node not found.');
+    if (!user) throw new Error('Account not found. Please check your email or sign up.');
     localStorage.setItem(SESSION_KEY, JSON.stringify(user));
     return user;
   },
@@ -135,7 +165,7 @@ export const api = {
     const cleanEmail = email.trim().toLowerCase();
     const localUsers: User[] = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
     const allUsers = [...db.users, ...localUsers];
-    if (allUsers.some(u => u.email.toLowerCase() === cleanEmail)) throw new Error('Identity exists.');
+    if (allUsers.some(u => u.email.toLowerCase() === cleanEmail)) throw new Error('An account with this email already exists.');
     const newUser: User = { id: `u-${Math.random().toString(36).substr(2, 9)}`, name: cleanEmail.split('@')[0].toUpperCase(), email: cleanEmail, role, verified: true, isPlatinum: false };
     localUsers.push(newUser);
     localStorage.setItem(USERS_KEY, JSON.stringify(localUsers));
@@ -179,23 +209,6 @@ export const api = {
     return codes;
   },
 
-  importVouchers: async (productId: string, codeStrings: string[]) => {
-    let allCodes = await api.getCodes();
-    let addedCount = 0;
-    let duplicateCount = 0;
-    codeStrings.forEach(s => {
-      const trimmed = s.trim().toUpperCase();
-      if (!trimmed) return;
-      if (allCodes.some(c => c.code === trimmed)) duplicateCount++;
-      else {
-        allCodes.push({ id: `vc-imp-${Date.now()}-${addedCount}`, productId, code: trimmed, status: 'Available', expiryDate: '2026-12-31', uploadDate: new Date().toISOString() });
-        addedCount++;
-      }
-    });
-    localStorage.setItem(CODES_KEY, JSON.stringify(allCodes));
-    return { addedCount, duplicateCount };
-  },
-
   getOrders: async (): Promise<Order[]> => JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]'),
   getOrderById: async (id: string) => (await api.getOrders()).find(o => o.id === id) || null,
 
@@ -203,8 +216,8 @@ export const api = {
     const orders = await api.getOrders();
     const today = new Date().toISOString().split('T')[0];
     const userToday = orders.filter(o => o.userId === userId && o.timestamp.startsWith(today));
-    
     return {
+      total: userToday.length,
       bankTotal: userToday.filter(o => o.paymentMethod === 'BankTransfer').reduce((acc, o) => acc + o.quantity, 0),
       cardTotal: userToday.filter(o => o.paymentMethod === 'Gateway').reduce((acc, o) => acc + o.quantity, 0)
     };
@@ -253,15 +266,13 @@ export const api = {
   },
 
   submitBankTransfer: async (productId: string, quantity: number, email: string, bankRef: string): Promise<Order> => {
-    const pricing = await api.calculatePrice(productId, quantity, 'BankTransfer');
     const p = db.products.find(x => x.id === productId);
     const currentUser = api.getCurrentUser();
     
-    // Check Limits
-    if (currentUser) {
+    if (currentUser && currentUser.role === 'Student') {
       const stats = await api.getDailyOrderStats(currentUser.id);
-      if (stats.bankTotal + quantity > 5) {
-        throw new Error("Additional Order Notification: For your security, further orders are restricted. Kindly reach out to our support team for assistance");
+      if (stats.total >= 1) {
+        throw new Error("For your security, further orders are restricted. Kindly reach out to our support team for assistance.");
       }
     }
 
@@ -271,18 +282,15 @@ export const api = {
       productId,
       productName: p?.name || 'Voucher',
       quantity,
-      baseAmount: pricing.baseAmount,
-      tierDiscount: pricing.tierDiscount,
-      promoDiscount: 0,
-      bankCharges: 0,
-      totalAmount: pricing.totalAmount,
+      totalAmount: (p?.basePrice || 0) * quantity,
       currency: p?.currency || 'USD',
       customerEmail: email,
       status: 'Pending',
       paymentMethod: 'BankTransfer',
       timestamp: new Date().toISOString(),
       voucherCodes: [],
-      bankRef
+      bankRef,
+      proofAttached: true
     };
     const orders = [order, ...await api.getOrders()];
     localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
@@ -291,20 +299,13 @@ export const api = {
     return order;
   },
 
-  calculatePrice: async (productId: string, quantity: number, paymentMethod: 'Gateway' | 'BankTransfer', promoCode?: string) => {
-    const p = db.products.find(x => x.id === productId);
-    const baseAmount = (p?.basePrice || 0) * quantity;
-    const bankCharges = paymentMethod === 'Gateway' ? baseAmount * 0.045 : 0;
-    const promoDiscount = promoCode === 'WELCOME10' ? baseAmount * 0.1 : 0;
-    return { baseAmount, tierDiscount: 0, promoDiscount, bankCharges, totalAmount: baseAmount - promoDiscount + bankCharges };
-  },
-
-  getLeads: async (): Promise<Lead[]> => JSON.parse(localStorage.getItem(LEADS_KEY) || '[]'),
   submitLead: async (type: string, data: any) => {
-    const leads = [ { id: `LD-${Math.random().toString(36).substr(2, 6).toUpperCase()}`, type, data, status: 'New', timestamp: new Date().toISOString() }, ...await api.getLeads() ];
+    const leads = [ { id: `LD-${Math.random().toString(36).substr(2, 6).toUpperCase()}`, type: type as any, data, status: 'New' as const, timestamp: new Date().toISOString() }, ...await api.getLeads() ];
+    const LEADS_KEY = 'unicou_leads_v1';
     localStorage.setItem(LEADS_KEY, JSON.stringify(leads));
   },
 
+  getLeads: async (): Promise<Lead[]> => JSON.parse(localStorage.getItem('unicou_leads_v1') || '[]'),
   getFinanceReport: async (): Promise<FinanceReport> => ({ totalRevenue: 0, totalVouchersSold: 0, salesByType: [], recentSales: [] }),
   getSecurityStatus: async (): Promise<SecurityStatus> => ({ uptime: '99.99%', rateLimitsTriggered: 0, activeSessions: 1, threatLevel: 'Normal' }),
   getLogs: async () => [],
@@ -321,51 +322,7 @@ export const api = {
   getTestResults: async () => [],
   getPendingSubmissions: async () => [],
   gradeSubmission: async (id: string, s: number, f: string) => {},
-
-  createGatewayOrder: async (amount: number) => ({
-    id: `rzp_order_${Math.random().toString(36).substr(2, 9)}`,
-    amount: amount * 100,
-    currency: 'USD',
-    key: RAZORPAY_KEY_ID
-  }),
-
-  processPayment: async (productId: string, quantity: number, email: string, paymentData: any): Promise<Order> => {
-    const pricing = await api.calculatePrice(productId, quantity, 'Gateway');
-    const p = db.products.find(x => x.id === productId);
-    const currentUser = api.getCurrentUser();
-    
-    // Check Limits
-    if (currentUser) {
-      const stats = await api.getDailyOrderStats(currentUser.id);
-      if (stats.cardTotal + quantity > 3) {
-        throw new Error("Additional Order Notification: For your security, further orders are restricted. Kindly reach out to our support team for assistance");
-      }
-    }
-
-    const order: Order = {
-      id: `UNICOU-${Math.random().toString(36).substr(2, 7).toUpperCase()}`,
-      userId: currentUser?.id || 'guest',
-      productId,
-      productName: p?.name || 'Voucher',
-      quantity,
-      baseAmount: pricing.baseAmount,
-      tierDiscount: pricing.tierDiscount,
-      promoDiscount: pricing.promoDiscount,
-      bankCharges: pricing.bankCharges,
-      totalAmount: pricing.totalAmount,
-      currency: p?.currency || 'USD',
-      customerEmail: email,
-      status: 'Pending',
-      paymentMethod: 'Gateway',
-      timestamp: new Date().toISOString(),
-      voucherCodes: [],
-      paymentId: paymentData.paymentId
-    };
-    const orders = [order, ...await api.getOrders()];
-    localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
-    dispatchOrderConfirmationEmail(email, order.id, currentUser?.name || email.split('@')[0]);
-    return order;
-  },
+  getImmigrationGuides: async () => db.immigrationGuides,
 
   submitQualificationLead: async (data: any): Promise<QualificationLead> => {
     const lead: QualificationLead = {
@@ -373,10 +330,10 @@ export const api = {
       ...data,
       status: 'New',
       timestamp: new Date().toISOString(),
-      trackingId: `TRK-${Math.random().toString(10).substr(2, 6)}`
+      trackingId: `TRK-${Math.random().toString(36).substr(2, 8).toUpperCase()}`
     };
-    const localLeads = JSON.parse(localStorage.getItem(QUAL_LEADS_KEY) || '[]');
-    localStorage.setItem(QUAL_LEADS_KEY, JSON.stringify([lead, ...localLeads]));
+    const leads = [lead, ...JSON.parse(localStorage.getItem(QUAL_LEADS_KEY) || '[]')];
+    localStorage.setItem(QUAL_LEADS_KEY, JSON.stringify(leads));
     return lead;
   },
 
@@ -384,12 +341,10 @@ export const api = {
     const booking: TestBooking = {
       id: `BK-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
       ...data,
-      trackingRef: `REF-${Math.random().toString(36).substr(2, 5).toUpperCase()}`
+      trackingRef: `REF-${Math.random().toString(36).substr(2, 8).toUpperCase()}`
     };
-    const localBookings = JSON.parse(localStorage.getItem(TEST_BOOKINGS_KEY) || '[]');
-    localStorage.setItem(TEST_BOOKINGS_KEY, JSON.stringify([booking, ...localBookings]));
+    const bookings = [booking, ...JSON.parse(localStorage.getItem(TEST_BOOKINGS_KEY) || '[]')];
+    localStorage.setItem(TEST_BOOKINGS_KEY, JSON.stringify(bookings));
     return booking;
-  },
-
-  getImmigrationGuides: async () => db.immigrationGuides
+  }
 };
