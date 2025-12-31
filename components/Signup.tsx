@@ -130,16 +130,30 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
               ))}
             </div>
 
-            <div>
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Verify Password</label>
-              <input 
-                type="password"
-                required
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                placeholder="••••••••"
-                className="w-full bg-[#0d111d] border-none rounded-xl p-5 text-white font-bold outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
-              />
+            <div className="space-y-4">
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Create Password</label>
+                <input 
+                  type="password"
+                  required
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  placeholder="••••••••"
+                  className="w-full bg-[#0d111d] border-none rounded-xl p-5 text-white font-bold outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Confirm Password</label>
+                <input 
+                  type="password"
+                  required
+                  value={formData.confirmPassword}
+                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                  placeholder="••••••••"
+                  className="w-full bg-[#0d111d] border-none rounded-xl p-5 text-white font-bold outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+                />
+              </div>
             </div>
           </div>
 

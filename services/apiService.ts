@@ -42,13 +42,6 @@ Delivery Method: Secure Email Delivery
 What Happens Next?
 Your exam voucher will be delivered to this email address shortly after payment verification.
 
-Why the wait? To ensure the highest level of security for your digital assets, we perform a quick verification on all transactions. This extra layer of protection ensures your voucher code reaches you safely.
-
-💡 Pro-Tip: If you don't see our email in your main inbox within the hour, please check your Promotions or Spam folder.
-
-Need Help?
-If you have any questions about your order, simply reply to this email or visit our [Help Center].
-
 Best regards, 
 The UniCou Team
   `;
@@ -58,7 +51,6 @@ The UniCou Team
 const dispatchAnnexEmail = (email: string, annex: 'C' | 'D' | 'E', orderId: string, extraData?: any) => {
   let subject = '';
   let body = '';
-
   const customerName = extraData?.customerName || 'Customer';
 
   if (annex === 'C') {
@@ -69,24 +61,17 @@ Dear ${customerName},
 
 Thank you for choosing UniCou. Your exam voucher has now been successfully delivered.
 
-Voucher Details
+Voucher Details:
 * Exam: ${productName || 'International Exam'}
 * Voucher Code: ${voucherCodes ? voucherCodes.join(', ') : 'N/A'}
 * Valid Until: ${expiryDate || '2026-12-31'}
-* Redemption Instructions: Visit the official exam provider portal (Pearson/British Council/ETS) and enter the code at checkout.
 
-Important Purchase Conditions
-By receiving this voucher, you acknowledge and agree that:
+Important Purchase Conditions:
 1. Once the voucher code is delivered, it cannot be refunded, replaced, or exchanged.
-2. You accept the website’s data privacy policy and consent to the use of your information as described therein.
-3. You shall be liable for any payment obligations, including cases of refund, return, cancellation, exam cancellation, related charges, or legal action.
+2. You accept the website’s data privacy policy.
+3. You shall be liable for any payment obligations, including cases of refund, return, or cancellation.
 
-Please keep your voucher secure and do not share it publicly.
-
-If you require assistance, our support team is here to help:
-[Support ChatBot / WhatsApp Node]
-
-We wish you success in your upcoming exam and your global education journey.
+We wish you success in your upcoming exam.
 
 Kind regards,
 UniCou Team
@@ -98,15 +83,12 @@ Dear ${customerName},
 
 Thank you for your order with UniCou.
 
-We would like to inform you that your voucher delivery is currently delayed due to ongoing payment verification.
+We would like to inform you that your voucher delivery is currently delayed due to ongoing payment verification. Our team is completing the required security checks to ensure a safe transaction. 
 
-Our team is completing the required security and compliance checks to ensure a safe transaction. Once verification is successfully completed, your voucher will be delivered immediately.
+Once verification is successfully completed, your voucher will be delivered immediately.
 
-We sincerely apologize for the inconvenience and appreciate your patience and understanding.
-
-If you need any assistance or have questions, please contact our support team:
+If you need any assistance:
 Support Email: connect@unicou.uk
-Support Portal: Visit our Support Node on the website
 
 Thank you for your cooperation.
 
@@ -122,10 +104,7 @@ We regret to inform you that your order ${orderId} has been cancelled due to pay
 
 If any amount has been deducted, please contact your bank or payment provider for a refund as per their policy.
 
-For further assistance or clarification, please feel free to contact our support team:
-Support Team: Support ChatBot on our portal
-
-Thank you for your understanding and cooperation.
+For further assistance, please contact our support chatbot.
 
 Kind regards,
 UniCou Team
@@ -138,7 +117,7 @@ UniCou Team
 const generateDemoStock = (productId: string, quantity: number): VoucherCode[] => {
   const product = db.products.find(p => p.id === productId);
   return Array(quantity).fill(0).map((_, i) => ({
-    id: `vc-auto-${productId}-${Date.now()}-${i}-${Math.random().toString(36).substr(2, 5)}`,
+    id: `vc-auto-${productId}-${Date.now()}-${i}`,
     productId,
     code: `${product?.category.substring(0,2).toUpperCase() || 'EX'}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
     status: 'Available' as VoucherStatus,
@@ -236,7 +215,6 @@ export const api = {
     if (orderIdx === -1) throw new Error('Order not found.');
     const order = orders[orderIdx];
 
-    // Fetch user name for personalized email
     const allUsers = await api.getUsers();
     const buyer = allUsers.find(u => u.id === order.userId);
     const customerName = buyer?.name || order.customerEmail.split('@')[0];
@@ -299,9 +277,7 @@ export const api = {
     const orders = [order, ...await api.getOrders()];
     localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
     
-    // Trigger Order Confirmation Email
     dispatchOrderConfirmationEmail(email, order.id, currentUser?.name || email.split('@')[0]);
-    
     return order;
   },
 
@@ -368,10 +344,7 @@ export const api = {
     };
     const orders = [order, ...await api.getOrders()];
     localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
-
-    // Trigger Order Confirmation Email
     dispatchOrderConfirmationEmail(email, order.id, currentUser?.name || email.split('@')[0]);
-
     return order;
   },
 
