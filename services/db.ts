@@ -1,12 +1,11 @@
-
 import { Product, VoucherCode, User, University, Course, CountryGuide, LMSCourse, LMSModule, LMSPracticeTest, Enrollment, CourseVoucher, Qualification, ImmigrationGuideData } from '../types';
 
 export const users: User[] = [
   { id: 'u-admin', name: 'System Admin / Owner', email: 'admin@unicou.uk', role: 'Admin' },
   { id: 'u-finance', name: 'Finance / Audit Team', email: 'finance@unicou.uk', role: 'Finance' },
-  { id: 'u-manager', name: 'Operations Manager', email: 'manager@unicou.uk', role: 'Admin' },
+  { id: 'u-manager', name: 'Operations Manager', email: 'manager@unicou.uk', role: 'Manager' },
   { id: 'u-trainer', name: 'Lead Trainer', email: 'trainer@unicou.uk', role: 'Trainer' },
-  { id: 'u-support', name: 'Support / Sales Node', email: 'support@unicou.uk', role: 'Admin' },
+  { id: 'u-support', name: 'Support / Sales Node', email: 'support@unicou.uk', role: 'Support' },
   { id: 'u-agent', name: 'Agent Partner / Prep Center', email: 'partner@unicou.uk', role: 'Agent', tier: 2 },
   { id: 'u-student', name: 'Alex Smith (Student)', email: 'alex@gmail.com', role: 'Customer' },
 ];
@@ -15,13 +14,13 @@ export const products: Product[] = [
   { id: 'v-1', name: 'IELTS Academic Voucher', category: 'IELTS', type: 'Voucher', basePrice: 149, currency: 'USD', description: 'Standard British Council/IDP Academic training voucher.', icon: '🌐' },
   { id: 'v-2', name: 'IELTS General Training', category: 'IELTS', type: 'Voucher', basePrice: 149, currency: 'USD', description: 'Standard IELTS General training voucher for migration.', icon: '🌐' },
   { id: 'v-6', name: 'PTE Academic Voucher', category: 'PTE', type: 'Voucher', basePrice: 165, currency: 'USD', description: 'Pearson Test of English Academic standard voucher.', icon: '📊' },
-  { id: 'v-10', name: 'LanguageCert SELT B1', category: 'LanguageCert', type: 'Voucher', basePrice: 155, currency: 'USD', description: 'Secure English Language Test (SELT) for UKVI.', icon: '⚡' },
-  { id: 'v-11', name: 'LanguageCert SELT B2', category: 'LanguageCert', type: 'Voucher', basePrice: 175, currency: 'USD', description: 'Advanced SELT assessment for University Tier 4.', icon: '⚡' },
-  { id: 'v-17', name: 'Skills for English SELT', category: 'Skills for English', type: 'Voucher', basePrice: 160, currency: 'USD', description: 'PSI Skills for English UKVI compliant voucher.', icon: '🛡️' },
+  { id: 'v-10', name: 'LanguageCert SELT B1', category: 'LanguageCert', type: 'Voucher', basePrice: 130, currency: 'GBP', description: 'Secure English Language Test (SELT) for UKVI.', icon: '⚡' },
+  { id: 'v-11', name: 'LanguageCert SELT B2', category: 'LanguageCert', type: 'Voucher', basePrice: 145, currency: 'GBP', description: 'Advanced SELT assessment for University Tier 4.', icon: '⚡' },
+  { id: 'v-17', name: 'Skills for English SELT', category: 'Skills for English', type: 'Voucher', basePrice: 135, currency: 'GBP', description: 'PSI Skills for English UKVI compliant voucher.', icon: '🛡️' },
   { id: 'v-19', name: 'TOEFL iBT Official', category: 'TOEFL', type: 'Voucher', basePrice: 195, currency: 'USD', description: 'ETS TOEFL iBT Official Global voucher.', icon: '🌎' },
   { id: 'v-20', name: 'Duolingo English Test', category: 'Duolingo', type: 'Voucher', basePrice: 60, currency: 'USD', description: 'Duolingo English Test Global Access.', icon: '🦉' },
-  { id: 'v-21', name: 'Oxford ELLT Digital', category: 'ELLT', type: 'Voucher', basePrice: 85, currency: 'USD', description: 'Oxford International Digital English Test.', icon: '🏫' },
-  { id: 'v-22', name: 'Password Skills Plus', category: 'OTHER', type: 'Voucher', basePrice: 95, currency: 'USD', description: 'Password Skills Plus Global assessment node.', icon: '🔑' }
+  { id: 'v-21', name: 'Oxford ELLT Digital', category: 'ELLT', type: 'Voucher', basePrice: 75, currency: 'GBP', description: 'Oxford International Digital English Test.', icon: '🏫' },
+  { id: 'v-22', name: 'Password Skills Plus', category: 'OTHER', type: 'Voucher', basePrice: 85, currency: 'GBP', description: 'Password Skills Plus Global assessment node.', icon: '🔑' }
 ];
 
 export const voucherCodes: VoucherCode[] = products.flatMap(p => 
@@ -479,7 +478,9 @@ export const qualifications: Qualification[] = [
   { id: 'q-othm-3', title: 'OTHM Level 3 Diploma in Business', duration: '6 Months', qualificationBody: 'OTHM', tuitionFees: '$1,200', requirements: ['High School Certificate'], description: 'Foundation for business management and international mobility.', level: 'Level 3', image: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800' }
 ];
 
+// Added missing immigrationGuides export to fix apiService error
+export const immigrationGuides: ImmigrationGuideData[] = [];
+
 export const initialEnrollments: Enrollment[] = [];
 export const courseVouchers: CourseVoucher[] = [];
-export const immigrationGuides: ImmigrationGuideData[] = [];
 export const universityBySlug = (slug: string): University | null => universities.find(u => u.slug === slug) || null;

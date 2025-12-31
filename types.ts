@@ -1,4 +1,4 @@
-export type UserRole = 'Admin' | 'Agent' | 'Customer' | 'Trainer' | 'Finance' | 'Teller';
+export type UserRole = 'Admin' | 'Agent' | 'Customer' | 'Trainer' | 'Finance' | 'Manager' | 'Support';
 export type FormType = 'student-apply' | 'agent-reg' | 'prep-center-reg' | 'institute-connect' | 'careers' | 'general' | 'immigration-consult';
 
 export interface User {
@@ -8,6 +8,7 @@ export interface User {
   role: UserRole;
   tier?: number;
   verified?: boolean;
+  isPlatinum?: boolean;
 }
 
 export interface Lead {
@@ -46,7 +47,7 @@ export interface Product {
   category: string;
   type: 'Voucher' | 'Course';
   basePrice: number;
-  currency: string;
+  currency: 'USD' | 'GBP' | 'INR' | 'PKR';
   description: string;
   icon: string;
   supportsFullRegistration?: boolean;
@@ -73,6 +74,7 @@ export interface Order {
   baseAmount: number;
   tierDiscount: number;
   promoDiscount: number;
+  bankCharges: number;
   totalAmount: number;
   currency: string;
   customerEmail: string;

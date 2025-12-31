@@ -8,8 +8,8 @@ const AgentDashboard: React.FC<{ user: User; onBuy: (pid: string, qty: number) =
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'inventory' | 'leads' | 'white-label'>('inventory');
+  const [purchaseQuantities, setPurchaseQuantities] = useState<Record<string, number>>({});
 
-  // White-label state simulation
   const [branding, setBranding] = useState({
     agencyName: user.name,
     primaryColor: '#004a61',
@@ -27,8 +27,7 @@ const AgentDashboard: React.FC<{ user: User; onBuy: (pid: string, qty: number) =
       ]);
       setProducts(p.filter(x => x.type === 'Voucher'));
       setOrders(o);
-      // Filter leads to simulate "Your Agency's Leads"
-      setLeads(le.filter(l => l.type === 'student').slice(0, 5)); 
+      setLeads(le.filter((l: Lead) => l.type === 'student').slice(0, 5)); 
       setLoading(false);
     };
     fetch();
@@ -36,6 +35,12 @@ const AgentDashboard: React.FC<{ user: User; onBuy: (pid: string, qty: number) =
 
   const totalSpent = orders.reduce((acc, o) => acc + o.totalAmount, 0);
   const totalCodes = orders.reduce((acc, o) => acc + o.quantity, 0);
+
+  const handleQtyChange = (pid: string, val: string) => {
+    const num = parseInt(val) || 1;
+    const capped = Math.max(1, Math.min(3, num));
+    setPurchaseQuantities(prev => ({ ...prev, [pid]: capped }));
+  };
 
   if (loading) return (
     <div className="p-40 text-center animate-pulse">
@@ -46,7 +51,6 @@ const AgentDashboard: React.FC<{ user: User; onBuy: (pid: string, qty: number) =
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12 bg-white min-h-screen">
-      {/* Header Section */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8 mb-16 border-b border-slate-100 pb-12">
         <div>
           <div className="flex items-center gap-3 mb-4">
@@ -54,10 +58,10 @@ const AgentDashboard: React.FC<{ user: User; onBuy: (pid: string, qty: number) =
              <span className="px-4 py-1.5 bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase tracking-widest rounded-full border border-emerald-100">Tier {user.tier || 1} Status</span>
           </div>
           <h1 className="text-5xl md:text-6xl font-display font-black tracking-tighter text-slate-900 uppercase leading-none">
-            Partner <span className="text-unicou-orange">Terminal</span>
+            Agent/Training Center <span className="text-unicou-orange">Portal</span>
           </h1>
-          <p className="text-slate-500 mt-4 font-bold italic text-lg leading-relaxed">
-            "Authorized B2B Interface for {user.name}. Regional Distribution Hub Active."
+          <p className="text-slate-500 mt-6 font-bold italic text-lg leading-relaxed max-w-3xl">
+            Welcome {user.name}! Your UniCou partner dashboard is ready. Continue supporting students with study abroad, IELTS/PTE/TOEFL vouchers, and training solutions.
           </p>
         </div>
 
@@ -77,21 +81,20 @@ const AgentDashboard: React.FC<{ user: User; onBuy: (pid: string, qty: number) =
         </div>
       </div>
 
-      {/* Main Dashboard Content */}
       <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
         {activeTab === 'inventory' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-            {/* Procurement Section */}
             <div className="lg:col-span-8 space-y-12">
               <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">Bulk Inventory Management</h2>
-                <span className="text-[10px] font-black text-emerald-600 uppercase bg-emerald-50 px-3 py-1 rounded-full">Automatic Tier Discounts Applied</span>
+                <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">Inventory Procurement</h2>
+                <span className="text-[10px] font-black text-emerald-600 uppercase bg-emerald-50 px-3 py-1 rounded-full">Membership Restrictions Active</span>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {products.map(p => {
                   const agentDiscount = (user.tier || 1) * 2;
                   const finalPrice = p.basePrice * (1 - agentDiscount/100);
+                  const qty = purchaseQuantities[p.id] || 1;
                   
                   return (
                     <div key={p.id} className="bg-white p-10 rounded-[3.5rem] border border-slate-100 hover:border-unicou-orange/20 transition-all group shadow-xl relative overflow-hidden">
@@ -109,14 +112,23 @@ const AgentDashboard: React.FC<{ user: User; onBuy: (pid: string, qty: number) =
                          <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest">per unit / {agentDiscount}% OFF</span>
                       </div>
 
-                      <div className="grid grid-cols-3 gap-3">
-                        {[10, 50, 100].map(qty => (
-                          <button 
-                            key={qty}
-                            onClick={() => onBuy(p.id, qty)}
-                            className="bg-slate-900 hover:bg-unicou-navy text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg active:scale-95"
-                          >Buy {qty}</button>
-                        ))}
+                      <div className="space-y-4">
+                        <div className="flex flex-col gap-2">
+                          <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Quantity (Order Limit: 3)</label>
+                          <input 
+                            type="number" min="1" max="3" 
+                            value={qty} 
+                            onChange={(e) => handleQtyChange(p.id, e.target.value)}
+                            className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-lg font-bold text-unicou-navy outline-none focus:border-unicou-orange shadow-inner"
+                          />
+                        </div>
+                        <button 
+                          onClick={() => onBuy(p.id, qty)}
+                          className="w-full bg-unicou-navy hover:bg-slate-950 text-white py-5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all shadow-lg active:scale-95 flex items-center justify-center gap-3"
+                        >
+                          INITIALIZE PURCHASE
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                        </button>
                       </div>
                     </div>
                   );
@@ -124,7 +136,6 @@ const AgentDashboard: React.FC<{ user: User; onBuy: (pid: string, qty: number) =
               </div>
             </div>
 
-            {/* Sidebar Stats */}
             <div className="lg:col-span-4 space-y-8">
               <div className="bg-unicou-navy p-10 rounded-[3.5rem] shadow-2xl text-white relative overflow-hidden">
                 <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-unicou-vibrant opacity-10 rounded-full blur-3xl" />
@@ -199,11 +210,6 @@ const AgentDashboard: React.FC<{ user: User; onBuy: (pid: string, qty: number) =
                       </td>
                     </tr>
                   ))}
-                  {leads.length === 0 && (
-                    <tr>
-                      <td colSpan={4} className="p-32 text-center text-slate-400 italic font-bold uppercase tracking-widest text-[11px]">Identity Registry Empty. Synchronize leads via your white-label portal.</td>
-                    </tr>
-                  )}
                 </tbody>
               </table>
             </div>
@@ -265,7 +271,6 @@ const AgentDashboard: React.FC<{ user: User; onBuy: (pid: string, qty: number) =
                    <div className="vibrant-strip mb-8 w-12"></div>
                    <h4 className="text-xl font-display font-black mb-6 uppercase tracking-tighter">Terminal Preview</h4>
                    <div className="aspect-[4/3] bg-white rounded-3xl overflow-hidden border-8 border-slate-800 shadow-inner relative">
-                      {/* Simulated preview of the white-label LMS */}
                       <div className="h-10 border-b border-slate-100 flex items-center px-4 gap-2">
                          <div className="w-3 h-3 rounded-full bg-slate-100" />
                          <div className="w-12 h-2 rounded-full bg-slate-50" />

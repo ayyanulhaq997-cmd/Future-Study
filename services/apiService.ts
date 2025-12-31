@@ -1,3 +1,4 @@
+
 import * as db from './db';
 import { 
   Product, VoucherCode, VoucherStatus, Order, User, ActivityLog, SecurityStatus, LMSCourse, 
@@ -41,7 +42,6 @@ const generateDemoStock = (productId: string, quantity: number): VoucherCode[] =
 };
 
 export const api = {
-  // Auth Node
   getCurrentUser: (): User | null => {
     const session = localStorage.getItem(SESSION_KEY);
     return session ? JSON.parse(session) : null;
@@ -72,14 +72,20 @@ export const api = {
       name: cleanEmail.split('@')[0].toUpperCase(),
       email: cleanEmail,
       role: role,
-      verified: true
+      verified: true,
+      isPlatinum: false // Default to standard
     };
 
     localUsers.push(newUser);
     localStorage.setItem(USERS_KEY, JSON.stringify(localUsers));
   },
 
-  verifyEmail: async (email: string): Promise<void> => {},
+  // Added verifyEmail to support identity verification flow in VerificationPending
+  verifyEmail: async (email: string): Promise<void> => {
+    // In demo environment, identity verification is assumed successful upon manual override.
+    console.log(`Identity verified for: ${email}`);
+    return Promise.resolve();
+  },
 
   logout: () => {
     localStorage.removeItem(SESSION_KEY);
@@ -107,7 +113,6 @@ export const api = {
     return [...db.users, ...localUsers];
   },
 
-  // Global Registry Nodes
   getUniversities: async () => db.universities,
   getUniversityBySlug: async (slug: string) => db.universities.find(u => u.slug === slug) || null,
   getUniversitiesByCountry: async (countryId: string) => db.universities.filter(u => u.countryId === countryId),
@@ -115,70 +120,140 @@ export const api = {
   getGuideBySlug: async (slug: string) => db.countryGuides.find(g => g.slug === slug) || null,
   getImmigrationGuides: async (): Promise<ImmigrationGuideData[]> => db.immigrationGuides,
 
-  // Procurement Node
   getProducts: async () => db.products,
   getProductById: async (id: string) => db.products.find(p => p.id === id),
   
-  getCodes: async () => {
-    let localCodes: VoucherCode[] = JSON.parse(localStorage.getItem(CODES_KEY) || '[]');
-    if (localCodes.length === 0) return db.voucherCodes;
-    return localCodes;
-  },
-  
-  getStockCount: async (productId: string) => {
-    const codes = await api.getCodes();
-    return codes.filter(c => c.productId === productId && c.status === 'Available').length;
+  // Added getCodes to retrieve vouchers from the vault for AdminDashboard
+  getCodes: async (): Promise<VoucherCode[]> => {
+    let codes = JSON.parse(localStorage.getItem(CODES_KEY) || '[]');
+    if (codes.length === 0) codes = [...db.voucherCodes];
+    return codes;
   },
 
-  importVouchers: async (productId: string, codes: string[]) => {
-    let localCodes: VoucherCode[] = JSON.parse(localStorage.getItem(CODES_KEY) || '[]');
-    if (localCodes.length === 0) localCodes = [...db.voucherCodes];
-
-    const newCodes = codes.map(c => ({
-      id: `vc-${productId}-${Math.random().toString(36).substr(2, 6)}`,
-      productId,
-      code: c,
-      status: 'Available' as VoucherStatus,
-      expiryDate: '2026-12-31'
-    }));
-    localCodes = [...localCodes, ...newCodes];
-    localStorage.setItem(CODES_KEY, JSON.stringify(localCodes));
-    return { addedCount: newCodes.length, duplicateCount: 0 };
+  // Added importVouchers to allow bulk injection of codes into the vault in AdminDashboard
+  importVouchers: async (productId: string, codeStrings: string[]) => {
+    let allCodes: VoucherCode[] = JSON.parse(localStorage.getItem(CODES_KEY) || '[]');
+    if (allCodes.length === 0) allCodes = [...db.voucherCodes];
+    
+    let addedCount = 0;
+    let duplicateCount = 0;
+    
+    codeStrings.forEach(s => {
+      const trimmed = s.trim();
+      if (!trimmed) return;
+      if (allCodes.some(c => c.code === trimmed)) {
+        duplicateCount++;
+      } else {
+        allCodes.push({
+          id: `vc-imp-${productId}-${Date.now()}-${addedCount}`,
+          productId,
+          code: trimmed.toUpperCase(),
+          status: 'Available',
+          expiryDate: '2026-12-31'
+        });
+        addedCount++;
+      }
+    });
+    
+    localStorage.setItem(CODES_KEY, JSON.stringify(allCodes));
+    return { addedCount, duplicateCount };
   },
 
-  // Settlement Engine
-  getOrders: async () => JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]'),
+  calculatePrice: async (productId: string, quantity: number, paymentMethod: 'Gateway' | 'BankTransfer' = 'BankTransfer', promoCode?: string) => {
+    const p = db.products.find(x => x.id === productId);
+    if (!p) throw new Error('Registry fault: Product not found.');
+    
+    const baseAmount = p.basePrice * quantity;
+    let tierDiscount = 0;
+    const currentUser = api.getCurrentUser();
+    
+    if (currentUser?.role === 'Agent') {
+      const discountPct = (currentUser.tier || 1) * 2;
+      tierDiscount = (baseAmount * discountPct) / 100;
+    }
+
+    const bankCharges = paymentMethod === 'Gateway' ? (baseAmount - tierDiscount) * 0.045 : 0;
+    
+    return {
+      baseAmount,
+      tierDiscount,
+      promoDiscount: 0,
+      bankCharges,
+      totalAmount: baseAmount - tierDiscount + bankCharges
+    };
+  },
+
+  getOrders: async (): Promise<Order[]> => JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]'),
   getOrderById: async (id: string) => {
     const orders: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
     return orders.find(o => o.id === id) || null;
   },
-  
-  calculatePrice: async (productId: string, quantity: number, promoCode?: string) => {
-    const p = db.products.find(x => x.id === productId);
-    if (!p) throw new Error('Registry fault: Product not found.');
-    return {
-      baseAmount: p.basePrice * quantity,
-      tierDiscount: 0,
-      promoDiscount: 0,
-      totalAmount: p.basePrice * quantity
-    };
+
+  checkPurchaseRestrictions: async (userId: string, quantity: number, method: 'Gateway' | 'BankTransfer'): Promise<void> => {
+    const users = await api.getUsers();
+    const user = users.find(u => u.id === userId);
+    const orders = await api.getOrders();
+    const today = new Date().toDateString();
+    
+    const todaysOrders = orders.filter(o => 
+      o.userId === userId && 
+      new Date(o.timestamp).toDateString() === today &&
+      o.status !== 'Cancelled'
+    );
+
+    const totalVouchersToday = todaysOrders.reduce((acc, o) => acc + o.quantity, 0);
+
+    // Hard Limit on Single Order Size
+    if (quantity > 3) {
+      throw new Error("Order Limit reached: Max 3 vouchers per single order allowed as per Operations Manager restriction.");
+    }
+
+    // Role-based Daily Restrictions
+    if (user?.role === 'Agent') {
+      if (method === 'BankTransfer') {
+        if (totalVouchersToday + quantity > 5) {
+          throw new Error("For your security, further orders are restricted. Kindly reach out to our support team for assistance. (Daily Agent Bank Limit: 5)");
+        }
+      } else {
+        if (!user.isPlatinum) {
+          throw new Error("RESTRICTED: Credit/Debit card payments are exclusively available to Platinum Members.");
+        }
+        if (totalVouchersToday + quantity > 3) {
+          throw new Error("For your security, further orders are restricted. Kindly reach out to our support team for assistance. (Daily Agent Card Limit: 3)");
+        }
+      }
+    } else if (user?.role === 'Customer') {
+      // Student Limit: Only ONE Voucher per day
+      if (totalVouchersToday + quantity > 1) {
+        throw new Error("For your security, further orders are restricted. Kindly reach out to our support team for assistance. (Student Daily Limit: 1)");
+      }
+      if (method === 'Gateway' && !user.isPlatinum) {
+        throw new Error("RESTRICTED: Card payments are only available to verified Platinum Partners.");
+      }
+    }
   },
 
   submitBankTransfer: async (productId: string, quantity: number, email: string, bankRef: string): Promise<Order> => {
-    const p = db.products.find(x => x.id === productId);
     const currentUser = api.getCurrentUser();
+    if (!currentUser) throw new Error("Authentication node inactive.");
+    
+    await api.checkPurchaseRestrictions(currentUser.id, quantity, 'BankTransfer');
+
+    const p = db.products.find(x => x.id === productId);
+    const pricing = await api.calculatePrice(productId, quantity, 'BankTransfer');
     const orders: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
     
     const order: Order = {
       id: `UNICOU-${Math.random().toString(36).substr(2, 7).toUpperCase()}`,
-      userId: currentUser?.id || 'guest-node',
+      userId: currentUser.id,
       productId,
       productName: p?.name || 'Academic Voucher',
       quantity,
-      baseAmount: (p?.basePrice || 0) * quantity,
-      tierDiscount: 0,
+      baseAmount: pricing.baseAmount,
+      tierDiscount: pricing.tierDiscount,
       promoDiscount: 0,
-      totalAmount: (p?.basePrice || 0) * quantity,
+      bankCharges: 0,
+      totalAmount: pricing.totalAmount,
       currency: 'USD',
       customerEmail: email,
       status: 'Pending',
@@ -228,14 +303,20 @@ export const api = {
   createGatewayOrder: async (amount: number) => {
     return {
       key: RAZORPAY_KEY_ID,
-      amount: amount * 100,
+      amount: Math.round(amount * 100),
       currency: 'USD',
       id: `rzp_${Math.random().toString(36).substr(2, 9)}`
     };
   },
 
   processPayment: async (productId: string, quantity: number, email: string, paymentData: any): Promise<Order> => {
+    const currentUser = api.getCurrentUser();
+    if (!currentUser) throw new Error("Auth node inactive.");
+
+    await api.checkPurchaseRestrictions(currentUser.id, quantity, 'Gateway');
+
     const p = db.products.find(x => x.id === productId);
+    const pricing = await api.calculatePrice(productId, quantity, 'Gateway');
     let codes: VoucherCode[] = JSON.parse(localStorage.getItem(CODES_KEY) || '[]');
     if (codes.length === 0) codes = [...db.voucherCodes];
 
@@ -250,18 +331,18 @@ export const api = {
     assigned.forEach(c => c.status = 'Used');
     
     const orders: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
-    const currentUser = api.getCurrentUser();
 
     const order: Order = {
       id: `UNICOU-${Math.random().toString(36).substr(2, 7).toUpperCase()}`,
-      userId: currentUser?.id || 'guest-node',
+      userId: currentUser.id,
       productId,
       productName: p?.name || 'Academic Voucher',
       quantity,
-      baseAmount: (p?.basePrice || 0) * quantity,
-      tierDiscount: 0,
+      baseAmount: pricing.baseAmount,
+      tierDiscount: pricing.tierDiscount,
       promoDiscount: 0,
-      totalAmount: (p?.basePrice || 0) * quantity,
+      bankCharges: pricing.bankCharges,
+      totalAmount: pricing.totalAmount,
       currency: 'USD',
       customerEmail: email,
       status: 'Completed',
@@ -276,8 +357,7 @@ export const api = {
     return order;
   },
 
-  // CRM & Leads
-  getLeads: async () => JSON.parse(localStorage.getItem(LEADS_KEY) || '[]'),
+  getLeads: async (): Promise<Lead[]> => JSON.parse(localStorage.getItem(LEADS_KEY) || '[]'),
   submitLead: async (type: 'student' | 'agent' | 'career' | 'general', data: Record<string, string>) => {
     const leads: Lead[] = JSON.parse(localStorage.getItem(LEADS_KEY) || '[]');
     const lead: Lead = {
@@ -315,7 +395,6 @@ export const api = {
     return booking;
   },
 
-  // Study Hub Node (LMS)
   getAllLMSCourses: async () => db.lmsCourses,
   getEnrolledCourses: async () => db.lmsCourses,
   getCourseModules: async (courseId: string) => db.lmsModules.filter(m => m.courseId === courseId),
@@ -352,7 +431,6 @@ export const api = {
       reviews: []
     };
 
-    // Correctly discover and inject manual submissions from the actual test structure
     test?.sections.forEach(section => {
       section.questions.forEach(q => {
         if (q.type === 'Essay' || q.type === 'Audio-Record') {
@@ -389,7 +467,6 @@ export const api = {
     return results.filter(r => r.userId === user.id);
   },
 
-  // Assessment Node (Trainer)
   getPendingSubmissions: async (): Promise<ManualSubmission[]> => {
     const subs: ManualSubmission[] = JSON.parse(localStorage.getItem(MANUAL_SUBS_KEY) || '[]');
     return subs.filter(s => !s.gradedBy);
@@ -408,7 +485,6 @@ export const api = {
     sub.feedback = feedback;
     sub.gradedBy = trainer?.name || 'Academic Trainer';
 
-    // Update parent result persistence
     const resIdx = results.findIndex(r => r.id === sub.testResultId);
     if (resIdx !== -1) {
         const res = results[resIdx];
@@ -423,7 +499,6 @@ export const api = {
             };
         }
 
-        // If all modules are graded, mark test as fully completed
         const pendingCount = res.skillScores.filter(ss => !ss.isGraded).length;
         if (pendingCount === 0) {
             const sumBands = res.skillScores.reduce((acc, ss) => acc + parseFloat(ss.band || '0'), 0);
@@ -436,7 +511,6 @@ export const api = {
     localStorage.setItem(RESULTS_KEY, JSON.stringify(results));
   },
 
-  // Governance Node (Admin/Finance)
   getSecurityStatus: async (): Promise<SecurityStatus> => ({ uptime: '99.98%', rateLimitsTriggered: 14, activeSessions: 42, threatLevel: 'Secure' }),
   getLogs: async (): Promise<ActivityLog[]> => [],
   getFinanceReport: async (): Promise<FinanceReport> => {

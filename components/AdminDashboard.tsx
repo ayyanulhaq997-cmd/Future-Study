@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { api } from '../services/apiService';
 import { Product, VoucherCode, Order, ActivityLog, User, SecurityStatus, Lead } from '../types';
@@ -127,24 +126,21 @@ const AdminDashboard: React.FC = () => {
       <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
         {activeTab === 'verification' && (
           <div className="bg-white p-12 rounded-[4rem] border border-slate-200 shadow-2xl overflow-hidden">
-             <h2 className="text-2xl font-black mb-10 text-slate-900 uppercase tracking-tighter">Fulfillment Queue</h2>
+             <h2 className="text-2xl font-black mb-10 text-slate-900 uppercase tracking-tighter">Orders Under Process</h2>
              <div className="overflow-x-auto">
                <table className="w-full text-left">
                  <thead>
                    <tr className="bg-slate-50 text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] border-y border-slate-100">
                      <th className="px-8 py-6">Order node</th>
                      <th className="px-8 py-6">Client / Email</th>
-                     <th className="px-8 py-6">Product & Stock</th>
+                     <th className="px-8 py-6">Product</th>
                      <th className="px-8 py-6">Settlement</th>
                      <th className="px-8 py-6 text-right">Action</th>
                    </tr>
                  </thead>
                  <tbody className="divide-y divide-slate-100">
                    {data.orders.filter(o => o.status === 'Pending').map(o => {
-                     const stock = data.codes.filter(c => c.productId === o.productId && c.status === 'Available').length;
-                     const isReady = stock >= o.quantity;
                      const isVerifying = verifyingId === o.id;
-                     
                      return (
                         <tr key={o.id} className="hover:bg-slate-50 transition-all group">
                         <td className="px-8 py-6">
@@ -154,11 +150,11 @@ const AdminDashboard: React.FC = () => {
                         <td className="px-8 py-6 text-slate-800 font-bold">{o.customerEmail}</td>
                         <td className="px-8 py-6">
                             <div className="text-[11px] font-black text-slate-900 mb-1 uppercase truncate max-w-[180px]">{o.productName}</div>
-                            <div className={`text-[9px] font-bold uppercase tracking-widest ${isReady ? 'text-emerald-500' : 'text-orange-500'}`}>
-                                {isReady ? `Vault Stock: ${stock} Units` : `Low Stock: ${stock} Units (Will Replenish)`}
+                            <div className={`text-[9px] font-bold uppercase tracking-widest text-emerald-500`}>
+                                Official {o.currency} Fulfillment
                             </div>
                         </td>
-                        <td className="px-8 py-6 font-display font-black text-slate-900">${o.totalAmount}</td>
+                        <td className="px-8 py-6 font-display font-black text-slate-900">{o.currency === 'GBP' ? '£' : '$'}{o.totalAmount}</td>
                         <td className="px-8 py-6 text-right">
                             <button 
                             onClick={() => handleVerify(o.id)} 
@@ -227,56 +223,6 @@ const AdminDashboard: React.FC = () => {
           </div>
         )}
 
-        {activeTab === 'leads' && (
-          <div className="bg-white rounded-[4rem] border border-slate-200 overflow-hidden shadow-2xl">
-            <h2 className="px-12 py-10 text-2xl font-black text-slate-900 uppercase tracking-tighter border-b border-slate-100">Global Lead Registry</h2>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="bg-slate-50 text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] border-b border-slate-100">
-                    <th className="px-8 py-6">Identity Node</th>
-                    <th className="px-8 py-6">Type</th>
-                    <th className="px-8 py-6">Submission Details</th>
-                    <th className="px-8 py-6">Timestamp</th>
-                    <th className="px-8 py-6 text-right">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {data.leads.map(lead => (
-                    <tr key={lead.id} className="hover:bg-slate-50">
-                      <td className="px-8 py-6">
-                        <div className="font-black text-slate-900 uppercase tracking-tight">{lead.data.name || lead.data.agency_name}</div>
-                        <div className="text-[10px] text-slate-500 font-mono italic">{lead.data.email}</div>
-                      </td>
-                      <td className="px-8 py-6">
-                        <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${lead.type === 'student' ? 'bg-blue-50 text-blue-600' : 'bg-orange-50 text-orange-600'}`}>
-                          {lead.type}
-                        </span>
-                      </td>
-                      <td className="px-8 py-6 max-w-xs">
-                        <p className="text-[11px] text-slate-600 font-medium italic line-clamp-2">
-                          {Object.entries(lead.data).map(([k, v]) => `${k}: ${v}`).join(' • ')}
-                        </p>
-                      </td>
-                      <td className="px-8 py-6 text-[10px] font-mono font-bold text-slate-400">
-                        {new Date(lead.timestamp).toLocaleString()}
-                      </td>
-                      <td className="px-8 py-6 text-right">
-                         <span className="px-3 py-1 bg-slate-50 border border-slate-200 rounded-full text-[9px] font-black uppercase text-slate-500">New Node</span>
-                      </td>
-                    </tr>
-                  ))}
-                  {data.leads.length === 0 && (
-                    <tr>
-                      <td colSpan={5} className="p-32 text-center text-slate-400 italic font-bold uppercase tracking-widest text-[11px]">No active leads in registry.</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
         {isAdmin && activeTab === 'staff' && (
           <div className="bg-white rounded-[4rem] border border-slate-200 overflow-hidden shadow-2xl">
              <div className="p-12 border-b border-slate-100 bg-slate-50/50">
@@ -294,11 +240,13 @@ const AdminDashboard: React.FC = () => {
                      <td className="px-8 py-6"><span className="px-5 py-2 bg-white border border-slate-200 text-unicou-navy rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-sm">{u.role}</span></td>
                      <td className="px-8 py-6 text-right">
                        <select value={u.role} onChange={e => handleRoleUpdate(u.id, e.target.value)} className="bg-white border border-slate-200 rounded-2xl px-6 py-2.5 text-[10px] font-black uppercase outline-none focus:border-unicou-orange shadow-sm cursor-pointer">
-                         <option value="Customer">Standard User</option>
-                         <option value="Agent">Agent Partner</option>
-                         <option value="Finance">Finance / Teller</option>
-                         <option value="Trainer">Exam Grader</option>
-                         <option value="Admin">System Admin</option>
+                         <option value="Customer">Student (Standard User)</option>
+                         <option value="Agent">Agent Partner / Prep Center</option>
+                         <option value="Finance">Finance / Audit Team</option>
+                         <option value="Trainer">Lead Trainer</option>
+                         <option value="Manager">Operations Manager</option>
+                         <option value="Support">Support / Sales Node</option>
+                         <option value="Admin">System Admin / Owner</option>
                        </select>
                      </td>
                    </tr>
@@ -307,25 +255,44 @@ const AdminDashboard: React.FC = () => {
              </table>
           </div>
         )}
-
-        {isAdmin && activeTab === 'audit' && (
-          <div className="bg-white rounded-[4rem] border border-slate-200 overflow-hidden shadow-2xl">
-            <table className="w-full text-left">
-              <thead className="bg-slate-50 text-[10px] font-black uppercase text-slate-500 tracking-widest border-b border-slate-100">
-                <tr><th className="px-8 py-6">Timestamp</th><th className="px-8 py-6">Staff Actor</th><th className="px-8 py-6">Action Node</th><th className="px-8 py-6">Critical Details</th></tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {data.logs.map(log => (
-                  <tr key={log.id} className="text-[11px] font-bold text-slate-700 hover:bg-slate-50">
-                    <td className="px-8 py-6 font-mono text-slate-400">{new Date(log.timestamp).toLocaleString()}</td>
-                    <td className="px-8 py-6 text-slate-900 uppercase">{log.userEmail}</td>
-                    <td className="px-8 py-6"><span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase border ${log.severity === 'critical' ? 'bg-red-50 text-red-600 border-red-100' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>{log.action}</span></td>
-                    <td className="px-8 py-6 text-slate-500 italic">"{log.details}"</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        
+        {activeTab === 'leads' && (
+           <div className="bg-white rounded-[4rem] border border-slate-200 overflow-hidden shadow-2xl">
+             <h2 className="px-12 py-10 text-2xl font-black text-slate-900 uppercase tracking-tighter border-b border-slate-100">Global Lead Registry</h2>
+             <div className="overflow-x-auto">
+               <table className="w-full text-left">
+                 <thead>
+                   <tr className="bg-slate-50 text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] border-b border-slate-100">
+                     <th className="px-8 py-6">Identity Node</th>
+                     <th className="px-8 py-6">Type</th>
+                     <th className="px-8 py-6">Submission Details</th>
+                     <th className="px-8 py-6 text-right">Status</th>
+                   </tr>
+                 </thead>
+                 <tbody className="divide-y divide-slate-100">
+                   {data.leads.map(lead => (
+                     <tr key={lead.id} className="hover:bg-slate-50">
+                       <td className="px-8 py-6">
+                         <div className="font-black text-slate-900 uppercase tracking-tight">{lead.data.name || lead.data.agency_name}</div>
+                         <div className="text-[10px] text-slate-500 font-mono italic">{lead.data.email}</div>
+                       </td>
+                       <td className="px-8 py-6">
+                         <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${lead.type === 'student' ? 'bg-blue-50 text-blue-600' : 'bg-orange-50 text-orange-600'}`}>
+                           {lead.type}
+                         </span>
+                       </td>
+                       <td className="px-8 py-6 max-w-xs truncate text-[11px] italic font-bold">
+                         {Object.values(lead.data).join(' • ')}
+                       </td>
+                       <td className="px-8 py-6 text-right">
+                          <span className="px-3 py-1 bg-slate-50 border border-slate-200 rounded-full text-[9px] font-black uppercase text-slate-500">New Node</span>
+                       </td>
+                     </tr>
+                   ))}
+                 </tbody>
+               </table>
+             </div>
+           </div>
         )}
       </div>
     </div>

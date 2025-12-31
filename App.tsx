@@ -41,7 +41,6 @@ const OFFICE_LOCATIONS = [
 
 const App: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
-  // View initialized correctly with home state
   const [view, setView] = useState<ViewState>({ type: 'home' });
   const [user, setUser] = useState<User | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -55,7 +54,6 @@ const App: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // navigateTo now strictly expects ViewState for enhanced type safety
   const navigateTo = (newView: ViewState) => {
     setView(newView);
     setIsNavbarVisible(true);
@@ -103,15 +101,15 @@ const App: React.FC = () => {
         return (
           <div className={`max-w-7xl mx-auto ${wrapperClass} px-6 animate-in fade-in py-20`}>
              <div className="text-center mb-16">
-               <h2 className="text-5xl font-display font-black text-unicou-navy uppercase tracking-tighter mb-4">Digital <span className="text-unicou-orange">Library</span></h2>
-               <p className="text-slate-500 font-bold italic">"Authorized access to global academic journals, prep material, and research nodes."</p>
+               <h2 className="text-5xl font-display font-black text-unicou-navy uppercase tracking-tighter mb-4">Study <span className="text-unicou-orange">Library</span></h2>
+               <p className="text-slate-500 font-bold italic">"Access to global academic journals, prep material, and research."</p>
              </div>
              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                {[1,2,3,4,5,6].map(i => (
                  <div key={i} className="bg-slate-50 p-10 rounded-[2.5rem] border border-slate-100 flex flex-col items-center text-center group hover:bg-white hover:shadow-premium transition-all">
                     <div className="text-4xl mb-6 grayscale group-hover:grayscale-0 transition-all">📚</div>
-                    <h3 className="font-black text-unicou-navy uppercase text-sm mb-2">Academic Node 0{i}</h3>
-                    <p className="text-xs text-slate-400 font-bold mb-8 italic">Encrypted educational resources for {i === 1 ? 'PTE' : 'General'} Mastery.</p>
+                    <h3 className="font-black text-unicou-navy uppercase text-sm mb-2">Resource Center 0{i}</h3>
+                    <p className="text-xs text-slate-500 font-bold mb-8 italic">Preparation resources for {i === 1 ? 'PTE' : 'General'} Success.</p>
                     <button onClick={() => navigateTo({ type: 'lms-dashboard' })} className="px-6 py-2.5 bg-unicou-navy text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-unicou-orange transition-colors">View Index</button>
                  </div>
                ))}
@@ -132,20 +130,20 @@ const App: React.FC = () => {
         return (
           <div className={`max-w-7xl mx-auto ${wrapperClass} px-6 animate-in fade-in pb-32`}>
              <div className="text-center mb-24">
-                <span className="text-[11px] font-black text-unicou-orange uppercase tracking-[0.5em] mb-4 block">Institutional Core</span>
-                <h2 className="text-6xl md:text-[7rem] font-display font-black text-unicou-navy mb-8 tracking-tighter leading-none">The UNICOU <span className="text-unicou-orange">Legacy</span></h2>
+                <span className="text-[11px] font-black text-unicou-orange uppercase tracking-[0.5em] mb-4 block">Since 2009</span>
+                <h2 className="text-6xl md:text-[7rem] font-display font-black text-unicou-navy mb-8 tracking-tighter leading-none">The UniCou <span className="text-unicou-orange">Legacy</span></h2>
                 <div className="h-2 w-32 bg-unicou-navy mx-auto rounded-full" />
              </div>
              <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
                <div className="lg:col-span-8 space-y-16">
                  <section className="bg-white p-12 md:p-16 rounded-3xl border border-slate-100 shadow-premium relative overflow-hidden">
                    <div className="relative z-10 space-y-8">
-                     <h2 className="text-4xl font-display font-black uppercase text-unicou-navy border-b-2 border-unicou-orange pb-6 inline-block">Established 2009</h2>
+                     <h2 className="text-4xl font-display font-black uppercase text-unicou-navy border-b-2 border-unicou-orange pb-6 inline-block">Since 2009</h2>
                      <p className="text-xl text-slate-800 font-black leading-relaxed italic border-l-4 border-unicou-orange pl-8">
-                       Founded with a passion for global education, UNICOU is a leading international consultancy with deep roots and a growing global footprint.
+                       Founded with a passion for global education, UniCou International Ltd is a leading consultancy with deep roots and a growing global footprint.
                      </p>
                      <div className="space-y-6 text-lg text-slate-600 leading-relaxed font-bold italic">
-                       <p>Our journey began in 2009 in Pakistan. As of 2023, we expanded our operations to include offices in the United Kingdom and Dubai, enhancing our ability to serve clients with localized expertise in competitive markets.</p>
+                       <p>Our journey began in 2009. As of 2023, we expanded our operations to include offices in the United Kingdom and Dubai, enhancing our ability to serve clients with localized expertise in competitive markets.</p>
                        <div className="flex wrap gap-2 pt-4">
                          {["British Council", "ICEF", "AIRC", "LanguageCert", "TOEFL", "Duolingo", "Pearson"].map(tag => (
                            <span key={tag} className="px-4 py-2 bg-slate-50 text-unicou-navy text-[10px] font-black uppercase tracking-widest rounded-lg border border-slate-100">{tag} Certified</span>
@@ -160,7 +158,7 @@ const App: React.FC = () => {
                          <span className="text-unicou-orange">01</span> Our Vision
                        </h3>
                        <p className="text-slate-300 text-lg font-black italic leading-relaxed">
-                         "To become the most trusted gateway for students and institutions seeking global mobility solutions."
+                         "To become the most trusted gateway for students and institutions seeking global education solutions."
                        </p>
                     </div>
                     <div className="bg-unicou-orange p-10 rounded-3xl shadow-premium group transition-all hover:scale-[1.02]">
@@ -177,7 +175,7 @@ const App: React.FC = () => {
                  <div className="bg-white p-10 rounded-3xl border border-slate-100 shadow-premium">
                    <h3 className="text-xl font-display font-black mb-8 uppercase text-unicou-navy">Why Partner With Us</h3>
                    <ul className="space-y-4">
-                      {["Advisors Certified by British Council", "Direct Institutional Fulfillment", "Ethical Counseling Protocols", "Verified Testing Nodes"].map(p => (
+                      {["Advisors Certified by British Council", "Direct Institutional Placement", "Ethical Counseling Protocols", "Verified Testing Centers"].map(p => (
                         <li key={p} className="flex items-center gap-3 text-[11px] font-black uppercase tracking-widest text-slate-700">
                           <div className="w-5 h-5 rounded-lg bg-emerald-500 flex items-center justify-center text-white text-[10px]">✓</div>
                           {p}
@@ -256,22 +254,22 @@ const App: React.FC = () => {
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-16 pb-16 border-b border-slate-200">
             <div className="md:col-span-1">
-               <img src={LOGO_SRC} alt="UNICOU" className="h-10 w-auto mb-8 hover:opacity-80 transition-opacity cursor-pointer" onClick={() => navigateTo({type: 'home'})} />
-               <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest leading-loose">Academic Mobility Infrastructure.<br />Established 2009.</p>
+               <img src={LOGO_SRC} alt="UniCou" className="h-10 w-auto mb-8 hover:opacity-80 transition-opacity cursor-pointer" onClick={() => navigateTo({type: 'home'})} />
+               <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest leading-loose">Study Abroad Specialists.<br />Since 2009.</p>
             </div>
             <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-10">
               {OFFICE_LOCATIONS.map((loc, i) => (
                 <div key={i}>
-                  <h5 className="text-[11px] font-black text-unicou-navy uppercase tracking-widest mb-4">{loc.country} Terminal</h5>
+                  <h5 className="text-[11px] font-black text-unicou-navy uppercase tracking-widest mb-4">{loc.country} Office</h5>
                   <p className="text-[13px] text-slate-600 leading-relaxed font-bold italic">"{loc.address}"</p>
                 </div>
               ))}
             </div>
             <div className="md:col-span-1">
-              <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-8">Navigation</h4>
+              <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-8">Quick Links</h4>
               <ul className="space-y-4 text-[12px] font-black text-unicou-navy uppercase tracking-widest">
                 <li><button onClick={() => navigateTo({ type: 'store' })} className="hover:text-unicou-orange transition-colors">Voucher Store</button></li>
-                <li><button onClick={() => navigateTo({ type: 'join-hub' })} className="hover:text-unicou-orange transition-colors">Apply Node</button></li>
+                <li><button onClick={() => navigateTo({ type: 'join-hub' })} className="hover:text-unicou-orange transition-colors">Apply Now</button></li>
                 <li><button onClick={() => navigateTo({ type: 'guide' })} className="hover:text-unicou-orange transition-colors">User Guide</button></li>
                 <li><button onClick={() => navigateTo({ type: 'policy', policyId: 'privacy' })} className="hover:text-unicou-orange transition-colors">Privacy Policy</button></li>
               </ul>
@@ -280,9 +278,9 @@ const App: React.FC = () => {
           <div className="pt-10 flex wrap gap-8 text-[10px] font-black uppercase tracking-widest text-slate-400">
              <button onClick={() => navigateTo({ type: 'policy', policyId: 'modern-slavery' })} className="hover:text-unicou-navy transition-colors">Modern Slavery Policy</button>
              <button onClick={() => navigateTo({ type: 'policy', policyId: 'accessibility' })} className="hover:text-unicou-navy transition-colors">Accessibility</button>
-             <button onClick={() => navigateTo({ type: 'policy', policyId: 'cookies' })} className="hover:text-unicou-navy transition-colors">Cookie Strategy</button>
+             <button onClick={() => navigateTo({ type: 'policy', policyId: 'cookies' })} className="hover:text-unicou-navy transition-colors">Cookies</button>
              <button onClick={() => navigateTo({ type: 'policy', policyId: 'privacy' })} className="hover:text-unicou-navy transition-colors">Privacy Policy</button>
-             <p className="ml-auto italic">© 2025 UNICOU INTERNATIONAL LTD. REG #06900657</p>
+             <p className="ml-auto italic">© 2025 UniCou International Ltd. REG #06900657</p>
           </div>
         </div>
       </footer>

@@ -54,8 +54,8 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
       type: 'lms-dashboard',
       subItems: [
         { label: 'Library', type: 'library' },
-        { label: 'Mock Test Terminal', type: 'lms-dashboard', tab: 'results' },
-        { label: 'Mastery Courses', type: 'lms-dashboard', tab: 'academy' },
+        { label: 'Practice Tests', type: 'lms-dashboard', tab: 'results' },
+        { label: 'Preparation Courses', type: 'lms-dashboard', tab: 'academy' },
         { label: 'Qualifications', type: 'qualifications' },
       ]
     },
@@ -86,7 +86,7 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
         }`}>
           <div className="flex items-center gap-6 xl:gap-8">
             <button onClick={() => onNavigate({ type: 'home' })} className="flex items-center transition-transform hover:scale-105 active:scale-95 shrink-0">
-              <img src={LOGO_SRC} alt="UNICOU" className="h-8 w-auto object-contain" />
+              <img src={LOGO_SRC} alt="UniCou" className="h-8 w-auto object-contain" />
             </button>
 
             <div className="hidden lg:flex items-center gap-0.5">
@@ -149,8 +149,8 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <button onClick={(e) => { e.stopPropagation(); onNavigate({ type: 'login' }); }} className="px-4 py-2 text-[11px] font-black uppercase tracking-tight text-unicou-navy hover:text-unicou-orange transition-all">Login</button>
-                <button onClick={(e) => { e.stopPropagation(); onNavigate({ type: 'signup' }); }} className="px-6 py-3 bg-unicou-orange text-white rounded-2xl font-black text-[11px] uppercase tracking-tight shadow-action hover:bg-orange-600 transition-all active:scale-95">Register</button>
+                <button onClick={(e) => { e.stopPropagation(); onNavigate({ type: 'login' }); }} className="px-4 py-2 text-[11px] font-black uppercase tracking-tight text-unicou-navy hover:text-unicou-orange transition-all">Sign In</button>
+                <button onClick={(e) => { e.stopPropagation(); onNavigate({ type: 'signup' }); }} className="px-6 py-3 bg-unicou-orange text-white rounded-2xl font-black text-[11px] uppercase tracking-tight shadow-action hover:bg-orange-600 transition-all active:scale-95">Sign Up</button>
               </div>
             )}
           </div>

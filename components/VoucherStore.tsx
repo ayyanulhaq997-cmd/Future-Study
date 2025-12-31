@@ -11,7 +11,6 @@ interface VoucherStoreProps {
 
 const VoucherStore: React.FC<VoucherStoreProps> = ({ onCheckout, onBook, onNavigateToAgent }) => {
   const [products, setProducts] = useState<Product[]>([]);
-  const [stockMap, setStockMap] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<string>('ALL');
 
@@ -21,12 +20,6 @@ const VoucherStore: React.FC<VoucherStoreProps> = ({ onCheckout, onBook, onNavig
         const p = await api.getProducts();
         const filtered = p.filter(x => x.type === 'Voucher');
         setProducts(filtered);
-        
-        const counts: Record<string, number> = {};
-        for (const item of filtered) {
-          counts[item.id] = await api.getStockCount(item.id);
-        }
-        setStockMap(counts);
       } catch (e) { console.error(e); } finally { setLoading(false); }
     };
     init();
@@ -80,15 +73,13 @@ const VoucherStore: React.FC<VoucherStoreProps> = ({ onCheckout, onBook, onNavig
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 pb-24">
         {filteredProducts.map(p => {
-          const stock = stockMap[p.id] || 0;
-          const out = stock === 0;
           return (
             <div key={p.id} className="bg-white p-12 rounded-[4rem] border border-slate-100 hover:border-unicou-orange/20 transition-all group flex flex-col h-full shadow-xl hover:shadow-3xl relative overflow-hidden">
               <div className="flex justify-between items-start mb-12">
                 <div className="h-14 flex items-center justify-center p-1">
                   <img src={getBrandLogo(p.category)} alt={p.category} className="max-h-full max-w-full object-contain filter grayscale group-hover:grayscale-0 transition-all duration-700 transform group-hover:scale-110" />
                 </div>
-                <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${out ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-emerald-50 text-emerald-600 border border-emerald-100'}`}>{out ? 'Node Locked' : 'Stock Valid'}</span>
+                <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-emerald-50 text-emerald-600 border border-emerald-100`}>Verified Unit</span>
               </div>
               <div className="mb-10">
                 <h3 className="text-3xl font-display font-black text-slate-950 group-hover:text-unicou-navy transition-colors tracking-tight leading-tight">{p.name}</h3>
@@ -98,22 +89,15 @@ const VoucherStore: React.FC<VoucherStoreProps> = ({ onCheckout, onBook, onNavig
                 <div className="flex justify-between items-end">
                   <div>
                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Registry Rate</p>
-                    <div className="flex items-baseline gap-2"><span className="text-4xl font-display font-black text-slate-950 tracking-tighter">${p.basePrice}</span><span className="text-slate-400 font-black text-[11px] uppercase tracking-widest">USD</span></div>
-                  </div>
-                  <div className="text-right">
-                     <p className="text-[9px] font-black text-slate-400 uppercase mb-2 tracking-widest">Available</p>
-                     <p className="text-xl font-black font-mono text-slate-950 bg-slate-50 px-3 py-1 rounded-xl border border-slate-100">{stock.toString().padStart(2, '0')}</p>
+                    <div className="flex items-baseline gap-2"><span className="text-4xl font-display font-black text-slate-950 tracking-tighter">{p.currency === 'GBP' ? '£' : '$'}{p.basePrice}</span><span className="text-slate-400 font-black text-[11px] uppercase tracking-widest">{p.currency}</span></div>
                   </div>
                 </div>
                 <button 
                   onClick={() => onCheckout(p.id, 1)}
-                  disabled={out}
-                  className={`w-full py-7 rounded-[2rem] font-black text-xs uppercase tracking-widest transition-all shadow-2xl active:scale-95 flex items-center justify-center gap-5 ${
-                    out ? 'bg-slate-50 text-slate-300 cursor-not-allowed border border-slate-100' : 'bg-unicou-orange hover:bg-orange-600 text-white shadow-orange-500/20'
-                  }`}
+                  className={`w-full py-7 rounded-[2rem] font-black text-xs uppercase tracking-widest transition-all shadow-2xl active:scale-95 flex items-center justify-center gap-5 bg-unicou-orange hover:bg-orange-600 text-white shadow-orange-500/20`}
                 >
-                  {out ? 'Procurement Paused' : 'Secure Checkout'}
-                  {!out && <svg className="w-6 h-6 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>}
+                  Secure Checkout
+                  <svg className="w-6 h-6 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                 </button>
               </div>
             </div>
