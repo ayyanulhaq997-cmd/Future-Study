@@ -66,6 +66,7 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
     { label: 'Customer', value: 'Customer' },
     { label: 'Agent Partner', value: 'Agent' },
     { label: 'Sales Executive', value: 'Sales Executive' },
+    { label: 'Academic Trainer', value: 'Trainer' },
     { label: 'Finance', value: 'Finance' },
     { label: 'Manager', value: 'Manager' },
     { label: 'Admin', value: 'Admin' }

@@ -28,7 +28,7 @@ export const BANK_DETAILS = {
 };
 
 const dispatchOrderConfirmationEmail = (email: string, orderId: string, customerName: string) => {
-  const subject = `Your UniCou Order Confirmation: #${orderId} 🚀`;
+  const subject = `Order No ${orderId}: Annex-B Notification - Your Order is Received`;
   const body = `
 Hi ${customerName},
 
@@ -37,7 +37,7 @@ Thank you for your purchase! We’ve received your order, and our team is curren
 Order Summary
 Status: Processing 
 Item: Exam Voucher as per order description
-Delivery Method: Secure Email Delivery
+Delivery Method: Secure Email Delivery (Annex-B Protocol)
 
 What Happens Next?
 Your exam voucher will be delivered to this email address shortly after payment verification.
@@ -55,7 +55,7 @@ const dispatchAnnexEmail = (email: string, annex: 'C' | 'D' | 'E', orderId: stri
 
   if (annex === 'C') {
     const { productName, voucherCodes, expiryDate } = extraData || {};
-    subject = `Order No ${orderId}: Your Exam Voucher is Delivered – Please Read Important Terms`;
+    subject = `Order No ${orderId}: Annex-C - Your Exam Voucher is Delivered`;
     body = `
 Dear ${customerName},
 
@@ -66,45 +66,34 @@ Voucher Details:
 * Voucher Code: ${voucherCodes ? voucherCodes.join(', ') : 'N/A'}
 * Valid Until: ${expiryDate || '2026-12-31'}
 
-Important Purchase Conditions:
+Important Conditions:
 1. Once the voucher code is delivered, it cannot be refunded, replaced, or exchanged.
 2. You accept the website’s data privacy policy.
-3. You shall be liable for any payment obligations, including cases of refund, return, or cancellation.
-
-We wish you success in your upcoming exam.
+3. You shall be liable for any payment obligations.
 
 Kind regards,
 UniCou Team
     `;
   } else if (annex === 'D') {
-    subject = `Order No ${orderId}: Update on Your Voucher Order – Payment Verification in Progress`;
+    subject = `Order No ${orderId}: Annex-D - Payment Verification Required`;
     body = `
 Dear ${customerName},
 
-Thank you for your order with UniCou.
-
-We would like to inform you that your voucher delivery is currently delayed due to ongoing payment verification. Our team is completing the required security checks to ensure a safe transaction. 
+We would like to inform you that your voucher delivery is currently delayed due to ongoing payment verification (Annex-D Protocol).
 
 Once verification is successfully completed, your voucher will be delivered immediately.
 
-If you need any assistance:
-Support Email: connect@unicou.uk
-
-Thank you for your cooperation.
+If you need any assistance: connect@unicou.uk
 
 Kind regards,
 UniCou Team
     `;
   } else if (annex === 'E') {
-    subject = `Order No ${orderId} Cancellation Notice`;
+    subject = `Order No ${orderId}: Annex-E - Order Cancellation Notice`;
     body = `
 Dear ${customerName},
 
-We regret to inform you that your order ${orderId} has been cancelled due to payment verification or security compliance reasons. We sincerely apologize for the inconvenience caused.
-
-If any amount has been deducted, please contact your bank or payment provider for a refund as per their policy.
-
-For further assistance, please contact our support chatbot.
+We regret to inform you that your order ${orderId} has been cancelled due to payment verification or security compliance reasons. 
 
 Kind regards,
 UniCou Team
@@ -157,7 +146,8 @@ export const api = {
 
   updateUserRole: async (uid: string, role: UserRole) => {
     const localUsers: User[] = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
-    const user = [...db.users, ...localUsers].find(u => u.id === uid);
+    const all = await api.getUsers();
+    const user = all.find(u => u.id === uid);
     if (user) {
       user.role = role;
       const idx = localUsers.findIndex(u => u.id === uid);
@@ -209,6 +199,17 @@ export const api = {
   getOrders: async (): Promise<Order[]> => JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]'),
   getOrderById: async (id: string) => (await api.getOrders()).find(o => o.id === id) || null,
 
+  getDailyOrderStats: async (userId: string) => {
+    const orders = await api.getOrders();
+    const today = new Date().toISOString().split('T')[0];
+    const userToday = orders.filter(o => o.userId === userId && o.timestamp.startsWith(today));
+    
+    return {
+      bankTotal: userToday.filter(o => o.paymentMethod === 'BankTransfer').reduce((acc, o) => acc + o.quantity, 0),
+      cardTotal: userToday.filter(o => o.paymentMethod === 'Gateway').reduce((acc, o) => acc + o.quantity, 0)
+    };
+  },
+
   processOrderAction: async (orderId: string, action: 'verify' | 'hold' | 'cancel') => {
     const orders = await api.getOrders();
     const orderIdx = orders.findIndex(o => o.id === orderId);
@@ -255,6 +256,15 @@ export const api = {
     const pricing = await api.calculatePrice(productId, quantity, 'BankTransfer');
     const p = db.products.find(x => x.id === productId);
     const currentUser = api.getCurrentUser();
+    
+    // Check Limits
+    if (currentUser) {
+      const stats = await api.getDailyOrderStats(currentUser.id);
+      if (stats.bankTotal + quantity > 5) {
+        throw new Error("Additional Order Notification: For your security, further orders are restricted. Kindly reach out to our support team for assistance");
+      }
+    }
+
     const order: Order = {
       id: `UNICOU-${Math.random().toString(36).substr(2, 7).toUpperCase()}`,
       userId: currentUser?.id || 'guest',
@@ -323,6 +333,15 @@ export const api = {
     const pricing = await api.calculatePrice(productId, quantity, 'Gateway');
     const p = db.products.find(x => x.id === productId);
     const currentUser = api.getCurrentUser();
+    
+    // Check Limits
+    if (currentUser) {
+      const stats = await api.getDailyOrderStats(currentUser.id);
+      if (stats.cardTotal + quantity > 3) {
+        throw new Error("Additional Order Notification: For your security, further orders are restricted. Kindly reach out to our support team for assistance");
+      }
+    }
+
     const order: Order = {
       id: `UNICOU-${Math.random().toString(36).substr(2, 7).toUpperCase()}`,
       userId: currentUser?.id || 'guest',

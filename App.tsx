@@ -19,6 +19,8 @@ import UniversityProfile from './components/UniversityProfile';
 import AdminDashboard from './components/AdminDashboard';
 import AgentDashboard from './components/AgentDashboard';
 import TrainerDashboard from './components/TrainerDashboard';
+import SalesDashboard from './components/SalesDashboard';
+import SupportDashboard from './components/SupportDashboard';
 import PartnerShowcase from './components/PartnerShowcase';
 import CookieConsent from './components/CookieConsent';
 import CustomerDashboard from './components/CustomerDashboard';
@@ -195,7 +197,9 @@ const App: React.FC = () => {
         return <div className={wrapperClass}><Login onLogin={(u) => { 
             setUser(u); 
             if (['Admin', 'Finance'].includes(u.role)) navigateTo({ type: 'admin' });
-            else if (u.role === 'Sales Executive') navigateTo({ type: 'sales-exec' });
+            else if (u.role === 'Sales Executive') navigateTo({ type: 'sales-node' });
+            else if (u.role === 'Trainer') navigateTo({ type: 'trainer' });
+            else if (u.role === 'Support') navigateTo({ type: 'support-portal' });
             else if (u.role === 'Agent') navigateTo({ type: 'agent' });
             else navigateTo({ type: 'lms-dashboard' }); 
         }} onNavigateToSignup={() => navigateTo({ type: 'signup' })} /></div>;
@@ -210,9 +214,15 @@ const App: React.FC = () => {
       case 'admin':
         if (!user || !['Admin', 'Finance'].includes(user.role)) return <div className="view-container text-center pt-40 font-black uppercase text-slate-400">Restricted Access.</div>;
         return <div className={wrapperClass}><AdminDashboard /></div>;
-      case 'sales-exec':
-        if (!user || user.role !== 'Sales Executive') return <div className="view-container text-center pt-40 font-black uppercase text-slate-400">Sales Executive Access Only.</div>;
+      case 'trainer':
+        if (!user || user.role !== 'Trainer') return <div className="view-container text-center pt-40 font-black uppercase text-slate-400">Restricted Access.</div>;
         return <div className={wrapperClass}><TrainerDashboard user={user} /></div>;
+      case 'sales-node':
+        if (!user || user.role !== 'Sales Executive') return <div className="view-container text-center pt-40 font-black uppercase text-slate-400">Restricted Access.</div>;
+        return <div className={wrapperClass}><SalesDashboard user={user} /></div>;
+      case 'support-portal':
+        if (!user || user.role !== 'Support') return <div className="view-container text-center pt-40 font-black uppercase text-slate-400">Restricted Access.</div>;
+        return <div className={wrapperClass}><SupportDashboard user={user} /></div>;
       case 'agent':
         if (!user || user.role !== 'Agent') return <div className="view-container text-center pt-40 font-black uppercase text-slate-400">Agent Portal Restricted.</div>;
         return <div className={wrapperClass}><AgentDashboard user={user} onBuy={(p, q) => navigateTo({ type: 'checkout', productId: p, quantity: q })} /></div>;

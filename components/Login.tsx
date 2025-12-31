@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { api } from '../services/apiService';
 import { User, ViewState } from '../types';
@@ -102,6 +103,10 @@ const Login: React.FC<LoginProps> = ({ onLogin, onNavigateToSignup, onBack }) =>
             <div className="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex justify-between px-6 items-center">
               <span className="font-black text-emerald-600 uppercase">Finance</span>
               <span>finance@unicou.uk</span>
+            </div>
+            <div className="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex justify-between px-6 items-center">
+              <span className="font-black text-purple-600 uppercase">Trainer</span>
+              <span>trainer@unicou.uk</span>
             </div>
          </div>
       </div>
