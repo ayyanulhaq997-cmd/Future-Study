@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/apiService';
 import { CountryGuide } from '../types';
@@ -33,7 +34,7 @@ const CountryList: React.FC<CountryListProps> = ({ onNavigateToGuide }) => {
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center p-20 min-h-[60vh] bg-white">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-unicou-vibrant mb-4"></div>
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-unicou-orange mb-4"></div>
       <p className="text-slate-800 font-bold uppercase tracking-widest text-xs">Scanning Global Nodes...</p>
     </div>
   );
@@ -56,7 +57,7 @@ const CountryList: React.FC<CountryListProps> = ({ onNavigateToGuide }) => {
           <div 
             key={guide.slug}
             onClick={() => onNavigateToGuide(guide.slug)}
-            className="group rounded-[3rem] overflow-hidden border border-slate-100 hover:border-unicou-vibrant/20 transition-all cursor-pointer shadow-premium relative bg-white flex flex-col"
+            className="group rounded-[3rem] overflow-hidden border border-slate-100 hover:border-unicou-orange/30 transition-all cursor-pointer shadow-premium relative bg-white flex flex-col"
           >
             <div className="relative h-64 overflow-hidden">
               <img 
@@ -76,7 +77,7 @@ const CountryList: React.FC<CountryListProps> = ({ onNavigateToGuide }) => {
                  <h3 className="text-3xl font-display font-bold group-hover:text-unicou-orange transition-colors leading-tight text-slate-900 uppercase">
                    {guide.title.replace('Study in ', '')}
                  </h3>
-                 <div className="w-2 h-2 rounded-full bg-unicou-vibrant shadow-[0_0_8px_#00f2ff]"></div>
+                 <div className="w-2.5 h-2.5 rounded-full bg-unicou-orange shadow-[0_0_10px_rgba(241,90,36,0.6)]"></div>
               </div>
               <p className="text-slate-500 text-sm mb-10 leading-relaxed line-clamp-2 italic font-medium">
                 {guide.content}
@@ -95,7 +96,7 @@ const CountryList: React.FC<CountryListProps> = ({ onNavigateToGuide }) => {
 
               <div className="flex items-center justify-between pt-8 border-t border-slate-50">
                 <span className="text-[10px] font-bold uppercase text-slate-400 tracking-widest group-hover:text-unicou-navy transition-colors">Access Guide</span>
-                <div className="w-12 h-12 rounded-2xl bg-unicou-navy text-white flex items-center justify-center group-hover:bg-unicou-vibrant group-hover:shadow-vibrant-glow transition-all duration-500 shadow-xl">
+                <div className="w-12 h-12 rounded-2xl bg-unicou-navy text-white flex items-center justify-center group-hover:bg-unicou-orange group-hover:shadow-action transition-all duration-500 shadow-xl">
                   <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                 </div>
               </div>

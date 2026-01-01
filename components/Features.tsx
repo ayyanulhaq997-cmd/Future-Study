@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 const features = [
@@ -7,7 +8,7 @@ const features = [
     icon: (
       <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
     ),
-    color: "bg-unicou-vibrant"
+    color: "bg-unicou-orange"
   },
   {
     title: "Secure Storage",
@@ -40,22 +41,22 @@ const Features: React.FC = () => {
     <section className="py-32 px-6 max-w-7xl mx-auto bg-white">
       <div className="text-center mb-20">
         <div className="flex items-center justify-center gap-2 mb-4">
-           <div className="w-2 h-2 rounded-full bg-unicou-vibrant"></div>
+           <div className="w-2 h-2 rounded-full bg-unicou-orange"></div>
            <span className="text-[11px] font-bold text-unicou-orange uppercase tracking-[0.4em]">The UNICOU Standard</span>
-           <div className="w-2 h-2 rounded-full bg-unicou-vibrant"></div>
+           <div className="w-2 h-2 rounded-full bg-unicou-orange"></div>
         </div>
         <h2 className="text-5xl font-display font-bold text-unicou-navy">Operational Excellence</h2>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
         {features.map((feature, idx) => (
-          <div key={idx} className="bg-white p-10 rounded-[2.5rem] border border-slate-100 hover:border-unicou-vibrant/20 hover:shadow-premium transition-all duration-500 group relative overflow-hidden">
+          <div key={idx} className="bg-white p-10 rounded-[2.5rem] border border-slate-100 hover:border-unicou-orange/20 hover:shadow-premium transition-all duration-500 group relative overflow-hidden">
             {/* Small eye-touching pop shape in each card */}
-            <div className="absolute top-0 right-0 w-16 h-16 bg-slate-50 rounded-bl-[2.5rem] flex items-center justify-center group-hover:bg-unicou-vibrant/5 transition-colors">
-               <div className="w-1.5 h-1.5 rounded-full bg-unicou-vibrant opacity-30 group-hover:opacity-100"></div>
+            <div className="absolute top-0 right-0 w-16 h-16 bg-slate-50 rounded-bl-[2.5rem] flex items-center justify-center group-hover:bg-unicou-orange/5 transition-colors">
+               <div className="w-1.5 h-1.5 rounded-full bg-unicou-orange opacity-30 group-hover:opacity-100"></div>
             </div>
 
-            <div className={`w-14 h-14 rounded-2xl ${feature.color} flex items-center justify-center text-white mb-8 group-hover:scale-110 transition-transform shadow-lg ${feature.color === 'bg-unicou-vibrant' ? 'shadow-unicou-vibrant/30' : ''}`}>
+            <div className={`w-14 h-14 rounded-2xl ${feature.color} flex items-center justify-center text-white mb-8 group-hover:scale-110 transition-transform shadow-lg ${feature.color === 'bg-unicou-orange' ? 'shadow-action' : ''}`}>
               {feature.icon}
             </div>
             <h3 className="text-lg font-bold mb-4 text-unicou-navy uppercase tracking-tight">{feature.title}</h3>

@@ -13,7 +13,7 @@ const About: React.FC = () => {
 
       {/* Main Narrative */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 mb-32">
-        <div className="lg:col-span-7 space-y-8 text-xl text-slate-700 font-medium leading-relaxed italic border-l-4 border-unicou-navy pl-10">
+        <div className="lg:col-span-7 space-y-8 text-xl text-slate-700 font-medium leading-relaxed italic border-l-4 border-unicou-orange pl-10">
           <p>
             Founded with a passion for global education and international opportunity, we are a leading international education and immigration consultancy with deep roots and a growing global footprint. 
             Our journey began in 2009 in Pakistan, where we first opened our doors to support ambitious students and professionals in navigating the complexities of studying, living, and working abroad.
