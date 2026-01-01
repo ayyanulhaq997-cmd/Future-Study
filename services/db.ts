@@ -2,13 +2,13 @@
 import { Product, VoucherCode, User, University, CountryGuide, UserRole, Course, Qualification, LMSCourse, LMSPracticeTest, ImmigrationGuideData } from '../types';
 
 export const users: User[] = [
-  { id: 'u-admin', name: 'Zeeshan (Admin)', email: 'admin@unicou.uk', role: 'System Admin/Owner', isAuthorized: true },
-  { id: 'u-trainer', name: 'Lead Trainer Node', email: 'trainer@unicou.uk', role: 'Lead Trainer', isAuthorized: true },
-  { id: 'u-finance', name: 'Finance Node 1', email: 'finance@unicou.uk', role: 'Finance/Audit Team', isAuthorized: true },
-  { id: 'u-sales', name: 'Sales Executive', email: 'sales@unicou.uk', role: 'Support/Sales Node', isAuthorized: true },
-  { id: 'u-manager', name: 'Operations Lead', email: 'manager@unicou.uk', role: 'Operation Manager', isAuthorized: true },
-  { id: 'u-agent', name: 'Partner Hub', email: 'partner@unicou.uk', role: 'Agent Partner/Prep Center', tier: 2, isAuthorized: true },
-  { id: 'u-student', name: 'Alex Smith', email: 'alex@gmail.com', role: 'Student', isAuthorized: true },
+  { id: 'u-admin', name: 'Zeeshan (Admin)', email: 'admin@unicou.uk', role: 'System Admin/Owner', isAuthorized: true, status: 'Active' },
+  { id: 'u-trainer', name: 'Lead Trainer Node', email: 'trainer@unicou.uk', role: 'Lead Trainer', isAuthorized: true, status: 'Active' },
+  { id: 'u-finance', name: 'Finance Node 1', email: 'finance@unicou.uk', role: 'Finance/Audit Team', isAuthorized: true, status: 'Active' },
+  { id: 'u-sales', name: 'Sales Executive', email: 'sales@unicou.uk', role: 'Support/Sales Node', isAuthorized: true, status: 'Active' },
+  { id: 'u-manager', name: 'Operations Lead', email: 'manager@unicou.uk', role: 'Operation Manager', isAuthorized: true, status: 'Active' },
+  { id: 'u-agent', name: 'Partner Hub', email: 'partner@unicou.uk', role: 'Agent Partner/Prep Center', tier: 2, isAuthorized: true, status: 'Active' },
+  { id: 'u-student', name: 'Alex Smith', email: 'alex@gmail.com', role: 'Student', isAuthorized: true, status: 'Active' },
 ];
 
 export const products: Product[] = [

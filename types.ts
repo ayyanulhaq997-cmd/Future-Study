@@ -17,9 +17,11 @@ export interface User {
   role: UserRole;
   tier?: number;
   verified?: boolean;
-  isPlatinum?: boolean;
   isAuthorized?: boolean;
-  canBypassQuota?: boolean; // New: Support override flag
+  canBypassQuota?: boolean;
+  status: 'Active' | 'Pending' | 'Suspended';
+  agreementDate?: string; // Record-keeping for agents
+  isFlagged?: boolean; // For security observation
 }
 
 export interface Lead {
@@ -51,11 +53,10 @@ export interface VoucherCode {
   status: VoucherStatus;
   expiryDate: string;
   uploadDate: string;
-  // Audit fields
   orderId?: string;
   buyerName?: string;
-  assignmentDate?: string;
   salesExecutiveName?: string;
+  assignmentDate?: string;
 }
 
 export interface Order {
@@ -67,20 +68,48 @@ export interface Order {
   totalAmount: number;
   currency: string;
   customerEmail: string;
-  buyerName: string; // New: Audit requirement
-  salesExecutiveName?: string; // New: Track processing staff/agent
-  status: 'Pending' | 'Completed' | 'Cancelled' | 'On-Hold';
+  buyerName: string;
+  status: 'Pending' | 'Completed' | 'Cancelled' | 'Security-Stop';
   paymentMethod: 'Gateway' | 'BankTransfer';
   timestamp: string;
   voucherCodes: string[];
   bankRef: string;
   proofAttached: boolean;
-  baseAmount?: number;
-  tierDiscount?: number;
-  promoDiscount?: number;
-  bankCharges?: number;
-  paymentId?: string;
 }
+
+export interface SecurityStatus {
+  isGlobalOrderStop: boolean;
+  threatLevel: 'Normal' | 'Observed' | 'Critical';
+  lastAudit: string;
+}
+
+export type ViewState = 
+  | { type: 'home' }
+  | { type: 'store' } 
+  | { type: 'admin' }
+  | { type: 'finance' }
+  | { type: 'agent' }
+  | { type: 'sales-node' }
+  | { type: 'trainer' }
+  | { type: 'support-portal' }
+  | { type: 'login' }
+  | { type: 'signup' }
+  | { type: 'forgot-password' }
+  | { type: 'about' }
+  | { type: 'resources' }
+  | { type: 'apply'; formType: FormType; context?: string }
+  | { type: 'country-list' }
+  | { type: 'country-guide'; slug: string }
+  | { type: 'lms-dashboard'; initialTab?: string }
+  | { type: 'lms-course-player'; courseId: string; initialLessonId?: string }
+  | { type: 'lms-practice-test'; testId: string }
+  | { type: 'course-catalogue' }
+  | { type: 'qualifications' }
+  | { type: 'join-hub' }
+  | { type: 'checkout'; productId: string; quantity: number }
+  | { type: 'success'; orderId: string }
+  | { type: 'university'; slug: string }
+  | { type: 'policy'; policyId: string };
 
 export interface University {
   id: string;
@@ -94,16 +123,6 @@ export interface University {
   website: string;
 }
 
-export interface Course {
-  id: string;
-  universityId: string;
-  title: string;
-  degree: 'Undergraduate' | 'Postgraduate';
-  duration: string;
-  tuitionFee: string;
-  description?: string;
-}
-
 export interface CountryGuide {
   id: string;
   countryId: string;
@@ -115,19 +134,26 @@ export interface CountryGuide {
   visaRequirements: string;
 }
 
-export interface ActivityLog {
+export interface Course {
   id: string;
-  action: string;
-  user: string;
-  timestamp: string;
-  details?: string;
+  universityId: string;
+  title: string;
+  degree: string;
+  duration: string;
+  tuitionFee: string;
+  description?: string;
 }
 
-export interface SecurityStatus {
-  uptime: string;
-  rateLimitsTriggered: number;
-  activeSessions: number;
-  threatLevel: 'Normal' | 'High' | 'Critical';
+export interface Qualification {
+  id: string;
+  title: string;
+  qualificationBody: string;
+  level: string;
+  duration: string;
+  tuitionFees: string;
+  description: string;
+  image: string;
+  requirements: string[];
 }
 
 export interface LMSCourse {
@@ -161,72 +187,47 @@ export interface Enrollment {
   progress: number;
 }
 
-export type SkillType = 'Listening' | 'Reading' | 'Writing' | 'Speaking';
-
-export interface SkillScore {
-  skill: SkillType;
-  score: number;
-  total: number;
-  band?: string;
-  isGraded: boolean;
-}
-
 export interface TestResult {
   id: string;
   userId: string;
   testId: string;
   testTitle: string;
-  skillScores: SkillScore[];
+  skillScores: any[];
   overallBand: string;
   timeTaken: number;
   timestamp: string;
-  status: 'Pending' | 'Completed';
-  reviews: string[];
 }
 
-export interface CourseVoucher {
+/**
+ * Added LMSTestQuestion to resolve import error in components/LMSPracticeTest.tsx
+ */
+export interface LMSTestQuestion {
   id: string;
-  code: string;
-  courseId: string;
-  status: 'Available' | 'Used';
+  text: string;
+  type: 'MCQ' | 'Essay' | 'Audio-Record';
+  skill: 'Listening' | 'Reading' | 'Writing' | 'Speaking';
+  options?: string[];
+  audioUrl?: string;
 }
 
-export interface Qualification {
+/**
+ * Added LMSTestSection for structured testing metadata
+ */
+export interface LMSTestSection {
   id: string;
   title: string;
-  qualificationBody: string;
-  level: string;
-  duration: string;
-  tuitionFees: string;
-  description: string;
-  image: string;
-  requirements: string[];
+  skill: string;
+  timeLimit: number;
+  questions: LMSTestQuestion[];
 }
 
-export interface QualificationLead {
+/**
+ * Updated LMSPracticeTest to use typed sections
+ */
+export interface LMSPracticeTest {
   id: string;
-  qualificationId: string;
-  qualificationTitle: string;
-  studentName: string;
-  studentEmail: string;
-  studentPhone: string;
-  highestQualification: string;
-  workExperience: string;
-  status: 'New' | 'Contacted' | 'Processed';
-  timestamp: string;
-  trackingId: string;
-}
-
-export interface TestBooking {
-  id: string;
-  productId: string;
-  productName: string;
-  studentName: string;
-  studentEmail: string;
-  preferredDate: string;
-  testCenter: string;
-  serviceType: string;
-  trackingRef: string;
+  title: string;
+  sections: LMSTestSection[];
 }
 
 export interface ManualSubmission {
@@ -234,28 +235,12 @@ export interface ManualSubmission {
   userId: string;
   userName: string;
   userEmail: string;
-  skill: SkillType;
   testTitle: string;
+  skill: string;
   questionText: string;
   studentAnswer: string;
   maxScore: number;
   timestamp: string;
-}
-
-export interface LeadSubmission {
-  id: string;
-  type: string;
-  data: any;
-  status: string;
-  timestamp: string;
-}
-
-export type LeadStatus = 'New' | 'Contacted' | 'Processed' | 'Approved' | 'Rejected';
-
-export interface PromoCode {
-  code: string;
-  discountType: 'Percentage' | 'Fixed';
-  value: number;
 }
 
 export interface FinanceReport {
@@ -263,20 +248,6 @@ export interface FinanceReport {
   totalVouchersSold: number;
   salesByType: { name: string; value: number }[];
   recentSales: Order[];
-}
-
-export interface ImmigrationGuideData {
-  id: string;
-  slug: string;
-  title: string;
-  content: string;
-  heroImage: string;
-  pathways: {
-    id: string;
-    title: string;
-    description: string;
-    requirements: string[];
-  }[];
 }
 
 export interface APIEndpoint {
@@ -288,53 +259,23 @@ export interface APIEndpoint {
   response: string;
 }
 
-export interface LMSTestQuestion {
+export interface QualificationLead {
   id: string;
-  type: 'MCQ' | 'Essay' | 'Audio-Record';
-  skill: SkillType;
-  text: string;
-  audioUrl?: string;
-  options?: string[];
+  qualificationId: string;
+  qualificationTitle: string;
+  timestamp: string;
 }
 
-export interface LMSTestSection {
+export interface TestBooking {
   id: string;
+  trackingRef: string;
+}
+
+export interface ImmigrationGuideData {
+  id: string;
+  slug: string;
   title: string;
-  skill: SkillType;
-  timeLimit: number;
-  questions: LMSTestQuestion[];
+  content: string;
+  heroImage: string;
+  pathways: any[];
 }
-
-export interface LMSPracticeTest {
-  id: string;
-  title: string;
-  sections: LMSTestSection[];
-}
-
-export type ViewState = 
-  | { type: 'home' }
-  | { type: 'store' } 
-  | { type: 'admin' }
-  | { type: 'finance' }
-  | { type: 'agent' }
-  | { type: 'sales-node' }
-  | { type: 'trainer' }
-  | { type: 'support-portal' }
-  | { type: 'login' }
-  | { type: 'signup' }
-  | { type: 'forgot-password' }
-  | { type: 'about' }
-  | { type: 'resources' }
-  | { type: 'apply'; formType: FormType; context?: string }
-  | { type: 'country-list' }
-  | { type: 'country-guide'; slug: string }
-  | { type: 'lms-dashboard'; initialTab?: string }
-  | { type: 'lms-course-player'; courseId: string; initialLessonId?: string }
-  | { type: 'lms-practice-test'; testId: string }
-  | { type: 'course-catalogue' }
-  | { type: 'qualifications' }
-  | { type: 'join-hub' }
-  | { type: 'checkout'; productId: string; quantity: number }
-  | { type: 'success'; orderId: string }
-  | { type: 'university'; slug: string }
-  | { type: 'policy'; policyId: string };

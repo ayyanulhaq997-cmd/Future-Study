@@ -1,11 +1,10 @@
 
 import * as db from './db';
 import { 
-  Product, VoucherCode, VoucherStatus, Order, User, ActivityLog, SecurityStatus, LMSCourse, 
-  LMSModule, LMSLesson, Enrollment, TestResult, CourseVoucher, Qualification, 
-  QualificationLead, TestBooking, ManualSubmission, SkillScore, SkillType, LeadSubmission, 
-  LeadStatus, PromoCode, FinanceReport, UserRole, ImmigrationGuideData, Lead,
-  University, CountryGuide, Course, LMSPracticeTest
+  Product, VoucherCode, Order, User, SecurityStatus, LMSCourse, 
+  LMSModule, Enrollment, TestResult, Qualification, 
+  QualificationLead, TestBooking, ManualSubmission, FinanceReport, UserRole, 
+  ImmigrationGuideData, Lead, University, CountryGuide, Course, LMSPracticeTest
 } from '../types';
 
 const SESSION_KEY = 'unicou_active_session_v4';
@@ -13,9 +12,21 @@ const LEADS_KEY = 'unicou_leads_v1';
 const ORDERS_KEY = 'unicou_orders_v1';
 const CODES_KEY = 'unicou_codes_v1';
 const USERS_KEY = 'unicou_local_users_v1';
-const RESULTS_KEY = 'unicou_test_results_v1';
+const SECURITY_KEY = 'unicou_shield_state';
+const PRODUCTS_KEY = 'unicou_custom_products';
 
 export const api = {
+  // --- Security Architecture ---
+  getSecurityState: (): SecurityStatus => {
+    const raw = localStorage.getItem(SECURITY_KEY);
+    return raw ? JSON.parse(raw) : { isGlobalOrderStop: false, threatLevel: 'Normal', lastAudit: new Date().toISOString() };
+  },
+
+  setGlobalStop: (stop: boolean) => {
+    const current = api.getSecurityState();
+    localStorage.setItem(SECURITY_KEY, JSON.stringify({ ...current, isGlobalOrderStop: stop }));
+  },
+
   getCurrentUser: (): User | null => {
     const session = localStorage.getItem(SESSION_KEY);
     return session ? JSON.parse(session) : null;
@@ -23,20 +34,13 @@ export const api = {
 
   login: async (email: string): Promise<User> => {
     let cleanEmail = email.trim().toLowerCase();
-    const staffShortcuts: Record<string, string> = {
-      'admin': 'admin@unicou.uk',
-      'trainer': 'trainer@unicou.uk',
-      'finance': 'finance@unicou.uk',
-      'sales': 'sales@unicou.uk'
-    };
-    if (staffShortcuts[cleanEmail]) cleanEmail = staffShortcuts[cleanEmail];
-
-    const raw = localStorage.getItem('unicou_local_users_v1');
-    const localUsers = raw ? JSON.parse(raw) : [];
+    const raw = localStorage.getItem(USERS_KEY);
+    const localUsers: User[] = raw ? JSON.parse(raw) : [];
     const allUsers = [...db.users, ...localUsers];
     
     const user = allUsers.find(u => u.email.toLowerCase() === cleanEmail);
-    if (!user) throw new Error('Identity node not found. Please verify credentials.');
+    if (!user) throw new Error('Identity Node Not Found.');
+    if (user.status === 'Suspended') throw new Error('Security Restriction: Node Suspended.');
     
     localStorage.setItem(SESSION_KEY, JSON.stringify(user));
     return user;
@@ -44,7 +48,7 @@ export const api = {
 
   signup: async (email: string, role: UserRole): Promise<User> => {
     const cleanEmail = email.trim().toLowerCase();
-    const raw = localStorage.getItem('unicou_local_users_v1');
+    const raw = localStorage.getItem(USERS_KEY);
     const localUsers = raw ? JSON.parse(raw) : [];
     
     const newUser: User = { 
@@ -52,11 +56,12 @@ export const api = {
       name: cleanEmail.split('@')[0].toUpperCase(), 
       email: cleanEmail, 
       role, 
-      verified: true,
-      isAuthorized: true 
+      status: role === 'Agent Partner/Prep Center' ? 'Pending' : 'Active',
+      verified: false, // Mandatory verification for students
+      isAuthorized: role !== 'Agent Partner/Prep Center' 
     };
     
-    localStorage.setItem('unicou_local_users_v1', JSON.stringify([...localUsers, newUser]));
+    localStorage.setItem(USERS_KEY, JSON.stringify([...localUsers, newUser]));
     localStorage.setItem(SESSION_KEY, JSON.stringify(newUser));
     return newUser;
   },
@@ -66,72 +71,93 @@ export const api = {
     window.location.href = '/'; 
   },
 
-  getProducts: async (): Promise<Product[]> => db.products,
-  getProductById: async (id: string): Promise<Product | undefined> => db.products.find(p => p.id === id),
+  getProducts: async (): Promise<Product[]> => {
+    const raw = localStorage.getItem(PRODUCTS_KEY);
+    const custom = raw ? JSON.parse(raw) : [];
+    return [...db.products, ...custom];
+  },
+
+  addProduct: async (p: Product): Promise<void> => {
+    const raw = localStorage.getItem(PRODUCTS_KEY);
+    const custom = raw ? JSON.parse(raw) : [];
+    localStorage.setItem(PRODUCTS_KEY, JSON.stringify([p, ...custom]));
+  },
+
+  getProductById: async (id: string): Promise<Product | undefined> => {
+    const all = await api.getProducts();
+    return all.find(p => p.id === id);
+  },
   
   getOrders: async (): Promise<Order[]> => {
     const currentUser = api.getCurrentUser();
     if (!currentUser) return [];
     const allOrders: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
-    if (['System Admin/Owner', 'Finance/Audit Team', 'Support/Sales Node'].includes(currentUser.role)) {
+    if (['System Admin/Owner', 'Finance/Audit Team', 'Operation Manager'].includes(currentUser.role)) {
       return allOrders;
     }
     return allOrders.filter(o => o.userId === currentUser.id);
   },
 
   getOrderById: async (id: string): Promise<Order | null> => {
-    const allOrders: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
-    return allOrders.find(o => o.id === id) || null;
+    const all = await api.getOrders();
+    return all.find(o => o.id === id) || null;
   },
 
-  checkUserQuota: async (paymentMethod: 'Gateway' | 'BankTransfer'): Promise<{ allowed: boolean; remaining: number; limit: number }> => {
+  checkUserQuota: async (): Promise<{ allowed: boolean; reason?: string }> => {
+    const security = api.getSecurityState();
+    if (security.isGlobalOrderStop) return { allowed: false, reason: 'SYSTEM_LOCKED' };
+
     const currentUser = api.getCurrentUser();
-    if (!currentUser) return { allowed: false, remaining: 0, limit: 0 };
-    
-    // Support Override check
-    if (currentUser.canBypassQuota) return { allowed: true, remaining: 99, limit: 99 };
+    if (!currentUser) return { allowed: false, reason: 'AUTH_REQUIRED' };
+    if (currentUser.canBypassQuota) return { allowed: true };
 
     const allOrders: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
     const oneDayAgo = new Date().getTime() - (24 * 60 * 60 * 1000);
     
-    const recentOrders = allOrders.filter(o => 
-      o.userId === currentUser.id && 
-      new Date(o.timestamp).getTime() > oneDayAgo
-    );
-
-    let limit = 1; // Default for Student
-    if (currentUser.role === 'Agent Partner/Prep Center') {
-      limit = paymentMethod === 'Gateway' ? 3 : 10;
+    // Restriction: Student can buy only ONE Voucher in one day
+    if (currentUser.role === 'Student') {
+      const recentOrders = allOrders.filter(o => 
+        o.userId === currentUser.id && 
+        new Date(o.timestamp).getTime() > oneDayAgo
+      );
+      if (recentOrders.length >= 1) return { allowed: false, reason: 'DAILY_QUOTA_REACHED' };
     }
 
-    return {
-      allowed: recentOrders.length < limit,
-      remaining: limit - recentOrders.length,
-      limit
-    };
+    return { allowed: true };
   },
 
   bypassUserQuota: async (email: string) => {
-    const raw = localStorage.getItem('unicou_local_users_v1');
+    const raw = localStorage.getItem(USERS_KEY);
     const localUsers: User[] = raw ? JSON.parse(raw) : [];
     const updated = localUsers.map(u => u.email.toLowerCase() === email.toLowerCase() ? { ...u, canBypassQuota: true } : u);
-    localStorage.setItem('unicou_local_users_v1', JSON.stringify(updated));
-    
-    const current = api.getCurrentUser();
-    if (current && current.email.toLowerCase() === email.toLowerCase()) {
-      localStorage.setItem(SESSION_KEY, JSON.stringify({ ...current, canBypassQuota: true }));
-    }
+    localStorage.setItem(USERS_KEY, JSON.stringify(updated));
+  },
+
+  verifyAgent: async (leadId: string): Promise<void> => {
+    const rawLeads = localStorage.getItem(LEADS_KEY);
+    const leads: Lead[] = rawLeads ? JSON.parse(rawLeads) : [];
+    const lead = leads.find(l => l.id === leadId);
+    if (!lead) return;
+
+    // 1. Update Lead Status
+    const updatedLeads = leads.map(l => l.id === leadId ? { ...l, status: 'Approved' as const } : l);
+    localStorage.setItem(LEADS_KEY, JSON.stringify(updatedLeads));
+
+    // 2. Grant Permission to User Node
+    const rawUsers = localStorage.getItem(USERS_KEY);
+    const localUsers: User[] = rawUsers ? JSON.parse(rawUsers) : [];
+    const updatedUsers = localUsers.map(u => 
+      u.email.toLowerCase() === (lead.data.email || '').toLowerCase() 
+        ? { ...u, status: 'Active' as const, isAuthorized: true, agreementDate: new Date().toISOString() } 
+        : u
+    );
+    localStorage.setItem(USERS_KEY, JSON.stringify(updatedUsers));
   },
 
   submitBankTransfer: async (productId: string, quantity: number, email: string, buyerName: string, bankRef: string): Promise<Order> => {
-    const quota = await api.checkUserQuota('BankTransfer');
-    if (!quota.allowed) {
-      throw new Error("QUOTA_EXCEEDED");
-    }
-
-    const p = db.products.find(x => x.id === productId);
+    const p = await api.getProductById(productId);
     const currentUser = api.getCurrentUser();
-    if (!currentUser) throw new Error("Session expired.");
+    if (!currentUser) throw new Error("Session Invalid.");
 
     const order: Order = {
       id: `UNICOU-${Math.random().toString(36).substr(2, 7).toUpperCase()}`,
@@ -156,7 +182,7 @@ export const api = {
     return order;
   },
 
-  getCodes: async (): Promise<VoucherCode[]> => JSON.parse(localStorage.getItem(CODES_KEY) || '[]') || db.voucherCodes,
+  getCodes: async (): Promise<VoucherCode[]> => db.voucherCodes,
   getLeads: async (): Promise<Lead[]> => JSON.parse(localStorage.getItem(LEADS_KEY) || '[]'),
   submitLead: async (type: string, data: any): Promise<void> => {
     const leads = JSON.parse(localStorage.getItem(LEADS_KEY) || '[]');
@@ -164,10 +190,20 @@ export const api = {
   },
   getFinanceReport: async (): Promise<FinanceReport> => ({ totalRevenue: 50000, totalVouchersSold: 420, salesByType: [], recentSales: [] }),
   getUsers: async (): Promise<User[]> => {
-    const raw = localStorage.getItem('unicou_local_users_v1');
+    const raw = localStorage.getItem(USERS_KEY);
     const localUsers = raw ? JSON.parse(raw) : [];
-    const allUsers = [...db.users, ...localUsers];
-    return allUsers;
+    return [...db.users, ...localUsers];
+  },
+  verifyEmail: async (email: string) => {
+    const raw = localStorage.getItem(USERS_KEY);
+    const users: User[] = raw ? JSON.parse(raw) : [];
+    const updated = users.map(u => u.email.toLowerCase() === email.toLowerCase() ? { ...u, verified: true } : u);
+    localStorage.setItem(USERS_KEY, JSON.stringify(updated));
+    // Update active session
+    const active = api.getCurrentUser();
+    if (active && active.email.toLowerCase() === email.toLowerCase()) {
+      localStorage.setItem(SESSION_KEY, JSON.stringify({ ...active, verified: true }));
+    }
   },
   getQualifications: async (): Promise<Qualification[]> => db.qualifications,
   getGuideBySlug: async (slug: string): Promise<CountryGuide | null> => db.countryGuides.find(g => g.slug === slug) || null,
@@ -178,17 +214,16 @@ export const api = {
   getAllLMSCourses: async (): Promise<LMSCourse[]> => db.lmsCourses,
   getEnrolledCourses: async (): Promise<LMSCourse[]> => db.lmsCourses,
   getCourseModules: async (id: string): Promise<LMSModule[]> => [],
-  getEnrollmentByCourse: async (id: string): Promise<Enrollment | null> => ({ id: '1', userId: 'u', courseId: id, progress: 0 }),
+  getEnrollmentByCourse: async (id: string): Promise<Enrollment | null> => null,
   updateCourseProgress: async (id: string, p: number): Promise<void> => {},
   redeemCourseVoucher: async (c: string): Promise<void> => {},
-  getTestById: async (id: string): Promise<LMSPracticeTest | undefined> => db.lmsTests.find(t => t.id === id),
-  submitTestResult: async (id: string, a: any, t: number): Promise<TestResult> => ({ id: '1', userId: 'u', testId: id, testTitle: 'T', skillScores: [], overallBand: '8', timeTaken: t, timestamp: '', status: 'Completed', reviews: [] } as any),
+  getTestById: async (id: string): Promise<LMSPracticeTest | undefined> => db.lmsTests[0],
+  submitTestResult: async (id: string, a: any, t: number): Promise<TestResult> => ({ id: '1', userId: 'u', testId: id, testTitle: 'T', skillScores: [], overallBand: '8', timeTaken: t, timestamp: '' } as any),
   getTestResults: async (): Promise<TestResult[]> => [],
   getPendingSubmissions: async (): Promise<ManualSubmission[]> => [],
   gradeSubmission: async (id: string, s: number, f: string): Promise<void> => {},
-  getImmigrationGuides: async (): Promise<ImmigrationGuideData[]> => db.immigrationGuides,
+  getImmigrationGuides: async (): Promise<ImmigrationGuideData[]> => [],
   processOrderAction: async (id: string, a: string): Promise<any> => ({} as any),
-  verifyEmail: async (e: string): Promise<void> => {},
   getQualificationById: async (id: string): Promise<Qualification | undefined> => db.qualifications.find(q => q.id === id),
   submitQualificationLead: async (d: any): Promise<QualificationLead> => ({ ...d, id: '1', timestamp: '', status: 'New', trackingId: 'T' }),
   submitTestBooking: async (d: any): Promise<TestBooking> => ({ ...d, id: '1', trackingRef: 'T' })

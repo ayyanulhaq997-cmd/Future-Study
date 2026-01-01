@@ -10,74 +10,58 @@ interface SuccessScreenProps {
 
 const SuccessScreen: React.FC<SuccessScreenProps> = ({ orderId, onClose }) => {
   const [order, setOrder] = useState<Order | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
 
-  const fetchOrder = () => {
-    setRefreshing(true);
-    api.getOrderById(orderId).then((o) => {
-        setOrder(o);
-        setRefreshing(false);
-    });
-  };
-
-  useEffect(() => { fetchOrder(); }, [orderId]);
+  useEffect(() => {
+    api.getOrderById(orderId).then(setOrder);
+  }, [orderId]);
 
   if (!order) return null;
 
-  if (order.status === 'Pending') {
-    return (
-      <div className="max-w-4xl mx-auto px-4 py-20 text-center animate-in fade-in duration-700 bg-white min-h-[80vh] flex flex-col items-center justify-center">
-        <div className="mb-12 inline-flex items-center justify-center w-24 h-24 bg-slate-100 text-unicou-navy rounded-full border border-slate-200 animate-pulse">
-          <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-        </div>
-
-        <h1 className="text-5xl md:text-7xl font-display font-black mb-8 tracking-tighter text-slate-900 leading-none uppercase">
-          Order <span className="text-unicou-navy">Confirmed!</span>
-        </h1>
-        <div className="space-y-6 max-w-2xl mx-auto mb-16">
-          <p className="text-lg text-slate-700 font-bold leading-relaxed italic">
-            Thanks for the Order, your payment is being verified. Your exam voucher will arrive via email shortly after payment verification. Please check your inbox and spam folder.
-          </p>
-          <p className="text-sm text-slate-500 font-black uppercase tracking-widest bg-slate-50 py-4 px-6 rounded-2xl border border-slate-100">
-            Verification usually takes between 10-60 minutes during standard operating hours. You can safely close this page.
-          </p>
-          <p className="text-[10px] text-slate-400 font-mono">Order ID: {order.id}</p>
-        </div>
-
-        <div className="flex flex-col sm:flex-row justify-center gap-6 w-full max-w-md">
-            <button 
-              onClick={fetchOrder} disabled={refreshing}
-              className="w-full px-12 py-6 bg-unicou-navy text-white rounded-3xl font-black text-xs uppercase tracking-widest shadow-3xl transition-all hover:bg-slate-900"
-            >
-              {refreshing ? 'REFRESHING...' : 'REFRESH STATUS'}
-            </button>
-            <button onClick={onClose} className="w-full px-12 py-6 bg-slate-100 text-unicou-navy border border-slate-200 rounded-3xl font-black text-xs uppercase tracking-widest shadow-xl hover:bg-white transition-all">MY DASHBOARD</button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="max-w-4xl mx-auto px-4 py-20 text-center animate-in zoom-in duration-700 bg-white">
-      <div className="mb-12 inline-flex items-center justify-center w-24 h-24 bg-emerald-50 text-emerald-500 rounded-full border border-emerald-100 shadow-xl">
-        <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+    <div className="max-w-4xl mx-auto px-4 py-20 text-center animate-in zoom-in duration-1000 bg-white min-h-[80vh] flex flex-col items-center justify-center">
+      <div className="mb-12 inline-flex items-center justify-center w-28 h-28 bg-emerald-50 text-emerald-500 rounded-full border border-emerald-100 shadow-2xl relative">
+        <div className="absolute inset-0 bg-emerald-500/10 rounded-full animate-ping" />
+        <svg className="w-14 h-14 relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
       </div>
-      <h1 className="text-5xl md:text-7xl font-display font-black mb-8 tracking-tighter text-slate-900 uppercase">Order <span className="text-emerald-500">Delivered.</span></h1>
-      <p className="text-xl text-slate-600 mb-16 max-w-2xl mx-auto font-bold italic leading-relaxed">
-        "Payment verified. Your official exam codes are now active and ready for use."
-      </p>
-      <div className="grid grid-cols-1 gap-6 mb-16 max-w-2xl mx-auto">
-        {order.voucherCodes.map((code, idx) => (
-          <div key={idx} className="bg-slate-50 p-10 rounded-[3rem] border border-slate-200 flex justify-between items-center shadow-inner group hover:bg-white transition-all">
-            <div className="text-left">
-               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Exam Code</p>
-               <h4 className="font-display font-black text-slate-900 text-xl">{order.productName}</h4>
-            </div>
-            <span className="font-mono text-3xl font-black text-unicou-navy tracking-widest">{code}</span>
-          </div>
-        ))}
+
+      {/* ANNEX B Protocol Node (Requirement 2e) */}
+      <div className="flex items-center gap-3 mb-6 bg-slate-50 px-5 py-2 rounded-full border border-slate-200">
+         <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+         <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">ANNEX B: FULFILLMENT PROTOCOL INITIALIZED</span>
       </div>
-      <button onClick={onClose} className="px-16 py-6 bg-unicou-navy text-white rounded-3xl font-black text-xs uppercase tracking-widest shadow-3xl hover:bg-slate-950 transition-all">RETURN TO STUDENT HUB</button>
+
+      <h1 className="text-5xl md:text-[6rem] font-display font-black mb-8 tracking-tighter text-slate-950 leading-[0.9] uppercase">
+        ORDER <span className="text-emerald-500">DISPATCHED</span>
+      </h1>
+      
+      <div className="space-y-10 max-w-2xl mx-auto mb-16">
+        <div className="bg-slate-50 p-12 rounded-[4rem] border border-slate-200 text-left relative overflow-hidden shadow-inner group">
+           <div className="absolute top-0 right-0 p-10 opacity-10 font-display text-9xl group-hover:scale-110 transition-transform select-none">📬</div>
+           <p className="text-2xl text-slate-900 font-bold leading-relaxed italic mb-8 relative z-10">
+             "Thanks for your order! Your payment node is currently being audited by our finance terminal. Once settlement is verified, your official voucher codes will be released to your <strong>Dashboard Vault</strong> and <strong>Primary Email Node</strong>."
+           </p>
+           
+           <div className="flex flex-wrap gap-4 relative z-10">
+              <div className="px-5 py-2 bg-white border border-slate-200 rounded-full text-[10px] font-black uppercase tracking-widest text-emerald-600 flex items-center gap-3 shadow-sm">
+                <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                Email Status: Queueing
+              </div>
+              <div className="px-5 py-2 bg-white border border-slate-200 rounded-full text-[10px] font-black uppercase tracking-widest text-unicou-navy flex items-center gap-3 shadow-sm">
+                <span className="w-1.5 h-1.5 bg-unicou-navy rounded-full animate-pulse" />
+                Dashboard Sync: Active
+              </div>
+           </div>
+        </div>
+        
+        <div className="flex justify-between items-center px-10">
+           <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Registry ID: {order.id}</p>
+           <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Timestamp: {new Date(order.timestamp).toLocaleTimeString()}</p>
+        </div>
+      </div>
+
+      <div className="flex flex-col sm:flex-row justify-center gap-6 w-full max-w-md">
+          <button onClick={onClose} className="w-full px-12 py-6 bg-unicou-navy text-white rounded-[2.5rem] font-black text-xs uppercase tracking-[0.2em] shadow-3xl transition-all hover:bg-slate-900 hover:scale-105 active:scale-95">GO TO STUDENT HUB</button>
+      </div>
     </div>
   );
 };
