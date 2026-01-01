@@ -21,96 +21,71 @@ const VoucherStore: React.FC<VoucherStoreProps> = ({ onCheckout, onBook, onNavig
   useEffect(() => {
     const init = async () => {
       setUser(api.getCurrentUser());
-      try {
-        const p = await api.getProducts();
-        setProducts(p.filter(x => x.type === 'Voucher'));
-      } catch (e) { console.error(e); } finally { setLoading(false); }
+      const p = await api.getProducts();
+      setProducts(p.filter(x => x.type === 'Voucher'));
+      setLoading(false);
     };
     init();
   }, []);
 
   const filteredProducts = useMemo(() => {
     if (activeCategory === 'ALL') return products;
-    if (activeCategory === 'OTHER') {
-      const topCategories = CATEGORIES.slice(1, 8);
-      return products.filter(p => !topCategories.includes(p.category));
-    }
-    const categoryMap: Record<string, string> = { 'ELLT': 'Oxford ELLT', 'TOEFL': 'ETS' };
-    const targetCat = categoryMap[activeCategory] || activeCategory;
-    return products.filter(p => p.category === targetCat);
+    return products.filter(p => p.category.includes(activeCategory));
   }, [products, activeCategory]);
 
   const getBrandLogo = (category: string) => {
-    const map: Record<string, string> = {
-      'IELTS': 'IELTS', 'PTE': 'PTE', 'LanguageCert': 'LanguageCertAcademic',
-      'ETS': 'TOEFL', 'Skills for English': 'SkillsForEnglish', 'Duolingo': 'Duolingo',
-      'Oxford ELLT': 'ELLT', 'Password': 'Password'
-    };
+    const map: Record<string, string> = { 'IELTS': 'IELTS', 'PTE': 'PTE', 'LanguageCert': 'LanguageCertAcademic', 'ETS': 'TOEFL', 'Duolingo': 'Duolingo', 'Oxford ELLT': 'ELLT' };
     return EXAM_LOGOS[map[category] || category] || EXAM_LOGOS['OTHER'];
   };
 
-  if (loading) return <div className="p-40 text-center animate-pulse text-unicou-navy font-black uppercase text-[11px] tracking-[0.4em]">Syncing Storefront...</div>;
+  if (loading) return <div className="p-40 text-center animate-pulse text-[#004a61] font-black uppercase text-[11px] tracking-[0.4em]">Syncing Storefront...</div>;
 
   return (
     <div className="max-w-7xl mx-auto px-6 animate-slide-up bg-white pb-32">
-      <div className="flex flex-col lg:flex-row justify-between items-start mb-12 gap-8 pt-12">
+      <div className="flex flex-col lg:flex-row justify-between items-start mb-8 gap-8 pt-8 border-b border-slate-100 pb-12">
         <div className="max-w-3xl">
-          <div className="flex items-center gap-3 mb-6">
-             <div className="w-2 h-2 rounded-full bg-unicou-orange animate-bounce"></div>
-             <span className="px-4 py-1.5 bg-slate-50 border border-slate-200 rounded-full text-[9px] font-black text-slate-500 uppercase tracking-widest shadow-sm">Official Student Store</span>
-          </div>
-          <h2 className="text-4xl md:text-5xl font-display font-black text-unicou-navy tracking-tighter leading-none mb-6 uppercase">Voucher <span className="text-unicou-orange">Shop</span></h2>
-          <p className="text-slate-600 text-lg font-bold leading-relaxed italic border-l-4 border-unicou-navy pl-6">
-            Instant delivery of official test vouchers. Secure your exam seat today with verified codes from Pearson, British Council, and IDP.
-          </p>
+          <h2 className="text-3xl font-display font-black text-[#004a61] tracking-tighter leading-none mb-4 uppercase">Voucher <span className="text-[#f15a24]">Shop</span></h2>
+          <p className="text-[#64748b] text-base font-bold leading-relaxed italic border-l-4 border-[#f15a24] pl-4">"Authorized procurement terminal for official exam vouchers. Instant delivery verified."</p>
         </div>
-        
-        {!user || user.role !== 'Agent Partner/Prep Center' ? (
-          <button onClick={onNavigateToAgent} className="shrink-0 px-10 py-5 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:bg-black transition-all">Agent Log-In</button>
-        ) : (
-          <div className="bg-unicou-navy/5 border border-unicou-navy/10 p-6 rounded-3xl text-center">
-             <p className="text-[10px] font-black text-unicou-navy uppercase mb-2">Partner Node Active</p>
-             <button onClick={() => onNavigateToAgent()} className="text-xs font-black text-unicou-orange underline uppercase tracking-widest">Back to Portal</button>
-          </div>
-        )}
+        <button onClick={onNavigateToAgent} className="shrink-0 px-8 py-4 bg-[#004a61] text-white rounded-xl font-black text-[9px] uppercase tracking-[0.2em] shadow-lg hover:bg-black transition-all">Agent Hub</button>
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-12">
+      <div className="flex flex-wrap gap-1.5 mb-12">
         {CATEGORIES.map(cat => (
-          <button key={cat} onClick={() => setActiveCategory(cat)} className={`px-6 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border ${activeCategory === cat ? 'bg-unicou-navy text-white border-unicou-navy shadow-lg' : 'bg-white text-slate-400 border-slate-100 hover:border-slate-300'}`}>{cat}</button>
+          <button key={cat} onClick={() => setActiveCategory(cat)} className={`px-4 py-2.5 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all border ${activeCategory === cat ? 'bg-[#004a61] text-white border-[#004a61] shadow-md' : 'bg-white text-slate-400 border-slate-100'}`}>{cat}</button>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-        {filteredProducts.map(p => (
-          <div key={p.id} className="bg-white p-10 rounded-[3rem] border border-slate-100 hover:border-unicou-orange/20 transition-all group shadow-xl flex flex-col">
-            <div className="flex justify-between items-start mb-6">
-              <img src={getBrandLogo(p.category)} alt={p.category} className="h-6 w-auto object-contain grayscale group-hover:grayscale-0 transition-all duration-500" />
-              <div className="w-2 h-2 rounded-full bg-unicou-orange" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {filteredProducts.map(p => {
+          const officialRate = p.basePrice * 1.1;
+          const discount = officialRate - p.basePrice;
+          return (
+            <div key={p.id} className="bg-white p-6 rounded-[2.5rem] border border-slate-100 hover:border-[#f15a24]/40 transition-all group shadow-sm hover:shadow-2xl flex flex-col relative overflow-hidden">
+              <img src={getBrandLogo(p.category)} alt={p.category} className="h-4 w-auto object-contain grayscale group-hover:grayscale-0 transition-all mb-6" />
+              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">{p.category} NODE</p>
+              <h3 className="text-lg font-display font-black text-slate-950 tracking-tight leading-tight uppercase mb-8">{p.name}</h3>
+              
+              {/* Point 12: Perfect Pricing Terminal UI */}
+              <div className="bg-[#f8fafc] rounded-[1.8rem] p-6 border border-slate-100 mb-8 mt-auto shadow-inner">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-[9px] font-black text-[#64748b] uppercase tracking-widest">Official Rate:</span>
+                  <span className="text-sm font-bold text-[#64748b] line-through">${officialRate.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between items-center mb-3">
+                  <span className="text-[9px] font-black text-[#f15a24] uppercase tracking-tighter">Exclusive Exam Discounts:</span>
+                  <span className="text-xs font-black text-[#f15a24]">-${discount.toFixed(2)}</span>
+                </div>
+                <div className="h-px bg-slate-200 mb-4" />
+                <div className="flex justify-between items-end">
+                  <span className="text-[10px] font-black text-[#004a61] uppercase tracking-widest mb-1">Exclusive Discounted Price:</span>
+                  <span className="text-3xl font-display font-black text-[#004a61] tracking-tighter leading-none">${p.basePrice.toFixed(2)}</span>
+                </div>
+              </div>
+              <button onClick={() => onCheckout(p.id, 1)} className="w-full bg-[#004a61] hover:bg-black text-white py-5 rounded-[1.4rem] font-black text-[10px] uppercase tracking-[0.2em] shadow-lg transition-all active:scale-95">PROCURE VOUCHER</button>
             </div>
-            
-            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{p.category} NODE</p>
-            <h3 className="text-2xl font-display font-black text-slate-900 tracking-tight leading-tight uppercase mb-8">{p.name}</h3>
-            
-            <div className="bg-slate-50/80 rounded-[2rem] p-6 border border-slate-100 mb-8 mt-auto">
-               <div className="flex justify-between items-center mb-2">
-                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">RETAIL RATE:</span>
-                  <span className="text-xs font-bold text-slate-400 tracking-tight">${(p.basePrice * 1.1).toFixed(2)}</span>
-               </div>
-               <div className="flex justify-between items-center mb-4 text-unicou-orange">
-                  <span className="text-[9px] font-black uppercase tracking-widest">EXCLUSIVE DISCOUNT:</span>
-                  <span className="text-xs font-bold tracking-tight">-${(p.basePrice * 0.1).toFixed(2)}</span>
-               </div>
-               <div className="h-px bg-slate-200 mb-4" />
-               <div className="flex justify-between items-center">
-                  <span className="text-[10px] font-black text-unicou-navy uppercase tracking-widest">NET PRICE:</span>
-                  <span className="text-3xl font-display font-black text-unicou-navy tracking-tighter">${p.basePrice.toFixed(2)}</span>
-               </div>
-            </div>
-
-            <button onClick={() => onCheckout(p.id, 1)} className="w-full bg-unicou-navy hover:bg-slate-900 text-white py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-action transition-all active:scale-95">BUY VOUCHER</button>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

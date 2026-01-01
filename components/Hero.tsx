@@ -48,13 +48,13 @@ const Hero: React.FC<HeroProps> = ({ onStart, onApplyClick }) => {
 
         <div className="mt-16 flex justify-center">
           <div className="flex items-center gap-3">
-             <div className="w-1 h-1 rounded-full bg-unicou-navy shadow-[0_0_8px_rgba(0,74,97,0.5)]"></div>
+             <div className="w-1.5 h-1.5 rounded-full bg-unicou-orange shadow-[0_0_8px_rgba(241,90,36,0.5)] animate-pulse"></div>
              <div className="vibrant-strip w-24"></div>
-             <div className="w-1 h-1 rounded-full bg-unicou-orange shadow-[0_0_8px_rgba(241,90,36,0.5)]"></div>
+             <div className="w-1.5 h-1.5 rounded-full bg-unicou-orange shadow-[0_0_8px_rgba(241,90,36,0.5)] animate-pulse"></div>
           </div>
         </div>
 
-        <div className="mt-24 pt-12 border-t border-slate-50">
+        <div className="mt-24 pt-12 border-t brand-border-orange">
           <h4 className="text-[8px] font-black text-slate-400 uppercase tracking-[0.4em] mb-8">Authorized Partners</h4>
           <div className="flex gap-16 animate-marquee whitespace-nowrap opacity-40 hover:opacity-100 transition-opacity">
             {[...partners, ...partners].map((p, i) => (

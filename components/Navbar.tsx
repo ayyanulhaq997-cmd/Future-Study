@@ -149,8 +149,8 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
 
             {user ? (
               <div className="flex items-center gap-2">
-                <button onClick={handleProfileClick} className="flex items-center gap-2 pl-2 pr-3 py-1.5 bg-unicou-navy rounded-full hover:bg-slate-900 transition-all shadow-md">
-                  <div className="w-6 h-6 rounded-full bg-unicou-orange flex items-center justify-center text-[10px] font-black text-white uppercase">{user.name.charAt(0)}</div>
+                <button onClick={handleProfileClick} className="flex items-center gap-2 pl-2 pr-3 py-1.5 bg-unicou-navy rounded-full hover:bg-slate-900 transition-all shadow-md group">
+                  <div className="w-6 h-6 rounded-full bg-unicou-orange flex items-center justify-center text-[10px] font-black text-white uppercase group-hover:scale-110 transition-transform">{user.name.charAt(0)}</div>
                   <span className="text-[10px] font-black text-white uppercase tracking-widest">{user.name.split(' ')[0]}</span>
                 </button>
                 <button onClick={(e) => { e.stopPropagation(); onLogout(); }} className="p-2 text-slate-400 hover:text-red-500 transition-colors">

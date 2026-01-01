@@ -1,3 +1,4 @@
+
 import * as db from './db';
 import { MailService } from './mailService';
 import { 
@@ -10,13 +11,15 @@ import {
 const SESSION_KEY = 'unicou_active_session_v4';
 const LEADS_KEY = 'unicou_leads_v1';
 const ORDERS_KEY = 'unicou_orders_v1';
-const CODES_KEY = 'unicou_codes_v1';
 const USERS_KEY = 'unicou_local_users_v1';
 const SECURITY_KEY = 'unicou_shield_state';
 const PRODUCTS_KEY = 'unicou_custom_products';
 
+/**
+ * UNICOU AUTHORITY API
+ * Hardened for Points 13 (Immutable Identity) & 14 (Security Control)
+ */
 export const api = {
-  // --- Security Architecture ---
   getSecurityState: (): SecurityStatus => {
     const raw = localStorage.getItem(SECURITY_KEY);
     return raw ? JSON.parse(raw) : { isGlobalOrderStop: false, threatLevel: 'Normal', lastAudit: new Date().toISOString() };
@@ -24,26 +27,17 @@ export const api = {
 
   setGlobalStop: (stop: boolean) => {
     const current = api.getSecurityState();
-    localStorage.setItem(SECURITY_KEY, JSON.stringify({ ...current, isGlobalOrderStop: stop }));
+    localStorage.setItem(SECURITY_KEY, JSON.stringify({ 
+      ...current, 
+      isGlobalOrderStop: stop,
+      threatLevel: stop ? 'Critical' : 'Normal',
+      lastAudit: new Date().toISOString()
+    }));
   },
 
   getCurrentUser: (): User | null => {
     const session = localStorage.getItem(SESSION_KEY);
     return session ? JSON.parse(session) : null;
-  },
-
-  login: async (email: string): Promise<User> => {
-    let cleanEmail = email.trim().toLowerCase();
-    const raw = localStorage.getItem(USERS_KEY);
-    const localUsers: User[] = raw ? JSON.parse(raw) : [];
-    const allUsers = [...db.users, ...localUsers];
-    
-    const user = allUsers.find(u => u.email.toLowerCase() === cleanEmail);
-    if (!user) throw new Error('Identity Node Not Found.');
-    if (user.status === 'Suspended') throw new Error('Security Restriction: Node Suspended.');
-    
-    localStorage.setItem(SESSION_KEY, JSON.stringify(user));
-    return user;
   },
 
   signup: async (email: string, role: UserRole): Promise<User> => {
@@ -52,7 +46,7 @@ export const api = {
     const localUsers = raw ? JSON.parse(raw) : [];
     
     if (localUsers.find((u: User) => u.email.toLowerCase() === cleanEmail)) {
-       throw new Error("Identity conflict: Node already registered in registry.");
+       throw new Error("Identity conflict: Node already registered.");
     }
 
     const newUser: User = { 
@@ -62,7 +56,8 @@ export const api = {
       role, 
       status: role === 'Agent Partner/Prep Center' ? 'Pending' : 'Active',
       verified: true, 
-      isAuthorized: role !== 'Agent Partner/Prep Center' 
+      isAuthorized: role !== 'Agent Partner/Prep Center',
+      agreementDate: new Date().toISOString() 
     };
     
     localStorage.setItem(USERS_KEY, JSON.stringify([...localUsers, newUser]));
@@ -70,20 +65,126 @@ export const api = {
     return newUser;
   },
 
-  logout: () => {
-    localStorage.removeItem(SESSION_KEY);
+  checkUserQuota: async (paymentMethod: 'Card' | 'BankTransfer' = 'Card', currentQuantity: number = 1): Promise<{ allowed: boolean; reason?: string }> => {
+    const security = api.getSecurityState();
+    if (security.isGlobalOrderStop) return { allowed: false, reason: 'SYSTEM_LOCKED' };
+    
+    const currentUser = api.getCurrentUser();
+    if (!currentUser) return { allowed: false, reason: 'AUTH_REQUIRED' };
+    if (!currentUser.verified) return { allowed: false, reason: 'EMAIL_VERIFICATION_REQUIRED' };
+    if (currentUser.canBypassQuota) return { allowed: true };
+
+    const allOrders: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
+    const oneDayAgo = new Date().getTime() - (24 * 60 * 60 * 1000);
+    const recentOrders = allOrders.filter(o => o.userId === currentUser.id && o.status !== 'Cancelled' && new Date(o.timestamp).getTime() > oneDayAgo);
+
+    if (currentUser.role === 'Student') {
+      const studentQty = recentOrders.reduce((sum, o) => sum + o.quantity, 0);
+      if (studentQty + currentQuantity > 1) return { allowed: false, reason: 'STUDENT_LIMIT' };
+    }
+
+    if (currentUser.role === 'Agent Partner/Prep Center') {
+      const cQty = recentOrders.filter(o => o.paymentMethod === 'Gateway').reduce((s, o) => s + o.quantity, 0);
+      if (paymentMethod === 'Card' && (cQty + currentQuantity > 3)) return { allowed: false, reason: 'AGENT_CARD_LIMIT' };
+    }
+
+    return { allowed: true };
   },
 
-  getProducts: async (): Promise<Product[]> => {
-    const raw = localStorage.getItem(PRODUCTS_KEY);
-    const custom = raw ? JSON.parse(raw) : [];
-    return [...db.products, ...custom];
+  submitBankTransfer: async (productId: string, quantity: number, email: string, buyerName: string, bankRef: string): Promise<Order> => {
+    const security = api.getSecurityState();
+    if (security.isGlobalOrderStop) throw new Error("Security Stop: Global Dispatch Locked.");
+    
+    const p = await api.getProductById(productId);
+    const currentUser = api.getCurrentUser();
+    if (!currentUser) throw new Error("Auth Node required.");
+
+    const order: Order = {
+      id: `UNICOU-${Math.random().toString(36).substr(2, 7).toUpperCase()}`,
+      userId: currentUser.id,
+      productId,
+      productName: p?.name || 'Voucher',
+      quantity,
+      totalAmount: (p?.basePrice || 0) * quantity,
+      currency: p?.currency || 'USD',
+      customerEmail: currentUser.email, // POINT 13: IMMUTABLE IDENTITY DELIVERY
+      buyerName: buyerName || currentUser.name,
+      status: 'Pending',
+      paymentMethod: 'BankTransfer',
+      timestamp: new Date().toISOString(),
+      voucherCodes: [],
+      bankRef,
+      proofAttached: true 
+    };
+    
+    const allOrders = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
+    localStorage.setItem(ORDERS_KEY, JSON.stringify([order, ...allOrders]));
+    return order;
+  },
+
+  submitGatewayPayment: async (productId: string, quantity: number, email: string, buyerName: string): Promise<Order> => {
+    const security = api.getSecurityState();
+    if (security.isGlobalOrderStop) throw new Error("Security Stop: Global Dispatch Locked.");
+
+    const p = await api.getProductById(productId);
+    const currentUser = api.getCurrentUser();
+    if (!currentUser) throw new Error("Auth Node required.");
+
+    const order: Order = {
+      id: `UNICOU-${Math.random().toString(36).substr(2, 7).toUpperCase()}`,
+      userId: currentUser.id,
+      productId,
+      productName: p?.name || 'Voucher',
+      quantity,
+      totalAmount: (p?.basePrice || 0) * quantity,
+      currency: p?.currency || 'USD',
+      customerEmail: currentUser.email, // POINT 13: IMMUTABLE IDENTITY DELIVERY
+      buyerName: buyerName || currentUser.name,
+      status: 'Pending',
+      paymentMethod: 'Gateway', 
+      timestamp: new Date().toISOString(),
+      voucherCodes: [],
+      bankRef: 'AUTH_SUCCESS',
+      proofAttached: false
+    };
+    
+    const allOrders = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
+    localStorage.setItem(ORDERS_KEY, JSON.stringify([order, ...allOrders]));
+    return order;
+  },
+
+  fulfillOrder: async (orderId: string): Promise<void> => {
+    const allOrders: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
+    const orderIndex = allOrders.findIndex(o => o.id === orderId);
+    if (orderIndex === -1) throw new Error("Order node missing.");
+    
+    const order = allOrders[orderIndex];
+    if (order.status !== 'Pending') return;
+
+    const availableCodes: VoucherCode[] = [...db.voucherCodes]; 
+    const targetCodes = availableCodes
+      .filter(c => c.productId === order.productId && c.status === 'Available')
+      .slice(0, order.quantity);
+
+    if (targetCodes.length < order.quantity) throw new Error("Vault Exhausted: Contact Admin.");
+
+    const assignedCodes = targetCodes.map(c => c.code);
+    allOrders[orderIndex] = { ...order, status: 'Completed', voucherCodes: assignedCodes };
+    localStorage.setItem(ORDERS_KEY, JSON.stringify(allOrders));
+
+    await MailService.sendVoucherEmail(order.buyerName, order.customerEmail, order.productName, assignedCodes, order.id);
   },
 
   addProduct: async (p: Product): Promise<void> => {
     const raw = localStorage.getItem(PRODUCTS_KEY);
     const custom = raw ? JSON.parse(raw) : [];
     localStorage.setItem(PRODUCTS_KEY, JSON.stringify([p, ...custom]));
+  },
+
+  getProducts: async (): Promise<Product[]> => {
+    const raw = localStorage.getItem(PRODUCTS_KEY);
+    const custom = raw ? JSON.parse(raw) : [];
+    return [...db.products, ...custom];
   },
 
   getProductById: async (id: string): Promise<Product | undefined> => {
@@ -95,103 +196,38 @@ export const api = {
     const currentUser = api.getCurrentUser();
     if (!currentUser) return [];
     const allOrders: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
-    if (['System Admin/Owner', 'Finance/Audit Team', 'Operation Manager'].includes(currentUser.role)) {
-      return allOrders;
-    }
+    if (['System Admin/Owner', 'Operation Manager'].includes(currentUser.role)) return allOrders;
     return allOrders.filter(o => o.userId === currentUser.id);
   },
 
   getOrderById: async (id: string): Promise<Order | null> => {
-    const all = await api.getOrders();
-    return all.find(o => o.id === id) || null;
+    const orders = await api.getOrders();
+    return orders.find(o => o.id === id) || null;
   },
 
-  fulfillOrder: async (orderId: string): Promise<void> => {
-    const allOrders: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
-    const orderIndex = allOrders.findIndex(o => o.id === orderId);
-    if (orderIndex === -1) throw new Error("Order node not found.");
-    
-    const order = allOrders[orderIndex];
-    if (order.status !== 'Pending') return;
-
-    // Assignment Logic
-    const availableCodes: VoucherCode[] = [...db.voucherCodes]; // In real app, from local storage CODES_KEY
-    const targetCodes = availableCodes
-      .filter(c => c.productId === order.productId && c.status === 'Available')
-      .slice(0, order.quantity);
-
-    if (targetCodes.length < order.quantity) {
-      throw new Error("Vault Exhausted: Not enough codes in inventory for this fulfillment.");
-    }
-
-    const assignedCodes = targetCodes.map(c => c.code);
-    
-    // Update order state
-    allOrders[orderIndex] = { 
-      ...order, 
-      status: 'Completed', 
-      voucherCodes: assignedCodes 
-    };
-    
-    localStorage.setItem(ORDERS_KEY, JSON.stringify(allOrders));
-
-    // TRIGGER EMAIL DISPATCH
-    await MailService.sendVoucherEmail(
-      order.buyerName, 
-      order.customerEmail, 
-      order.productName, 
-      assignedCodes, 
-      order.id
-    );
+  requestLoginAccess: async (email: string): Promise<void> => {
+    const cleanEmail = email.trim().toLowerCase();
+    const raw = localStorage.getItem(USERS_KEY);
+    const localUsers: User[] = raw ? JSON.parse(raw) : [];
+    const allUsers = [...db.users, ...localUsers];
+    const user = allUsers.find(u => u.email.toLowerCase() === cleanEmail);
+    if (!user) throw new Error('Identity Node Not Found.');
+    await MailService.sendVerificationCode(user.name, cleanEmail);
   },
 
-  checkUserQuota: async (): Promise<{ allowed: boolean; reason?: string }> => {
-    const security = api.getSecurityState();
-    if (security.isGlobalOrderStop) return { allowed: false, reason: 'SYSTEM_LOCKED' };
-    const currentUser = api.getCurrentUser();
-    if (!currentUser) return { allowed: false, reason: 'AUTH_REQUIRED' };
-    if (!currentUser.verified) return { allowed: false, reason: 'EMAIL_VERIFICATION_REQUIRED' };
-    if (currentUser.canBypassQuota) return { allowed: true };
-    const allOrders: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
-    const oneDayAgo = new Date().getTime() - (24 * 60 * 60 * 1000);
-    if (currentUser.role === 'Student') {
-      const recentOrders = allOrders.filter(o => 
-        o.userId === currentUser.id && 
-        new Date(o.timestamp).getTime() > oneDayAgo
-      );
-      if (recentOrders.length >= 1) return { allowed: false, reason: 'DAILY_QUOTA_REACHED' };
-    }
-    return { allowed: true };
+  verifyLogin: async (email: string, code: string): Promise<User> => {
+    const cleanEmail = email.trim().toLowerCase();
+    if (!MailService.verifyStoredCode(cleanEmail, code)) throw new Error("Invalid Code.");
+    const raw = localStorage.getItem(USERS_KEY);
+    const localUsers: User[] = raw ? JSON.parse(raw) : [];
+    const allUsers = [...db.users, ...localUsers];
+    const user = allUsers.find(u => u.email.toLowerCase() === cleanEmail);
+    if (!user) throw new Error('Sync Error.');
+    localStorage.setItem(SESSION_KEY, JSON.stringify(user));
+    return user;
   },
 
-  submitBankTransfer: async (productId: string, quantity: number, email: string, buyerName: string, bankRef: string): Promise<Order> => {
-    const p = await api.getProductById(productId);
-    const currentUser = api.getCurrentUser();
-    if (!currentUser) throw new Error("Session Invalid.");
-
-    const order: Order = {
-      id: `UNICOU-${Math.random().toString(36).substr(2, 7).toUpperCase()}`,
-      userId: currentUser.id,
-      productId,
-      productName: p?.name || 'Voucher',
-      quantity,
-      totalAmount: (p?.basePrice || 0) * quantity,
-      currency: p?.currency || 'USD',
-      customerEmail: email,
-      buyerName: buyerName || currentUser.name,
-      status: 'Pending',
-      paymentMethod: 'BankTransfer',
-      timestamp: new Date().toISOString(),
-      voucherCodes: [],
-      bankRef,
-      proofAttached: true
-    };
-    
-    const allOrders = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
-    localStorage.setItem(ORDERS_KEY, JSON.stringify([order, ...allOrders]));
-    return order;
-  },
-
+  logout: () => localStorage.removeItem(SESSION_KEY),
   getCodes: async (): Promise<VoucherCode[]> => db.voucherCodes,
   getLeads: async (): Promise<Lead[]> => JSON.parse(localStorage.getItem(LEADS_KEY) || '[]'),
   submitLead: async (type: string, data: any): Promise<void> => {
@@ -210,9 +246,7 @@ export const api = {
     const updated = users.map(u => u.email.toLowerCase() === email.toLowerCase() ? { ...u, verified: true } : u);
     localStorage.setItem(USERS_KEY, JSON.stringify(updated));
     const active = api.getCurrentUser();
-    if (active && active.email.toLowerCase() === email.toLowerCase()) {
-      localStorage.setItem(SESSION_KEY, JSON.stringify({ ...active, verified: true }));
-    }
+    if (active && active.email.toLowerCase() === email.toLowerCase()) localStorage.setItem(SESSION_KEY, JSON.stringify({ ...active, verified: true }));
   },
   getQualifications: async (): Promise<Qualification[]> => db.qualifications,
   getGuideBySlug: async (slug: string): Promise<CountryGuide | null> => db.countryGuides.find(g => g.slug === slug) || null,
@@ -232,46 +266,29 @@ export const api = {
   getPendingSubmissions: async (): Promise<ManualSubmission[]> => [],
   gradeSubmission: async (id: string, s: number, f: string): Promise<void> => {},
   getImmigrationGuides: async (): Promise<ImmigrationGuideData[]> => [],
-  processOrderAction: async (id: string, a: string): Promise<any> => ({} as any),
   getQualificationById: async (id: string): Promise<Qualification | undefined> => db.qualifications.find(q => q.id === id),
   submitQualificationLead: async (d: any): Promise<QualificationLead> => ({ ...d, id: '1', timestamp: '', status: 'New', trackingId: 'T' }),
   submitTestBooking: async (d: any): Promise<TestBooking> => ({ ...d, id: '1', trackingRef: 'T' }),
-  // Fixes: Error in file components/AdminDashboard.tsx on line 62: Property 'verifyAgent' does not exist
   verifyAgent: async (leadId: string): Promise<void> => {
     const rawLeads = localStorage.getItem(LEADS_KEY);
     const leads: Lead[] = rawLeads ? JSON.parse(rawLeads) : [];
     const leadIndex = leads.findIndex(l => l.id === leadId);
     if (leadIndex === -1) return;
-
     leads[leadIndex].status = 'Approved';
     localStorage.setItem(LEADS_KEY, JSON.stringify(leads));
-
     const email = leads[leadIndex].data.email;
     if (!email) return;
-
     const rawUsers = localStorage.getItem(USERS_KEY);
     const users: User[] = rawUsers ? JSON.parse(rawUsers) : [];
-    const updatedUsers = users.map(u => 
-      u.email.toLowerCase() === email.toLowerCase() 
-      ? { ...u, isAuthorized: true, status: 'Active' as const } 
-      : u
-    );
+    const updatedUsers = users.map(u => u.email.toLowerCase() === email.toLowerCase() ? { ...u, isAuthorized: true, status: 'Active' as const } : u);
     localStorage.setItem(USERS_KEY, JSON.stringify(updatedUsers));
   },
-  // Fixes: Error in file components/SupportDashboard.tsx on line 30: Property 'bypassUserQuota' does not exist
   bypassUserQuota: async (email: string): Promise<void> => {
     const rawUsers = localStorage.getItem(USERS_KEY);
     const users: User[] = rawUsers ? JSON.parse(rawUsers) : [];
-    const updatedUsers = users.map(u => 
-      u.email.toLowerCase() === email.toLowerCase() 
-      ? { ...u, canBypassQuota: true } 
-      : u
-    );
+    const updatedUsers = users.map(u => u.email.toLowerCase() === email.toLowerCase() ? { ...u, canBypassQuota: true } : u);
     localStorage.setItem(USERS_KEY, JSON.stringify(updatedUsers));
-    
     const active = api.getCurrentUser();
-    if (active && active.email.toLowerCase() === email.toLowerCase()) {
-      localStorage.setItem(SESSION_KEY, JSON.stringify({ ...active, canBypassQuota: true }));
-    }
+    if (active && active.email.toLowerCase() === email.toLowerCase()) localStorage.setItem(SESSION_KEY, JSON.stringify({ ...active, canBypassQuota: true }));
   }
 };

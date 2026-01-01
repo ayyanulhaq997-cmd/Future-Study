@@ -41,18 +41,18 @@ const Features: React.FC = () => {
     <section className="py-32 px-6 max-w-7xl mx-auto bg-white">
       <div className="text-center mb-20">
         <div className="flex items-center justify-center gap-2 mb-4">
-           <div className="w-2 h-2 rounded-full bg-unicou-orange"></div>
+           <div className="w-2 h-2 rounded-full bg-unicou-orange shadow-[0_0_8px_rgba(241,90,36,0.6)]"></div>
            <span className="text-[11px] font-bold text-unicou-orange uppercase tracking-[0.4em]">The UNICOU Standard</span>
-           <div className="w-2 h-2 rounded-full bg-unicou-orange"></div>
+           <div className="w-2 h-2 rounded-full bg-unicou-orange shadow-[0_0_8px_rgba(241,90,36,0.6)]"></div>
         </div>
         <h2 className="text-5xl font-display font-bold text-unicou-navy">Operational Excellence</h2>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
         {features.map((feature, idx) => (
-          <div key={idx} className="bg-white p-10 rounded-[2.5rem] border border-slate-100 hover:border-unicou-orange/20 hover:shadow-premium transition-all duration-500 group relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-16 h-16 bg-slate-50 rounded-bl-[2.5rem] flex items-center justify-center group-hover:bg-unicou-orange/5 transition-colors">
-               <div className="w-1.5 h-1.5 rounded-full bg-unicou-orange opacity-30 group-hover:opacity-100"></div>
+          <div key={idx} className="bg-white p-10 rounded-[2.5rem] border-2 border-slate-50 hover:border-unicou-orange/40 hover:shadow-premium transition-all duration-500 group relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-16 h-16 bg-slate-50 rounded-bl-[2.5rem] flex items-center justify-center group-hover:bg-unicou-orange/10 transition-colors">
+               <div className="w-2 h-2 rounded-full bg-unicou-orange opacity-30 group-hover:opacity-100 shadow-[0_0_5px_rgba(241,90,36,0.4)]"></div>
             </div>
 
             <div className={`w-14 h-14 rounded-2xl ${feature.color} flex items-center justify-center text-white mb-8 group-hover:scale-110 transition-transform shadow-lg ${feature.color === 'bg-unicou-orange' ? 'shadow-action' : ''}`}>
@@ -62,7 +62,7 @@ const Features: React.FC = () => {
             <p className="text-slate-500 text-sm leading-relaxed font-medium">
               {feature.description}
             </p>
-            <div className="mt-6 vibrant-strip opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div className="mt-6 vibrant-strip opacity-20 group-hover:opacity-100 transition-opacity"></div>
           </div>
         ))}
       </div>
