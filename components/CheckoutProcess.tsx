@@ -28,6 +28,15 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
     BankTransfer: 10
   };
 
+  // Prevent background scroll when payment modal is active
+  useEffect(() => {
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalStyle;
+    };
+  }, []);
+
   useEffect(() => {
     const user = api.getCurrentUser();
     setCurrentUser(user);

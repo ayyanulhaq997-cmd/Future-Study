@@ -21,11 +21,13 @@ import AdminDashboard from './components/AdminDashboard';
 import AgentDashboard from './components/AgentDashboard';
 import CustomerDashboard from './components/CustomerDashboard';
 import QualificationCatalogue from './components/QualificationCatalogue';
+import PolicyPage from './components/PolicyPage';
 import { ViewState, User } from './types';
 import { api } from './services/apiService';
 import { LOGO_SRC } from './constants/assets';
 
 const OFFICE_LOCATIONS = [
+  { country: "United Kingdom", address: "Central Operations, Manchester, UK" },
   { country: "Dubai", address: "24695 Deira, Dubai, UAE" },
   { country: "Pakistan", address: "Plot No.23-17-B-1, Township, Lahore, Pakistan" }
 ];
@@ -120,6 +122,8 @@ const App: React.FC = () => {
         return <div className="view-container">{user ? <AgentDashboard user={user} onBuy={(p, q) => navigateTo({ type: 'checkout', productId: p, quantity: q })} /> : <Login onLogin={handleAuthorizedNavigation} onNavigateToSignup={() => navigateTo({ type: 'signup' })} onNavigateToForgot={() => navigateTo({ type: 'forgot-password' })} />}</div>;
       case 'lms-dashboard':
         return <div className="view-container">{user ? <CustomerDashboard user={user} onNavigate={navigateTo} /> : <LMSDashboard onNavigate={navigateTo} />}</div>;
+      case 'policy':
+        return <div className="view-container"><PolicyPage policyId={(view as any).policyId} /></div>;
       default:
         return <div className="view-container text-center pt-40">Page updating soon.</div>;
     }
@@ -132,24 +136,70 @@ const App: React.FC = () => {
       <Navbar view={view as any} user={user} scrolled={scrolled} onNavigate={navigateTo} onLogout={handleLogout} onOpenSearch={() => setSearchOpen(true)} isVisible={true} />
       <main className="relative z-0">{renderContent()}</main>
       
-      <footer className="bg-slate-50 border-t border-slate-100 py-24 mt-auto">
+      <footer className="bg-slate-50 border-t border-slate-200 pt-24 pb-12 mt-auto">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-16 pb-16 border-b border-slate-200">
-            <div className="md:col-span-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 pb-16 border-b border-slate-200">
+            <div className="lg:col-span-2">
                <img src={LOGO_SRC} alt="UniCou" className="h-10 w-auto mb-8 cursor-pointer" onClick={() => navigateTo({type: 'home'})} />
-               <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest leading-loose">Study Abroad Specialists.<br />Your path to global education.</p>
+               <p className="text-slate-600 text-sm font-bold italic leading-relaxed max-w-sm">
+                 "UniCou International Ltd is a premier global academic mobility platform, specializing in University Admissions, Official Exam Vouchers, and Professional Certifications."
+               </p>
+               <div className="mt-8 flex gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shadow-sm">FB</div>
+                  <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shadow-sm">IG</div>
+                  <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shadow-sm">LI</div>
+               </div>
             </div>
-            <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-10">
-              {OFFICE_LOCATIONS.map((loc, i) => (
-                <div key={i}>
-                  <h5 className="text-[11px] font-black text-unicou-navy uppercase tracking-widest mb-4">{loc.country} Regional Office</h5>
-                  <p className="text-[13px] text-slate-600 leading-relaxed font-bold italic">"{loc.address}"</p>
-                </div>
-              ))}
+            
+            <div>
+              <h5 className="text-[10px] font-black text-unicou-navy uppercase tracking-widest mb-6">Our Verticals</h5>
+              <ul className="space-y-4 text-xs font-bold text-slate-500 uppercase tracking-tighter">
+                <li><button onClick={() => navigateTo({type: 'store'})} className="hover:text-unicou-orange transition-colors">Exam Vouchers</button></li>
+                <li><button onClick={() => navigateTo({type: 'lms-dashboard'})} className="hover:text-unicou-orange transition-colors">Learning Hub</button></li>
+                <li><button onClick={() => navigateTo({type: 'country-list'})} className="hover:text-unicou-orange transition-colors">University Portal</button></li>
+                <li><button onClick={() => navigateTo({type: 'qualifications'})} className="hover:text-unicou-orange transition-colors">Qualifications</button></li>
+              </ul>
+            </div>
+
+            <div>
+              <h5 className="text-[10px] font-black text-unicou-navy uppercase tracking-widest mb-6">Legal & Security</h5>
+              <ul className="space-y-4 text-xs font-bold text-slate-500 uppercase tracking-tighter">
+                <li><button onClick={() => navigateTo({type: 'policy', policyId: 'privacy'})} className="hover:text-unicou-orange transition-colors">Privacy Policy</button></li>
+                <li><button onClick={() => navigateTo({type: 'policy', policyId: 'terms-of-use'})} className="hover:text-unicou-orange transition-colors">Terms of Use</button></li>
+                <li><button onClick={() => navigateTo({type: 'policy', policyId: 'cookies'})} className="hover:text-unicou-orange transition-colors">Cookie Policy</button></li>
+                <li><button onClick={() => navigateTo({type: 'policy', policyId: 'modern-slavery'})} className="hover:text-unicou-orange transition-colors">Modern Slavery</button></li>
+                <li><button onClick={() => navigateTo({type: 'policy', policyId: 'accessibility'})} className="hover:text-unicou-orange transition-colors">Accessibility</button></li>
+                <li><button onClick={() => navigateTo({type: 'policy', policyId: 'whistleblowing'})} className="hover:text-unicou-orange transition-colors">Whistleblowing</button></li>
+                <li><button onClick={() => navigateTo({type: 'policy', policyId: 'carbon-reduction'})} className="hover:text-unicou-orange transition-colors">Carbon Plan</button></li>
+              </ul>
+            </div>
+
+            <div>
+              <h5 className="text-[10px] font-black text-unicou-navy uppercase tracking-widest mb-6">Global Connect</h5>
+              <ul className="space-y-4 text-xs font-bold text-slate-500 uppercase tracking-tighter">
+                <li><button onClick={() => navigateTo({type: 'join-hub'})} className="hover:text-unicou-orange transition-colors">Application Hub</button></li>
+                <li><a href="mailto:connect@unicou.uk" className="hover:text-unicou-orange transition-colors">connect@unicou.uk</a></li>
+                <li><a href="https://wa.me/4470000000" className="hover:text-unicou-orange transition-colors">WhatsApp Sync</a></li>
+              </ul>
             </div>
           </div>
-          <div className="pt-10 flex gap-8 text-[10px] font-black uppercase tracking-widest text-slate-400">
-             <p className="ml-auto italic">© 2025 UniCou International Ltd. All rights reserved.</p>
+
+          <div className="pt-12 grid grid-cols-1 md:grid-cols-3 gap-10">
+             {OFFICE_LOCATIONS.map((loc, i) => (
+                <div key={i} className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm group hover:border-unicou-orange/20 transition-all">
+                   <h6 className="text-[9px] font-black text-unicou-navy uppercase tracking-widest mb-2">{loc.country} Node</h6>
+                   <p className="text-[11px] text-slate-500 font-bold italic leading-relaxed">"{loc.address}"</p>
+                </div>
+             ))}
+          </div>
+
+          <div className="mt-16 pt-8 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center gap-6">
+             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em]">© 2025 UNICOU INTERNATIONAL LTD • ALL RIGHTS RESERVED.</p>
+             <div className="flex items-center gap-4">
+                <div className="w-1.5 h-1.5 rounded-full bg-unicou-navy"></div>
+                <div className="vibrant-strip w-12"></div>
+                <div className="w-1.5 h-1.5 rounded-full bg-unicou-orange"></div>
+             </div>
           </div>
         </div>
       </footer>

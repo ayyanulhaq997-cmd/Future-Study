@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { GeminiService } from '../services/geminiService';
 import { ViewState } from '../types';
@@ -12,6 +13,15 @@ const SearchOverlay: React.FC<SearchOverlayProps> = ({ onClose, onNavigate }) =>
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Prevent background scroll when overlay is active
+  useEffect(() => {
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalStyle;
+    };
+  }, []);
 
   useEffect(() => {
     inputRef.current?.focus();

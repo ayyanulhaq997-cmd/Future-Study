@@ -334,4 +334,5 @@ export type ViewState =
   | { type: 'join-hub' }
   | { type: 'checkout'; productId: string; quantity: number }
   | { type: 'success'; orderId: string }
-  | { type: 'university'; slug: string };
+  | { type: 'university'; slug: string }
+  | { type: 'policy'; policyId: string };
