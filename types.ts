@@ -18,7 +18,7 @@ export interface User {
   tier?: number;
   verified?: boolean;
   isPlatinum?: boolean;
-  isAuthorized?: boolean; // For Agent/Partner verification by Manager
+  isAuthorized?: boolean;
 }
 
 export interface Lead {
@@ -49,7 +49,12 @@ export interface VoucherCode {
   code: string;
   status: VoucherStatus;
   expiryDate: string;
-  uploadDate?: string;
+  uploadDate: string;
+  // Audit fields
+  orderId?: string;
+  buyerName?: string;
+  assignmentDate?: string;
+  salesExecutiveName?: string;
 }
 
 export interface Order {
@@ -61,13 +66,14 @@ export interface Order {
   totalAmount: number;
   currency: string;
   customerEmail: string;
+  buyerName: string; // New: Audit requirement
+  salesExecutiveName?: string; // New: Track processing staff/agent
   status: 'Pending' | 'Completed' | 'Cancelled' | 'On-Hold';
   paymentMethod: 'Gateway' | 'BankTransfer';
   timestamp: string;
   voucherCodes: string[];
   bankRef: string;
   proofAttached: boolean;
-  // Added missing pricing and tracking properties
   baseAmount?: number;
   tierDiscount?: number;
   promoDiscount?: number;

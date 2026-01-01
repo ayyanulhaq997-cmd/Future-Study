@@ -27,45 +27,57 @@ const SuccessScreen: React.FC<SuccessScreenProps> = ({ orderId, onClose }) => {
   if (order.status === 'Pending') {
     return (
       <div className="max-w-4xl mx-auto px-4 py-20 text-center animate-in fade-in duration-700 bg-white min-h-[80vh] flex flex-col items-center justify-center">
-        <div className="mb-12 inline-flex items-center justify-center w-24 h-24 bg-orange-500/10 text-orange-400 rounded-full border border-orange-500/20 animate-pulse">
+        <div className="mb-12 inline-flex items-center justify-center w-24 h-24 bg-slate-100 text-unicou-navy rounded-full border border-slate-200 animate-pulse">
           <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
         </div>
 
-        <h1 className="text-5xl md:text-7xl font-display font-black mb-8 tracking-tighter text-slate-900 leading-none">
-          Settlement <span className="text-unicou-orange">Received.</span>
+        <h1 className="text-5xl md:text-7xl font-display font-black mb-8 tracking-tighter text-slate-900 leading-none uppercase">
+          Order <span className="text-unicou-navy">Confirmed!</span>
         </h1>
-        <p className="text-lg text-slate-500 font-bold mb-16 max-w-2xl mx-auto leading-relaxed">
-            Your payment for order <span className="text-unicou-navy font-black">{order.id}</span> has been logged (Annex-B). Verification node is active. Voucher codes will appear in your dashboard upon settlement release.
-        </p>
+        <div className="space-y-6 max-w-2xl mx-auto mb-16">
+          <p className="text-lg text-slate-700 font-bold leading-relaxed italic">
+            Thanks for the Order, your payment is being verified. Your exam voucher will arrive via email shortly after payment verification. Please check your inbox and spam folder.
+          </p>
+          <p className="text-sm text-slate-500 font-black uppercase tracking-widest bg-slate-50 py-4 px-6 rounded-2xl border border-slate-100">
+            Verification usually takes between 10-60 minutes during standard operating hours. You can safely close this page.
+          </p>
+          <p className="text-[10px] text-slate-400 font-mono">Order ID: {order.id}</p>
+        </div>
 
         <div className="flex flex-col sm:flex-row justify-center gap-6 w-full max-w-md">
             <button 
               onClick={fetchOrder} disabled={refreshing}
-              className="w-full px-12 py-6 bg-unicou-navy text-white rounded-3xl font-black text-xs uppercase tracking-widest shadow-3xl transition-all"
+              className="w-full px-12 py-6 bg-unicou-navy text-white rounded-3xl font-black text-xs uppercase tracking-widest shadow-3xl transition-all hover:bg-slate-900"
             >
-              {refreshing ? 'Refreshing...' : 'CHECK SYNC STATUS'}
+              {refreshing ? 'REFRESHING...' : 'REFRESH STATUS'}
             </button>
-            <button onClick={onClose} className="w-full px-12 py-6 bg-unicou-orange text-white rounded-3xl font-black text-xs uppercase tracking-widest shadow-3xl hover:bg-orange-600 transition-colors">BACK TO STUDENT HUB</button>
+            <button onClick={onClose} className="w-full px-12 py-6 bg-slate-100 text-unicou-navy border border-slate-200 rounded-3xl font-black text-xs uppercase tracking-widest shadow-xl hover:bg-white transition-all">MY DASHBOARD</button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-20 text-center animate-in zoom-in duration-700">
-      <div className="mb-12 inline-flex items-center justify-center w-24 h-24 bg-emerald-500/10 text-emerald-500 rounded-full">
+    <div className="max-w-4xl mx-auto px-4 py-20 text-center animate-in zoom-in duration-700 bg-white">
+      <div className="mb-12 inline-flex items-center justify-center w-24 h-24 bg-emerald-50 text-emerald-500 rounded-full border border-emerald-100 shadow-xl">
         <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
       </div>
-      <h1 className="text-4xl md:text-6xl font-display font-bold mb-6">Fulfillment <span className="text-emerald-500">Verified.</span></h1>
-      <p className="text-xl text-slate-600 mb-12 max-w-2xl mx-auto font-medium italic">"Annex-C Synchronization Complete. Your codes are active below."</p>
-      <div className="grid grid-cols-1 gap-6 mb-12 max-w-2xl mx-auto">
+      <h1 className="text-5xl md:text-7xl font-display font-black mb-8 tracking-tighter text-slate-900 uppercase">Order <span className="text-emerald-500">Delivered.</span></h1>
+      <p className="text-xl text-slate-600 mb-16 max-w-2xl mx-auto font-bold italic leading-relaxed">
+        "Payment verified. Your official exam codes are now active and ready for use."
+      </p>
+      <div className="grid grid-cols-1 gap-6 mb-16 max-w-2xl mx-auto">
         {order.voucherCodes.map((code, idx) => (
-          <div key={idx} className="bg-white p-10 rounded-[3rem] border border-slate-100 flex justify-between items-center shadow-xl">
-            <span className="font-mono text-3xl font-black tracking-widest">{code}</span>
+          <div key={idx} className="bg-slate-50 p-10 rounded-[3rem] border border-slate-200 flex justify-between items-center shadow-inner group hover:bg-white transition-all">
+            <div className="text-left">
+               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Exam Code</p>
+               <h4 className="font-display font-black text-slate-900 text-xl">{order.productName}</h4>
+            </div>
+            <span className="font-mono text-3xl font-black text-unicou-navy tracking-widest">{code}</span>
           </div>
         ))}
       </div>
-      <button onClick={onClose} className="px-12 py-6 bg-unicou-orange text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-orange-600 transition-colors">RETURN TO STUDENT HUB</button>
+      <button onClick={onClose} className="px-16 py-6 bg-unicou-navy text-white rounded-3xl font-black text-xs uppercase tracking-widest shadow-3xl hover:bg-slate-950 transition-all">RETURN TO STUDENT HUB</button>
     </div>
   );
 };

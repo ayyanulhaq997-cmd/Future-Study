@@ -47,7 +47,10 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
         { label: 'IELTS Vouchers', type: 'store' },
         { label: 'TOEFL iBT', type: 'store' },
         { label: 'Duolingo', type: 'store' },
-        { label: 'LanguageCert', type: 'store' },
+        { label: 'Oxford ELLT', type: 'store' },
+        { label: 'LanguageCert Academic', type: 'store' },
+        { label: 'LanguageCert ESOL', type: 'store' },
+        { label: 'Skills for English', type: 'store' },
       ]
     },
     { 

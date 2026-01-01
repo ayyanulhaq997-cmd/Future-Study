@@ -1,10 +1,10 @@
 
 import React, { useState } from 'react';
 import { api } from '../services/apiService';
-import { UserRole } from '../types';
+import { User, UserRole } from '../types';
 
 interface SignupProps {
-  onSuccess: (email: string) => void;
+  onSuccess: (user: User) => void;
   onNavigateToLogin: () => void;
 }
 
@@ -28,9 +28,9 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
     setLoading(true);
     setError('');
     try {
-      await api.signup(formData.email, formData.role);
-      alert("Registration request received. Please check your email for a verification link.");
-      onSuccess(formData.email);
+      const user = await api.signup(formData.email, formData.role);
+      alert("Registration Successful. Your UniCou node is now active.");
+      onSuccess(user);
     } catch (err: any) {
       setError(err.message || 'Registration failed.');
       setLoading(false);

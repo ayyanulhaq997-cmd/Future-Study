@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { FormType } from '../types';
 import { api } from '../services/apiService';
@@ -71,7 +72,7 @@ const ApplyForm: React.FC<ApplyFormProps> = ({ type, context, onSuccess }) => {
       <div className="relative z-10 mb-12">
         <div className="flex items-center gap-3 mb-4">
            <div className="vibrant-strip w-12"></div>
-           <span className="text-[10px] font-black text-unicou-orange uppercase tracking-[0.4em]">{context || 'AUTHORITATIVE HUB REGISTRY'}</span>
+           <span className="text-[10px] font-black text-unicou-navy uppercase tracking-[0.4em]">{context || 'AUTHORITATIVE HUB REGISTRY'}</span>
         </div>
         <h2 className="text-4xl md:text-5xl font-display font-bold text-unicou-navy tracking-tight leading-none mb-4 uppercase">
           {type === 'student-apply' ? 'STUDENT ADMISSION PORTAL' : 'AGENT / PARTNER MEMBERSHIP'}

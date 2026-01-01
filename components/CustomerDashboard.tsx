@@ -25,14 +25,21 @@ const CustomerDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => vo
     fetch();
   }, []);
 
+  const isAgent = user.role === 'Agent Partner/Prep Center';
+
   if (loading) return <div className="p-40 text-center animate-pulse text-unicou-navy font-black uppercase tracking-widest text-[11px]">Syncing your portal...</div>;
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12 bg-white">
       <div className="text-center mb-20 animate-in slide-in-from-top-4 duration-700">
-        <h1 className="text-5xl md:text-7xl font-display font-black mb-6 tracking-tighter text-slate-950 uppercase leading-none">STUDENT <span className="text-unicou-orange">PORTAL</span></h1>
-        <p className="text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed font-bold italic">
-          Hi {user.name.split(' ')[0]}! Your UniCou student portal is ready. Learn, prepare, and move closer to your international career goals!
+        <h1 className="text-5xl md:text-7xl font-display font-black mb-6 tracking-tighter text-slate-950 uppercase leading-none">
+          {isAgent ? 'PARTNER' : 'STUDENT'} <span className="text-unicou-orange">PORTAL</span>
+        </h1>
+        <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed font-bold italic">
+          {isAgent 
+            ? `Welcome ${user.name}! Your UniCou partner dashboard is ready. Continue supporting students with study abroad, IELTS/PTE/TOEFL vouchers, and training solutions.`
+            : `Hi ${user.name.split(' ')[0]}! Your UniCou student portal is ready. Learn, prepare, and move closer to your international career goals!`
+          }
         </p>
         
         <div className="flex justify-center mt-12">
@@ -56,7 +63,7 @@ const CustomerDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => vo
               orders.map(o => (
                 <div key={o.id} className="space-y-8">
                   <div className="flex items-center gap-6 border-b border-slate-100 pb-6">
-                    <span className="text-[10px] font-black text-unicou-orange uppercase tracking-[0.4em]">Order ID: {o.id}</span>
+                    <span className="text-[10px] font-black text-unicou-navy uppercase tracking-[0.4em]">Order ID: {o.id}</span>
                     <span className="text-[10px] text-slate-400 font-mono font-bold uppercase">{new Date(o.timestamp).toLocaleDateString()}</span>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -114,7 +121,7 @@ const CustomerDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => vo
                    </div>
                    <div className="text-right">
                       <p className="text-[10px] font-black uppercase text-slate-400">Band Score</p>
-                      <p className="text-2xl font-black text-unicou-orange">{res.overallBand}</p>
+                      <p className="text-2xl font-black text-unicou-navy">{res.overallBand}</p>
                    </div>
                 </div>
               ))

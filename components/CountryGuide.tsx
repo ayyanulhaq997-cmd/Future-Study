@@ -28,7 +28,7 @@ const CountryGuide: React.FC<{ slug: string; onViewUniversity: (slug: string) =>
   const renderContent = (text: string) => {
     return text.split('\n').map((line, i) => {
       if (line.startsWith('### ')) {
-        return <h2 key={i} className="text-3xl font-display font-black text-slate-950 mt-12 mb-6 tracking-tight">{line.replace('### ', '')}</h2>;
+        return <h2 key={i} className="text-3xl font-display font-black text-slate-950 mt-12 mb-6 tracking-tight uppercase">{line.replace('### ', '')}</h2>;
       }
       if (line.startsWith('- ')) {
         return <li key={i} className="ml-6 text-slate-700 mb-3 list-disc font-bold italic">{line.replace('- ', '')}</li>;
@@ -55,9 +55,9 @@ const CountryGuide: React.FC<{ slug: string; onViewUniversity: (slug: string) =>
         <div className="absolute bottom-16 left-16 right-16">
           <div className="flex items-center gap-3 mb-6">
              <span className="px-5 py-2 bg-unicou-navy text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg">Official Guide</span>
-             <span className="px-5 py-2 bg-white/20 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-widest rounded-full border border-white/20">Updated 2025</span>
+             <span className="px-5 py-2 bg-white/20 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-widest rounded-full border border-white/20">Updated 2025/2026</span>
           </div>
-          <h1 className="text-6xl md:text-[5.5rem] font-display font-black text-white mb-4 tracking-tighter leading-none">{guide.title}</h1>
+          <h1 className="text-6xl md:text-[5.5rem] font-display font-black text-white mb-4 tracking-tighter leading-none uppercase">{guide.title}</h1>
         </div>
       </div>
 
@@ -69,19 +69,11 @@ const CountryGuide: React.FC<{ slug: string; onViewUniversity: (slug: string) =>
               <div className="prose prose-lg max-w-none">
                 {renderContent(guide.content)}
               </div>
-              
-              <div className="mt-20 pt-20 border-t border-slate-200">
-                 <button onClick={onRegister} className="w-full py-8 bg-unicou-orange hover:bg-orange-600 text-white rounded-[2.5rem] font-black text-2xl uppercase tracking-widest transition-all shadow-3xl active:scale-95 flex items-center justify-center gap-6 group">
-                   START YOUR APPLICATION
-                   <svg className="w-8 h-8 group-hover:translate-x-2 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-                 </button>
-                 <p className="mt-8 text-center text-[10px] text-slate-400 font-black uppercase tracking-[0.3em]">Help & Support: connect@unicou.uk</p>
-              </div>
             </div>
           </section>
 
           <section>
-            <h2 className="text-4xl font-display font-black text-slate-950 mb-10">Top Featured <span className="text-unicou-navy">Universities</span></h2>
+            <h2 className="text-4xl font-display font-black text-slate-950 mb-10 uppercase">Top Featured <span className="text-unicou-navy">Universities</span></h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {unis.map(u => (
                 <div key={u.id} className="bg-white p-10 rounded-[3rem] border border-slate-100 hover:border-unicou-navy/20 transition-all cursor-pointer group shadow-lg" onClick={() => onViewUniversity(u.slug)}>
@@ -90,7 +82,7 @@ const CountryGuide: React.FC<{ slug: string; onViewUniversity: (slug: string) =>
                        <img src={u.logo} className="max-w-full max-h-full object-contain" alt={u.name} />
                     </div>
                     <div>
-                      <h3 className="font-black text-slate-900 group-hover:text-unicou-navy transition-colors text-xl leading-tight">{u.name}</h3>
+                      <h3 className="font-black text-slate-900 group-hover:text-unicou-navy transition-colors text-xl leading-tight uppercase">{u.name}</h3>
                       <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mt-2">Ranked #{u.ranking}</p>
                     </div>
                   </div>
@@ -102,6 +94,27 @@ const CountryGuide: React.FC<{ slug: string; onViewUniversity: (slug: string) =>
                 </div>
               ))}
             </div>
+          </section>
+
+          {/* New Handoff/Call to Action Section */}
+          <section className="bg-unicou-navy p-12 md:p-20 rounded-[4rem] text-center text-white relative overflow-hidden shadow-3xl">
+             <div className="absolute top-0 right-0 p-20 opacity-5">
+                <svg className="w-64 h-64" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+             </div>
+             <div className="relative z-10">
+                <h3 className="text-4xl md:text-5xl font-display font-black mb-6 tracking-tighter uppercase">Ready to take the first step?</h3>
+                <p className="text-slate-300 text-xl font-bold italic mb-12 max-w-2xl mx-auto">"Join thousands of students who have launched their global careers through the UniCou hub. Let’s make 2025/2026 the year of your move."</p>
+                
+                <button onClick={onRegister} className="px-16 py-7 bg-unicou-orange hover:bg-orange-600 text-white rounded-[2.5rem] font-black text-xl uppercase tracking-[0.2em] transition-all shadow-action active:scale-95 flex items-center justify-center gap-6 mx-auto group">
+                   OPEN REGISTRATION FORM
+                   <svg className="w-8 h-8 group-hover:translate-x-2 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                </button>
+                
+                <div className="mt-12 pt-12 border-t border-white/10 flex flex-col items-center gap-4">
+                   <p className="text-[10px] font-black text-white/50 uppercase tracking-[0.4em]">Direct Communication Node</p>
+                   <a href="mailto:connect@unicou.uk" className="text-2xl font-black text-unicou-vibrant hover:text-white transition-colors tracking-tight">connect@unicou.uk</a>
+                </div>
+             </div>
           </section>
         </div>
 
@@ -115,17 +128,17 @@ const CountryGuide: React.FC<{ slug: string; onViewUniversity: (slug: string) =>
                <div className="space-y-8">
                  <div className="bg-slate-50 p-8 rounded-[2rem] border border-slate-100 shadow-inner">
                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Est. Living Cost</p>
-                   <p className="text-3xl font-display font-black text-slate-950 tracking-tighter">{guide.costOfLiving}</p>
+                   <p className="text-3xl font-display font-black text-slate-950 tracking-tighter uppercase">{guide.costOfLiving}</p>
                  </div>
                  <div className="bg-slate-50 p-8 rounded-[2rem] border border-slate-100 shadow-inner">
                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Visa Requirements</p>
-                   <p className="text-lg font-black text-emerald-600 uppercase tracking-tight leading-tight">{guide.visaRequirements}</p>
+                   <p className="text-lg font-black text-emerald-600 uppercase tracking-tight leading-tight uppercase">{guide.visaRequirements}</p>
                  </div>
                </div>
             </div>
             <div className="p-10 bg-unicou-navy rounded-[3rem] shadow-3xl group">
-               <h4 className="text-xl font-black text-white mb-4">Strategic Consultation</h4>
-               <p className="text-slate-300 text-sm leading-relaxed mb-8 font-bold italic">"Our expert advisors are ready to help you plan your studies for the 2025 intake."</p>
+               <h4 className="text-xl font-black text-white mb-4 uppercase tracking-tighter">Strategic Consultation</h4>
+               <p className="text-slate-300 text-sm leading-relaxed mb-8 font-bold italic">"Our expert advisors are ready to help you plan your studies for the 2025/2026 intake."</p>
                <button onClick={onRegister} className="w-full py-5 bg-white text-slate-950 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all hover:scale-105 active:scale-95 shadow-2xl">BOOK A FREE CONSULTATION</button>
             </div>
           </div>
