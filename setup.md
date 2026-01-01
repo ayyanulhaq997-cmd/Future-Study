@@ -1,3 +1,4 @@
+
 # UNICOU Platform Setup & Operation Guide
 
 This document provides essential instructions for managing the UNICOU Global Academic Mobility platform.
@@ -5,25 +6,26 @@ This document provides essential instructions for managing the UNICOU Global Aca
 ## 1. Website Overview
 UNICOU is a high-performance ecosystem for Study Abroad, Voucher Sales, and LMS Preparation.
 
-## 2. Enabling Physical Emails (Production)
-By default, the platform runs in **Simulated Mail Mode** (logs to browser console). To send real emails to customers:
+## 2. Enabling Real Emails (Gmail)
+By default, the app uses **Simulated Mode**. To receive real emails in your Gmail, provide the following details from your EmailJS dashboard:
 
-### Option A: EmailJS (Recommended for Frontend only)
-1. Sign up at [emailjs.com](https://www.emailjs.com/).
-2. In `services/apiService.ts`, update `dispatchMail` to use the `emailjs-com` library.
-3. Replace the `EMAIL_API_ENDPOINT` logic with `emailjs.send(...)`.
+### Required Information
+- **SERVICE_ID**: Found in "Email Services" tab (e.g., `service_abc123`)
+- **TEMPLATE_ID**: Found in "Email Templates" tab (e.g., `template_xyz456`)
+- **PUBLIC_KEY**: Found in "Account" -> "API Keys" tab.
 
-### Option B: Backend SMTP (Professional Standard)
-1. Set `EMAIL_MODE = 'production'` in `services/apiService.ts`.
-2. Provide a valid `EMAIL_API_ENDPOINT` pointing to your Node.js or Python backend.
-3. Ensure your backend is configured with **SendGrid** or **Amazon SES**.
+### Email Template Configuration
+In EmailJS, your template must use these exact variable names in the "Content" area:
+- `{{to_name}}`: The user's name.
+- `{{to_email}}`: The user's Gmail address.
+- `{{verification_link}}`: The unique link the user clicks to verify.
+
+### How it works
+When a student signs up, they get an email. Clicking the link takes them back to the site where the app automatically authorizes their account, allowing them to buy vouchers.
 
 ## 3. Payment Configuration
 ### Bank Transfer (Primary)
 Update `BANK_DETAILS` in `services/apiService.ts`. Admin must manually verify references in the **Admin Terminal** to trigger voucher dispatch.
-
-### Razorpay (Secondary)
-Update `RAZORPAY_KEY_ID` in `services/apiService.ts` with your Live Key from the Razorpay dashboard.
 
 ## 4. Admin Access
 - **Admin**: admin@unicou.uk

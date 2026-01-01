@@ -32,7 +32,7 @@ const features = [
     icon: (
       <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
     ),
-    color: "bg-emerald-400"
+    color: "bg-unicou-navy"
   }
 ];
 
@@ -51,7 +51,6 @@ const Features: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
         {features.map((feature, idx) => (
           <div key={idx} className="bg-white p-10 rounded-[2.5rem] border border-slate-100 hover:border-unicou-orange/20 hover:shadow-premium transition-all duration-500 group relative overflow-hidden">
-            {/* Small eye-touching pop shape in each card */}
             <div className="absolute top-0 right-0 w-16 h-16 bg-slate-50 rounded-bl-[2.5rem] flex items-center justify-center group-hover:bg-unicou-orange/5 transition-colors">
                <div className="w-1.5 h-1.5 rounded-full bg-unicou-orange opacity-30 group-hover:opacity-100"></div>
             </div>

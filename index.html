@@ -6,17 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UniCou | International Education & Exam Vouchers</title>
     
-    <!-- SEO Meta Tags -->
-    <meta name="description" content="UniCou International Ltd is the premier global study abroad platform. Providing official PTE/IELTS vouchers, university consultancy, and professional certifications.">
-    <meta name="keywords" content="study abroad, PTE vouchers, IELTS vouchers, student visa, UniCou, international education, UK admissions">
-    <meta name="author" content="UniCou International Ltd">
-    <meta name="publisher" content="UniCou International Ltd">
-    <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://www.unicou.uk/">
-    
     <base href="/">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <script>
@@ -25,25 +16,17 @@
         theme: {
           extend: {
             fontFamily: {
-              sans: ['"DejaVu Sans"', 'Tahoma', '"Avenir Next LT Pro"', 'ui-sans-serif', 'system-ui'],
+              sans: ['"DejaVu Sans"', 'Tahoma', 'ui-sans-serif', 'system-ui'],
               display: ['"DejaVu Sans"', 'Tahoma', 'sans-serif'],
             },
             colors: {
               unicou: {
-                navy: '#004a61', // Official Brand Navy
-                orange: '#f15a24', // Official Brand Orange
-                vibrant: '#00f2ff', // Global Mobility Cyan
-                electric: '#fffc00', // Warning/Alert Yellow
-                emerald: '#10b981', // Discount/Success Green
-                indigo: '#6366f1',  // Tech/Audit Indigo
-                charcoal: '#333333'
+                navy: '#004a61',    // Color 1: Authority
+                orange: '#f15a24',  // Color 2: Action
+                charcoal: '#333333', // Color 3: Text
+                ice: '#f8fafc',      // Color 4: Neutral
+                slate: '#64748b'     // Secondary Neutral
               }
-            },
-            boxShadow: {
-              'premium': '0 20px 40px -15px rgba(0, 74, 97, 0.08)',
-              'action': '0 15px 30px -10px rgba(241, 90, 36, 0.3)',
-              'vibrant-glow': '0 0 25px rgba(0, 242, 255, 0.4)',
-              '3xl': '0 35px 60px -15px rgba(0, 0, 0, 0.3)',
             }
           }
         }
@@ -60,42 +43,17 @@
         margin: 0;
         min-height: 100vh;
         -webkit-font-smoothing: antialiased;
-        overflow-x: hidden;
       }
-      
       .view-container {
         padding-top: var(--content-top);
         min-height: calc(100vh - var(--nav-height));
-        transition: padding-top 0.5s ease-in-out;
       }
-
-      .glass {
-        background: rgba(255, 255, 255, 0.7);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-      }
-
       .vibrant-strip {
-        height: 6px;
-        background: linear-gradient(90deg, #004a61 0%, #f15a24 50%, #004a61 100%);
+        height: 4px;
+        background: linear-gradient(90deg, #004a61 0%, #f15a24 100%);
         border-radius: 10px;
       }
-
-      @keyframes slide-up {
-        from { transform: translateY(25px); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
-      }
-      .animate-slide-up {
-        animation: slide-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      }
-      
-      h1, h2, h3, h4, h5, h6 { font-weight: 900; letter-spacing: -0.015em; color: #004a61; }
-      
-      .no-scrollbar::-webkit-scrollbar { display: none; }
-      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-      p { line-height: 1.625; }
+      h1, h2, h3, h4 { font-weight: 900; color: #004a61; }
     </style>
 <script type="importmap">
 {
@@ -104,9 +62,8 @@
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
     "react/": "https://esm.sh/react@^19.2.3/",
     "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
-    "vite": "https://esm.sh/vite@^7.3.0",
-    "@google/generative-ai": "https://esm.sh/@google/generative-ai@^0.21.0",
-    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2"
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
+    "vite": "https://esm.sh/vite@^7.3.0"
   }
 }
 </script>

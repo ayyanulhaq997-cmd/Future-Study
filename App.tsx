@@ -12,7 +12,6 @@ import UniversityProfile from './components/UniversityProfile';
 import ApplicationHub from './components/ApplicationHub';
 import Login from './components/Login';
 import Signup from './components/Signup';
-import VerificationPending from './components/VerificationPending';
 import AIChat from './components/AIChat';
 import LMSDashboard from './components/LMSDashboard';
 import LMSCoursePlayer from './components/LMSCoursePlayer';
@@ -28,8 +27,8 @@ import Resources from './components/Resources';
 import About from './components/About';
 import TrainerDashboard from './components/TrainerDashboard';
 import FinanceDashboard from './components/FinanceDashboard';
-import SalesDashboard from './components/SalesDashboard';
 import SupportDashboard from './components/SupportDashboard';
+import VerificationPending from './components/VerificationPending';
 import CookieConsent from './components/CookieConsent';
 import { ViewState, User } from './types';
 import { api } from './services/apiService';
@@ -50,13 +49,36 @@ const App: React.FC = () => {
   useEffect(() => {
     const active = api.getCurrentUser();
     if (active) setUser(active);
+
+    const params = new URLSearchParams(window.location.search);
+    const verifyEmail = params.get('email');
+    const verifyToken = params.get('token');
+
+    if (verifyEmail && verifyToken) {
+      handleAutoVerify(verifyEmail);
+    }
+
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const handleAutoVerify = async (email: string) => {
+    try {
+      await api.verifyEmail(email);
+      const updated = api.getCurrentUser();
+      if (updated && updated.email.toLowerCase() === email.toLowerCase()) {
+        setUser(updated);
+      }
+      window.history.replaceState({}, document.title, "/");
+      alert("IDENTITY VERIFIED: Your procurement node is now authorized.");
+      setView({ type: 'store' });
+    } catch (e) {
+      console.error("Verification sync failed.");
+    }
+  };
+
   const navigateTo = (newView: ViewState) => {
-    // Role-based logic: If an Agent tries to go to the retail store, redirect to their procurement portal
     if (newView.type === 'store' && user?.role === 'Agent Partner/Prep Center') {
       setView({ type: 'agent' });
     } else {
@@ -76,7 +98,7 @@ const App: React.FC = () => {
     } else if (u.role === 'Lead Trainer') {
       navigateTo({ type: 'trainer' });
     } else if (u.role === 'Support/Sales Node') {
-      navigateTo({ type: 'sales-node' });
+      navigateTo({ type: 'support-portal' });
     } else {
       navigateTo({ type: 'lms-dashboard' });
     }
@@ -137,35 +159,55 @@ const App: React.FC = () => {
           </div>
         );
       case 'checkout':
-        return <CheckoutProcess productId={(view as any).productId} quantity={(view as any).quantity} onSuccess={(oid) => navigateTo({ type: 'success', orderId: oid })} onCancel={() => navigateTo({ type: 'store' })} />;
+        return <CheckoutProcess productId={(view as any).productId} quantity={(view as any).quantity} onSuccess={(oid) => navigateTo({ type: 'success', orderId: oid })} onCancel={() => navigateTo({ type: 'store' })} onNavigate={navigateTo} />;
       case 'success':
         return <div className="view-container"><SuccessScreen orderId={(view as any).orderId} onClose={() => navigateTo({ type: 'lms-dashboard' })} /></div>;
       case 'admin':
-        return <div className="view-container"><AdminDashboard /></div>;
+        return <div className="view-container">{user ? <AdminDashboard user={user} /> : <div className="pt-40 text-center">Auth Required</div>}</div>;
       case 'finance':
         return <div className="view-container">{user ? <FinanceDashboard user={user} /> : <Login onLogin={handleAuthorizedNavigation} onNavigateToSignup={() => navigateTo({ type: 'signup' })} onNavigateToForgot={() => navigateTo({ type: 'forgot-password' })} />}</div>;
       case 'trainer':
         return <div className="view-container">{user ? <TrainerDashboard user={user} /> : <Login onLogin={handleAuthorizedNavigation} onNavigateToSignup={() => navigateTo({ type: 'signup' })} onNavigateToForgot={() => navigateTo({type: 'forgot-password' })} />}</div>;
-      case 'sales-node':
-        return <div className="view-container">{user ? <SalesDashboard user={user} /> : <Login onLogin={handleAuthorizedNavigation} onNavigateToSignup={() => navigateTo({ type: 'signup' })} onNavigateToForgot={() => navigateTo({ type: 'forgot-password' })} />}</div>;
       case 'support-portal':
         return <div className="view-container">{user ? <SupportDashboard user={user} /> : <Login onLogin={handleAuthorizedNavigation} onNavigateToSignup={() => navigateTo({ type: 'signup' })} onNavigateToForgot={() => navigateTo({ type: 'forgot-password' })} />}</div>;
       case 'agent':
+        if (user && user.role === 'Agent Partner/Prep Center' && !user.isAuthorized) {
+          return (
+            <div className="view-container flex items-center justify-center p-12">
+               <div className="max-w-xl bg-white p-16 rounded-[4rem] border border-slate-200 shadow-3xl text-center">
+                  <div className="w-20 h-20 bg-orange-50 text-unicou-orange rounded-3xl flex items-center justify-center mx-auto mb-10 shadow-inner text-4xl">🕒</div>
+                  <h2 className="text-3xl font-display font-black text-unicou-navy uppercase tracking-tighter mb-4">Partner Node <span className="text-unicou-orange">Pending</span></h2>
+                  <p className="text-slate-600 font-bold italic leading-relaxed mb-10">"Your agency profile is currently under review by the global operations manager. Procurement nodes will be authorized within 24 hours of successful verification."</p>
+                  <button onClick={() => navigateTo({ type: 'home' })} className="px-10 py-4 bg-unicou-navy text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all hover:bg-slate-900">Return to Portal Home</button>
+               </div>
+            </div>
+          );
+        }
         return <div className="view-container">{user ? <AgentDashboard user={user} onBuy={(p, q) => navigateTo({ type: 'checkout', productId: p, quantity: q })} /> : <Login onLogin={handleAuthorizedNavigation} onNavigateToSignup={() => navigateTo({ type: 'signup' })} onNavigateToForgot={() => navigateTo({ type: 'forgot-password' })} />}</div>;
       case 'lms-dashboard':
         return <div className="view-container">{user ? <CustomerDashboard user={user} onNavigate={navigateTo} /> : <LMSDashboard onNavigate={navigateTo} />}</div>;
       case 'lms-course-player':
-        return <div className="view-container"><LMSCoursePlayer courseId={(view as any).courseId} onNavigate={navigateTo} /></div>;
+        return <div className="view-container">{user ? <LMSCoursePlayer courseId={(view as any).courseId} onNavigate={navigateTo} /> : <Login onLogin={handleAuthorizedNavigation} onNavigateToSignup={() => navigateTo({ type: 'signup' })} onNavigateToForgot={() => navigateTo({ type: 'forgot-password' })} />}</div>;
       case 'lms-practice-test':
-        return <div className="view-container"><LMSPracticeTest testId={(view as any).testId} onNavigate={navigateTo} /></div>;
+        return <div className="view-container">{user ? <LMSPracticeTest testId={(view as any).testId} onNavigate={navigateTo} /> : <Login onLogin={handleAuthorizedNavigation} onNavigateToSignup={() => navigateTo({ type: 'signup' })} onNavigateToForgot={() => navigateTo({ type: 'forgot-password' })} />}</div>;
       case 'policy':
         return <div className="view-container"><PolicyPage policyId={(view as any).policyId} /></div>;
+      case 'verification':
+        return <div className="view-container"><VerificationPending email={(view as any).email} onVerified={() => {
+           const active = api.getCurrentUser();
+           setUser(active);
+           navigateTo({ type: 'store' });
+        }} /></div>;
       default:
         return <div className="view-container text-center pt-40">Page updating soon.</div>;
     }
   };
 
-  const handleLogout = () => { api.logout(); setUser(null); navigateTo({ type: 'home' }); };
+  const handleLogout = () => { 
+    api.logout(); 
+    setUser(null); 
+    navigateTo({ type: 'home' }); 
+  };
 
   return (
     <div className="min-h-screen text-unicou-navy bg-white relative">

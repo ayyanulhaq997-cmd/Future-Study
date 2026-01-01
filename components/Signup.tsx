@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { api } from '../services/apiService';
+import { MailService } from '../services/mailService';
 import { User, UserRole } from '../types';
 
 interface SignupProps {
@@ -8,9 +9,14 @@ interface SignupProps {
   onNavigateToLogin: () => void;
 }
 
+type SignupStep = 'email' | 'code-entry' | 'complete';
+
 const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
+  const [step, setStep] = useState<SignupStep>('email');
+  const [verificationCode, setVerificationCode] = useState('');
   const [formData, setFormData] = useState({
     email: '',
+    name: '',
     password: '',
     confirmPassword: '',
     role: 'Student' as UserRole
@@ -18,104 +24,121 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [simulatedCode, setSimulatedCode] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleRequestCode = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match. Please verify your security string.");
+    if (!formData.email.includes('@')) {
+      setError("Please enter a valid email.");
       return;
     }
     setLoading(true);
     setError('');
     try {
-      const user = await api.signup(formData.email, formData.role);
-      alert("Registration Successful. Your UniCou node is now active.");
-      onSuccess(user);
+      await MailService.sendVerificationCode(formData.name || 'Student', formData.email);
+      setStep('code-entry');
+      setSimulatedCode(MailService.lastCodeDispatched);
     } catch (err: any) {
-      setError(err.message || 'Registration failed.');
+      setError("Failed to send code.");
+    } finally {
       setLoading(false);
     }
   };
 
-  const roles: { label: string; value: UserRole }[] = [
-    { label: 'Student (Direct Consumer)', value: 'Student' },
-    { label: 'Agent Partner / Center', value: 'Agent Partner/Prep Center' },
-    { label: 'Academic Trainer', value: 'Lead Trainer' },
-    { label: 'Support / Sales Executive', value: 'Support/Sales Node' },
-  ];
+  const handleVerifyCode = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (MailService.verifyStoredCode(formData.email, verificationCode)) {
+      setStep('complete');
+      setError('');
+    } else {
+      setError("Invalid verification code.");
+    }
+  };
+
+  const handleFinalSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const user = await api.signup(formData.email, formData.role);
+      await api.verifyEmail(formData.email);
+      onSuccess(user);
+    } catch (err: any) {
+      setError(err.message || 'Signup failed.');
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="max-w-md mx-auto py-12 px-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="bg-white p-10 rounded-[3rem] border border-slate-200 shadow-3xl relative overflow-hidden">
-        <div className="mb-10 text-center">
-          <h2 className="text-4xl font-display font-black text-unicou-navy tracking-tight uppercase leading-none">Create <span className="text-unicou-orange">Account</span></h2>
-          <p className="text-slate-500 text-[10px] mt-3 font-black uppercase tracking-widest">Start Your UniCou Journey</p>
+    <div className="max-w-md mx-auto py-20 px-4 animate-in fade-in duration-500">
+      <div className="bg-white p-8 md:p-10 rounded-3xl border border-slate-200 shadow-xl">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-display font-black text-unicou-navy uppercase tracking-tight">
+            {step === 'complete' ? 'Setup Profile' : 'Sign Up'}
+          </h2>
+          <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-2">
+            UniCou Global Registry
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="w-full space-y-6">
-          <div>
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">User Type</label>
-            <select 
-              value={formData.role}
-              onChange={(e) => setFormData({ ...formData, role: e.target.value as UserRole })}
-              className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-5 text-slate-900 font-bold outline-none focus:border-unicou-navy"
-            >
-              {roles.map(r => (
-                <option key={r.value} value={r.value}>{r.label}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Email Address</label>
+        {step === 'email' && (
+          <form onSubmit={handleRequestCode} className="space-y-5">
             <input 
               type="email" required value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              placeholder="e.g. john@example.com"
-              className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-5 text-slate-900 font-bold outline-none focus:border-unicou-navy"
+              placeholder="Email Address"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm font-bold outline-none focus:border-unicou-navy transition-all"
             />
-          </div>
-          
-          <div className="space-y-4">
-            <div className="relative">
-              <div className="flex justify-between mb-3">
-                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Secure Password</label>
-                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-[10px] font-black text-unicou-navy uppercase tracking-widest">{showPassword ? 'Hide' : 'Show'}</button>
+            {error && <p className="text-red-500 text-xs font-bold text-center">{error}</p>}
+            <button 
+              type="submit" disabled={loading}
+              className="w-full py-4 bg-unicou-navy text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-slate-900 transition-all"
+            >
+              {loading ? 'Processing...' : 'Send Verification Code'}
+            </button>
+          </form>
+        )}
+
+        {step === 'code-entry' && (
+          <form onSubmit={handleVerifyCode} className="space-y-6">
+            {simulatedCode && (
+              <div className="p-4 bg-unicou-orange/5 border border-unicou-orange/20 rounded-xl text-center">
+                <p className="text-[10px] font-black text-unicou-orange uppercase tracking-widest mb-1">Test Code (Automatic)</p>
+                <p className="text-xl font-mono font-black text-unicou-navy">{simulatedCode}</p>
               </div>
-              <input 
-                type={showPassword ? "text" : "password"} required
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                placeholder="••••••••"
-                className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-5 text-slate-900 font-bold outline-none focus:border-unicou-navy"
-              />
-            </div>
-
+            )}
             <input 
-              type={showPassword ? "text" : "password"} required
-              value={formData.confirmPassword}
-              onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-              placeholder="Confirm Password"
-              className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-5 text-slate-900 font-bold outline-none focus:border-unicou-navy"
+              type="text" required maxLength={6}
+              value={verificationCode}
+              onChange={(e) => setVerificationCode(e.target.value)}
+              placeholder="Enter 6-digit Code"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-2xl font-mono font-black text-center text-unicou-navy outline-none focus:border-unicou-navy"
             />
-          </div>
+            <button type="submit" className="w-full py-4 bg-unicou-navy text-white rounded-xl font-black text-xs uppercase tracking-widest">Verify Code</button>
+          </form>
+        )}
 
-          {error && <div className="text-red-500 text-[9px] font-black uppercase text-center bg-red-50 py-3 rounded-xl border border-red-100">{error}</div>}
+        {step === 'complete' && (
+          <form onSubmit={handleFinalSubmit} className="space-y-4">
+            <input type="text" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm font-bold outline-none" placeholder="Full Name" />
+            <select value={formData.role} onChange={e => setFormData({...formData, role: e.target.value as UserRole})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm font-bold outline-none">
+              <option value="Student">Student (Default)</option>
+              <option value="Agent Partner/Prep Center">Agent / Academy Partner</option>
+            </select>
+            <input type="password" required value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm font-bold outline-none" placeholder="Create Password" />
+            <input type="password" required value={formData.confirmPassword} onChange={e => setFormData({...formData, confirmPassword: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm font-bold outline-none" placeholder="Confirm Password" />
+            <button type="submit" className="w-full py-4 bg-unicou-orange text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg">Create Account</button>
+          </form>
+        )}
 
-          <button 
-            type="submit" disabled={loading}
-            className="w-full py-6 bg-unicou-navy text-white rounded-2xl shadow-xl text-xs font-black uppercase tracking-[0.2em] hover:bg-slate-950 transition-all disabled:opacity-50"
-          >
-            {loading ? 'Creating Account...' : 'Register Account'}
+        <div className="text-center pt-6 mt-6 border-t border-slate-100">
+          <button type="button" onClick={onNavigateToLogin} className="text-xs text-slate-400 font-bold uppercase tracking-widest hover:text-unicou-orange">
+            Have an account? <span className="text-unicou-navy font-black">Login</span>
           </button>
-
-          <div className="text-center pt-6">
-            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">
-              Already have an account?{' '}
-              <button type="button" onClick={onNavigateToLogin} className="text-unicou-orange font-black hover:underline">Sign In</button>
-            </p>
-          </div>
-        </form>
+        </div>
       </div>
     </div>
   );

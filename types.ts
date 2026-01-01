@@ -109,7 +109,8 @@ export type ViewState =
   | { type: 'checkout'; productId: string; quantity: number }
   | { type: 'success'; orderId: string }
   | { type: 'university'; slug: string }
-  | { type: 'policy'; policyId: string };
+  | { type: 'policy'; policyId: string }
+  | { type: 'verification'; email: string };
 
 export interface University {
   id: string;
@@ -198,9 +199,6 @@ export interface TestResult {
   timestamp: string;
 }
 
-/**
- * Added LMSTestQuestion to resolve import error in components/LMSPracticeTest.tsx
- */
 export interface LMSTestQuestion {
   id: string;
   text: string;
@@ -210,9 +208,6 @@ export interface LMSTestQuestion {
   audioUrl?: string;
 }
 
-/**
- * Added LMSTestSection for structured testing metadata
- */
 export interface LMSTestSection {
   id: string;
   title: string;
@@ -221,9 +216,6 @@ export interface LMSTestSection {
   questions: LMSTestQuestion[];
 }
 
-/**
- * Updated LMSPracticeTest to use typed sections
- */
 export interface LMSPracticeTest {
   id: string;
   title: string;

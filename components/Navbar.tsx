@@ -57,7 +57,7 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
       label: 'Learning Hub', 
       type: 'lms-dashboard',
       subItems: [
-        { label: 'Library', type: 'library' },
+        { label: 'Library', type: 'lms-dashboard' },
         { label: 'Practice Tests', type: 'lms-dashboard', tab: 'results' },
         { label: 'Preparation Courses', type: 'lms-dashboard', tab: 'academy' },
         { label: 'Qualifications', type: 'qualifications' },
@@ -78,7 +78,7 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
     } else if (user.role === 'Agent Partner/Prep Center') {
       onNavigate({ type: 'agent' });
     } else if (user.role === 'Support/Sales Node') {
-      onNavigate({ type: 'sales-node' });
+      onNavigate({ type: 'support-portal' });
     } else if (user.role === 'Lead Trainer') {
       onNavigate({ type: 'trainer' });
     } else {

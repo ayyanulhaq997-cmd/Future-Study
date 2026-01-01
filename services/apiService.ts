@@ -1,5 +1,5 @@
-
 import * as db from './db';
+import { MailService } from './mailService';
 import { 
   Product, VoucherCode, Order, User, SecurityStatus, LMSCourse, 
   LMSModule, Enrollment, TestResult, Qualification, 
@@ -51,13 +51,17 @@ export const api = {
     const raw = localStorage.getItem(USERS_KEY);
     const localUsers = raw ? JSON.parse(raw) : [];
     
+    if (localUsers.find((u: User) => u.email.toLowerCase() === cleanEmail)) {
+       throw new Error("Identity conflict: Node already registered in registry.");
+    }
+
     const newUser: User = { 
       id: `u-${Math.random().toString(36).substr(2, 9)}`, 
       name: cleanEmail.split('@')[0].toUpperCase(), 
       email: cleanEmail, 
       role, 
       status: role === 'Agent Partner/Prep Center' ? 'Pending' : 'Active',
-      verified: false, 
+      verified: true, 
       isAuthorized: role !== 'Agent Partner/Prep Center' 
     };
     
@@ -68,7 +72,6 @@ export const api = {
 
   logout: () => {
     localStorage.removeItem(SESSION_KEY);
-    window.location.href = '/'; 
   },
 
   getProducts: async (): Promise<Product[]> => {
@@ -103,22 +106,54 @@ export const api = {
     return all.find(o => o.id === id) || null;
   },
 
+  fulfillOrder: async (orderId: string): Promise<void> => {
+    const allOrders: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
+    const orderIndex = allOrders.findIndex(o => o.id === orderId);
+    if (orderIndex === -1) throw new Error("Order node not found.");
+    
+    const order = allOrders[orderIndex];
+    if (order.status !== 'Pending') return;
+
+    // Assignment Logic
+    const availableCodes: VoucherCode[] = [...db.voucherCodes]; // In real app, from local storage CODES_KEY
+    const targetCodes = availableCodes
+      .filter(c => c.productId === order.productId && c.status === 'Available')
+      .slice(0, order.quantity);
+
+    if (targetCodes.length < order.quantity) {
+      throw new Error("Vault Exhausted: Not enough codes in inventory for this fulfillment.");
+    }
+
+    const assignedCodes = targetCodes.map(c => c.code);
+    
+    // Update order state
+    allOrders[orderIndex] = { 
+      ...order, 
+      status: 'Completed', 
+      voucherCodes: assignedCodes 
+    };
+    
+    localStorage.setItem(ORDERS_KEY, JSON.stringify(allOrders));
+
+    // TRIGGER EMAIL DISPATCH
+    await MailService.sendVoucherEmail(
+      order.buyerName, 
+      order.customerEmail, 
+      order.productName, 
+      assignedCodes, 
+      order.id
+    );
+  },
+
   checkUserQuota: async (): Promise<{ allowed: boolean; reason?: string }> => {
     const security = api.getSecurityState();
     if (security.isGlobalOrderStop) return { allowed: false, reason: 'SYSTEM_LOCKED' };
-
     const currentUser = api.getCurrentUser();
     if (!currentUser) return { allowed: false, reason: 'AUTH_REQUIRED' };
-    
-    // Requirement 2c: Mandatory Email Verification for every purchase
     if (!currentUser.verified) return { allowed: false, reason: 'EMAIL_VERIFICATION_REQUIRED' };
-    
     if (currentUser.canBypassQuota) return { allowed: true };
-
     const allOrders: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
     const oneDayAgo = new Date().getTime() - (24 * 60 * 60 * 1000);
-    
-    // Requirement 2f: Student can buy only ONE Voucher in one day
     if (currentUser.role === 'Student') {
       const recentOrders = allOrders.filter(o => 
         o.userId === currentUser.id && 
@@ -126,40 +161,7 @@ export const api = {
       );
       if (recentOrders.length >= 1) return { allowed: false, reason: 'DAILY_QUOTA_REACHED' };
     }
-
     return { allowed: true };
-  },
-
-  bypassUserQuota: async (email: string) => {
-    const raw = localStorage.getItem(USERS_KEY);
-    const localUsers: User[] = raw ? JSON.parse(raw) : [];
-    const updated = localUsers.map(u => u.email.toLowerCase() === email.toLowerCase() ? { ...u, canBypassQuota: true } : u);
-    localStorage.setItem(USERS_KEY, JSON.stringify(updated));
-    
-    // Sync current session if applicable
-    const active = api.getCurrentUser();
-    if (active && active.email.toLowerCase() === email.toLowerCase()) {
-      localStorage.setItem(SESSION_KEY, JSON.stringify({ ...active, canBypassQuota: true }));
-    }
-  },
-
-  verifyAgent: async (leadId: string): Promise<void> => {
-    const rawLeads = localStorage.getItem(LEADS_KEY);
-    const leads: Lead[] = rawLeads ? JSON.parse(rawLeads) : [];
-    const lead = leads.find(l => l.id === leadId);
-    if (!lead) return;
-
-    const updatedLeads = leads.map(l => l.id === leadId ? { ...l, status: 'Approved' as const } : l);
-    localStorage.setItem(LEADS_KEY, JSON.stringify(updatedLeads));
-
-    const rawUsers = localStorage.getItem(USERS_KEY);
-    const localUsers: User[] = rawUsers ? JSON.parse(rawUsers) : [];
-    const updatedUsers = localUsers.map(u => 
-      u.email.toLowerCase() === (lead.data.email || '').toLowerCase() 
-        ? { ...u, status: 'Active' as const, isAuthorized: true, agreementDate: new Date().toISOString() } 
-        : u
-    );
-    localStorage.setItem(USERS_KEY, JSON.stringify(updatedUsers));
   },
 
   submitBankTransfer: async (productId: string, quantity: number, email: string, buyerName: string, bankRef: string): Promise<Order> => {
@@ -233,5 +235,43 @@ export const api = {
   processOrderAction: async (id: string, a: string): Promise<any> => ({} as any),
   getQualificationById: async (id: string): Promise<Qualification | undefined> => db.qualifications.find(q => q.id === id),
   submitQualificationLead: async (d: any): Promise<QualificationLead> => ({ ...d, id: '1', timestamp: '', status: 'New', trackingId: 'T' }),
-  submitTestBooking: async (d: any): Promise<TestBooking> => ({ ...d, id: '1', trackingRef: 'T' })
+  submitTestBooking: async (d: any): Promise<TestBooking> => ({ ...d, id: '1', trackingRef: 'T' }),
+  // Fixes: Error in file components/AdminDashboard.tsx on line 62: Property 'verifyAgent' does not exist
+  verifyAgent: async (leadId: string): Promise<void> => {
+    const rawLeads = localStorage.getItem(LEADS_KEY);
+    const leads: Lead[] = rawLeads ? JSON.parse(rawLeads) : [];
+    const leadIndex = leads.findIndex(l => l.id === leadId);
+    if (leadIndex === -1) return;
+
+    leads[leadIndex].status = 'Approved';
+    localStorage.setItem(LEADS_KEY, JSON.stringify(leads));
+
+    const email = leads[leadIndex].data.email;
+    if (!email) return;
+
+    const rawUsers = localStorage.getItem(USERS_KEY);
+    const users: User[] = rawUsers ? JSON.parse(rawUsers) : [];
+    const updatedUsers = users.map(u => 
+      u.email.toLowerCase() === email.toLowerCase() 
+      ? { ...u, isAuthorized: true, status: 'Active' as const } 
+      : u
+    );
+    localStorage.setItem(USERS_KEY, JSON.stringify(updatedUsers));
+  },
+  // Fixes: Error in file components/SupportDashboard.tsx on line 30: Property 'bypassUserQuota' does not exist
+  bypassUserQuota: async (email: string): Promise<void> => {
+    const rawUsers = localStorage.getItem(USERS_KEY);
+    const users: User[] = rawUsers ? JSON.parse(rawUsers) : [];
+    const updatedUsers = users.map(u => 
+      u.email.toLowerCase() === email.toLowerCase() 
+      ? { ...u, canBypassQuota: true } 
+      : u
+    );
+    localStorage.setItem(USERS_KEY, JSON.stringify(updatedUsers));
+    
+    const active = api.getCurrentUser();
+    if (active && active.email.toLowerCase() === email.toLowerCase()) {
+      localStorage.setItem(SESSION_KEY, JSON.stringify({ ...active, canBypassQuota: true }));
+    }
+  }
 };

@@ -68,9 +68,9 @@ const VoucherStore: React.FC<VoucherStoreProps> = ({ onCheckout, onBook, onNavig
         {!user || user.role !== 'Agent Partner/Prep Center' ? (
           <button onClick={onNavigateToAgent} className="shrink-0 px-10 py-5 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:bg-black transition-all">Agent Log-In</button>
         ) : (
-          <div className="bg-unicou-emerald/5 border border-unicou-emerald/10 p-6 rounded-3xl text-center">
-             <p className="text-[10px] font-black text-unicou-emerald uppercase mb-2">Partner Node Active</p>
-             <button onClick={() => onNavigateToAgent()} className="text-xs font-black text-unicou-navy underline uppercase tracking-widest">Back to Portal</button>
+          <div className="bg-unicou-navy/5 border border-unicou-navy/10 p-6 rounded-3xl text-center">
+             <p className="text-[10px] font-black text-unicou-navy uppercase mb-2">Partner Node Active</p>
+             <button onClick={() => onNavigateToAgent()} className="text-xs font-black text-unicou-orange underline uppercase tracking-widest">Back to Portal</button>
           </div>
         )}
       </div>
@@ -86,7 +86,7 @@ const VoucherStore: React.FC<VoucherStoreProps> = ({ onCheckout, onBook, onNavig
           <div key={p.id} className="bg-white p-10 rounded-[3rem] border border-slate-100 hover:border-unicou-orange/20 transition-all group shadow-xl flex flex-col">
             <div className="flex justify-between items-start mb-6">
               <img src={getBrandLogo(p.category)} alt={p.category} className="h-6 w-auto object-contain grayscale group-hover:grayscale-0 transition-all duration-500" />
-              <div className="w-2 h-2 rounded-full bg-unicou-emerald" />
+              <div className="w-2 h-2 rounded-full bg-unicou-orange" />
             </div>
             
             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{p.category} NODE</p>
@@ -97,7 +97,7 @@ const VoucherStore: React.FC<VoucherStoreProps> = ({ onCheckout, onBook, onNavig
                   <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">RETAIL RATE:</span>
                   <span className="text-xs font-bold text-slate-400 tracking-tight">${(p.basePrice * 1.1).toFixed(2)}</span>
                </div>
-               <div className="flex justify-between items-center mb-4 text-unicou-emerald">
+               <div className="flex justify-between items-center mb-4 text-unicou-orange">
                   <span className="text-[9px] font-black uppercase tracking-widest">EXCLUSIVE DISCOUNT:</span>
                   <span className="text-xs font-bold tracking-tight">-${(p.basePrice * 0.1).toFixed(2)}</span>
                </div>
