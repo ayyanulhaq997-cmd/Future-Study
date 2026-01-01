@@ -30,6 +30,7 @@ import TrainerDashboard from './components/TrainerDashboard';
 import FinanceDashboard from './components/FinanceDashboard';
 import SalesDashboard from './components/SalesDashboard';
 import SupportDashboard from './components/SupportDashboard';
+import CookieConsent from './components/CookieConsent';
 import { ViewState, User } from './types';
 import { api } from './services/apiService';
 import { LOGO_SRC } from './constants/assets';
@@ -235,6 +236,7 @@ const App: React.FC = () => {
       </footer>
 
       <AIChat />
+      <CookieConsent />
       {searchOpen && <SearchOverlay onClose={() => setSearchOpen(false)} onNavigate={navigateTo} />}
     </div>
   );
