@@ -49,14 +49,15 @@ export const api = {
        throw new Error("Identity conflict: Node already registered.");
     }
 
+    // Fix: Updated comparison to use 'Agent' instead of invalid 'Agent Partner/Prep Center' string
     const newUser: User = { 
       id: `u-${Math.random().toString(36).substr(2, 9)}`, 
       name: cleanEmail.split('@')[0].toUpperCase(), 
       email: cleanEmail, 
       role, 
-      status: role === 'Agent Partner/Prep Center' ? 'Pending' : 'Active',
+      status: role === 'Agent' ? 'Pending' : 'Active',
       verified: true, 
-      isAuthorized: role !== 'Agent Partner/Prep Center',
+      isAuthorized: role !== 'Agent',
       agreementDate: new Date().toISOString() 
     };
     
@@ -91,7 +92,8 @@ export const api = {
       if (studentTotal + currentQuantity > 1) return { allowed: false, reason: 'STUDENT_LIMIT' };
     }
 
-    if (currentUser.role === 'Agent Partner/Prep Center') {
+    // Fix: Updated comparison to use 'Agent' instead of invalid 'Agent Partner/Prep Center' string
+    if (currentUser.role === 'Agent') {
       const cardTotal = recentOrders.filter(o => o.paymentMethod === 'Gateway').reduce((sum, o) => sum + o.quantity, 0);
       const bankTotal = recentOrders.filter(o => o.paymentMethod === 'BankTransfer').reduce((sum, o) => sum + o.quantity, 0);
       

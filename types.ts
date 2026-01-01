@@ -1,12 +1,10 @@
 
 export type UserRole = 
-  | 'System Admin/Owner' 
-  | 'Finance/Audit Team' 
-  | 'Operation Manager' 
-  | 'Lead Trainer' 
-  | 'Support/Sales Node' 
-  | 'Agent Partner/Prep Center' 
-  | 'Student';
+  | 'Student' 
+  | 'Agent' 
+  | 'Institute'
+  | 'System Admin/Owner'
+  | 'Operation Manager';
 
 export type FormType = 'student-apply' | 'agent-reg' | 'prep-center-reg' | 'institute-connect' | 'careers' | 'general' | 'immigration-consult';
 
@@ -20,13 +18,13 @@ export interface User {
   isAuthorized?: boolean;
   canBypassQuota?: boolean;
   status: 'Active' | 'Pending' | 'Suspended';
-  agreementDate?: string; // Record-keeping for agents
-  isFlagged?: boolean; // For security observation
+  agreementDate?: string; 
+  isFlagged?: boolean; 
 }
 
 export interface Lead {
   id: string;
-  type: 'student' | 'agent' | 'career' | 'general';
+  type: 'student' | 'agent' | 'institute' | 'general';
   data: Record<string, string>;
   status: 'New' | 'Contacted' | 'Processed' | 'Approved' | 'Rejected';
   timestamp: string;
@@ -55,8 +53,8 @@ export interface VoucherCode {
   uploadDate: string;
   orderId?: string;
   buyerName?: string;
-  salesExecutiveName?: string;
   assignmentDate?: string;
+  salesExecutiveName?: string;
 }
 
 export interface Order {
@@ -86,12 +84,8 @@ export interface SecurityStatus {
 export type ViewState = 
   | { type: 'home' }
   | { type: 'store' } 
-  | { type: 'admin' }
-  | { type: 'finance' }
   | { type: 'agent' }
-  | { type: 'sales-node' }
-  | { type: 'trainer' }
-  | { type: 'support-portal' }
+  | { type: 'institute' }
   | { type: 'login' }
   | { type: 'signup' }
   | { type: 'forgot-password' }
@@ -242,15 +236,6 @@ export interface FinanceReport {
   recentSales: Order[];
 }
 
-export interface APIEndpoint {
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE';
-  path: string;
-  description: string;
-  authRequired: boolean;
-  params?: string[];
-  response: string;
-}
-
 export interface QualificationLead {
   id: string;
   qualificationId: string;
@@ -270,4 +255,13 @@ export interface ImmigrationGuideData {
   content: string;
   heroImage: string;
   pathways: any[];
+}
+
+export interface APIEndpoint {
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  path: string;
+  description: string;
+  authRequired: boolean;
+  params?: string[];
+  response: string;
 }

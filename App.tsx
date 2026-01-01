@@ -18,17 +18,13 @@ import LMSCoursePlayer from './components/LMSCoursePlayer';
 import LMSPracticeTest from './components/LMSPracticeTest';
 import CheckoutProcess from './components/CheckoutProcess';
 import SuccessScreen from './components/SuccessScreen';
-import AdminDashboard from './components/AdminDashboard';
 import AgentDashboard from './components/AgentDashboard';
 import CustomerDashboard from './components/CustomerDashboard';
+import CourseCatalogue from './components/CourseCatalogue';
 import QualificationCatalogue from './components/QualificationCatalogue';
 import PolicyPage from './components/PolicyPage';
 import Resources from './components/Resources';
 import About from './components/About';
-import TrainerDashboard from './components/TrainerDashboard';
-import FinanceDashboard from './components/FinanceDashboard';
-import SupportDashboard from './components/SupportDashboard';
-import VerificationPending from './components/VerificationPending';
 import CookieConsent from './components/CookieConsent';
 import { ViewState, User } from './types';
 import { api } from './services/apiService';
@@ -54,24 +50,14 @@ const App: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  /**
-   * AUTHENTICATED ROUTING HUB
-   * Ensures all users go to their specific dashboard terminal.
-   */
   const handleAuthorizedNavigation = (u: User) => {
     setUser(u);
-    if (['System Admin/Owner', 'Operation Manager'].includes(u.role)) {
-      navigateTo({ type: 'admin' });
-    } else if (u.role === 'Finance/Audit Team') {
-      navigateTo({ type: 'finance' });
-    } else if (u.role === 'Agent Partner/Prep Center') {
+    if (u.role === 'Agent') {
       navigateTo({ type: 'agent' });
-    } else if (u.role === 'Lead Trainer') {
-      navigateTo({ type: 'trainer' });
-    } else if (u.role === 'Support/Sales Node') {
-      navigateTo({ type: 'support-portal' });
+    } else if (u.role === 'Institute') {
+      navigateTo({ type: 'institute' });
     } else {
-      navigateTo({ type: 'lms-dashboard' }); // Standard Student Dashboard
+      navigateTo({ type: 'lms-dashboard' });
     }
   };
 
@@ -111,34 +97,51 @@ const App: React.FC = () => {
         return <CheckoutProcess productId={(view as any).productId} quantity={(view as any).quantity} onSuccess={(oid) => navigateTo({ type: 'success', orderId: oid })} onCancel={() => navigateTo({ type: 'store' })} onNavigate={navigateTo} />;
       case 'success':
         return <div className="view-container"><SuccessScreen orderId={(view as any).orderId} onClose={() => navigateTo({ type: 'lms-dashboard' })} /></div>;
-      case 'admin':
-        return <div className="view-container">{user ? <AdminDashboard user={user} /> : <div className="p-20 text-center">Redirecting...</div>}</div>;
-      case 'finance':
-        return <div className="view-container">{user ? <FinanceDashboard user={user} /> : <div className="p-20 text-center">Redirecting...</div>}</div>;
-      case 'trainer':
-        return <div className="view-container">{user ? <TrainerDashboard user={user} /> : <div className="p-20 text-center">Redirecting...</div>}</div>;
-      case 'support-portal':
-        return <div className="view-container">{user ? <SupportDashboard user={user} /> : <div className="p-20 text-center">Redirecting...</div>}</div>;
+      
+      // PUBLIC ROLES
+      case 'lms-dashboard':
+        return (
+          <div className="view-container">
+            {user ? (
+              <CustomerDashboard 
+                user={user} 
+                onNavigate={navigateTo} 
+                initialTab={(view as any).initialTab} 
+              />
+            ) : (
+              <LMSDashboard onNavigate={navigateTo} />
+            )}
+          </div>
+        );
       case 'agent':
-        if (user && user.role === 'Agent Partner/Prep Center' && !user.isAuthorized) {
+      case 'institute':
+        if (user && (user.role === 'Agent' || user.role === 'Institute') && !user.isAuthorized) {
           return (
             <div className="view-container flex items-center justify-center p-12">
                <div className="max-w-xl bg-white p-16 rounded-[4rem] border border-slate-200 shadow-3xl text-center">
                   <div className="w-20 h-20 bg-orange-50 text-unicou-orange rounded-3xl flex items-center justify-center mx-auto mb-10 shadow-inner text-4xl">🕒</div>
                   <h2 className="text-3xl font-display font-black text-unicou-navy uppercase tracking-tighter mb-4">Partner Node <span className="text-unicou-orange">Pending</span></h2>
-                  <p className="text-slate-600 font-bold italic leading-relaxed mb-10">"Your agency profile is currently under review. Procurement nodes will be authorized within 24 hours."</p>
+                  <p className="text-slate-600 font-bold italic leading-relaxed mb-10">"Your profile is currently under review. Access will be authorized within 24 hours."</p>
                   <button onClick={() => navigateTo({ type: 'home' })} className="px-10 py-4 bg-unicou-navy text-white rounded-2xl font-black text-xs uppercase tracking-widest">Return Home</button>
                </div>
             </div>
           );
         }
-        return <div className="view-container">{user ? <AgentDashboard user={user} onBuy={(p, q) => navigateTo({ type: 'checkout', productId: p, quantity: q })} /> : <div className="p-20 text-center">Redirecting...</div>}</div>;
-      case 'lms-dashboard':
-        return <div className="view-container">{user ? <CustomerDashboard user={user} onNavigate={navigateTo} /> : <div className="p-20 text-center">Redirecting...</div>}</div>;
+        return <div className="view-container">{user ? <AgentDashboard user={user} onBuy={(p, q) => navigateTo({ type: 'checkout', productId: p, quantity: q })} /> : <div className="p-20 text-center">Unauthorized Access Node...</div>}</div>;
+
+      case 'course-catalogue':
+        return <div className="view-container"><CourseCatalogue onCheckout={(p, q) => navigateTo({ type: 'checkout', productId: p, quantity: q })} /></div>;
+      case 'lms-course-player':
+        if (!user) { navigateTo({ type: 'login' }); return null; }
+        return <LMSCoursePlayer courseId={(view as any).courseId} initialLessonId={(view as any).initialLessonId} onNavigate={navigateTo} />;
+      case 'lms-practice-test':
+        if (!user) { navigateTo({ type: 'login' }); return null; }
+        return <LMSPracticeTest testId={(view as any).testId} onNavigate={navigateTo} />;
+      
       case 'policy':
         return <div className="view-container"><PolicyPage policyId={(view as any).policyId} /></div>;
       default:
-        return <div className="view-container text-center pt-40">Node update in progress...</div>;
+        return <div className="view-container text-center pt-40">Portal Initializing...</div>;
     }
   };
 
@@ -146,7 +149,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen text-unicou-navy bg-white relative">
-      <Navbar view={view as any} user={user} scrolled={scrolled} onNavigate={navigateTo} onLogout={handleLogout} onOpenSearch={() => setSearchOpen(true)} isVisible={true} />
+      <Navbar view={view as any} user={user} scrolled={scrolled} onNavigate={navigateTo} onLogout={handleLogout} onOpenSearch={() => setSearchOpen(false)} isVisible={true} />
       <main className="relative z-0">{renderContent()}</main>
       
       <footer className="bg-slate-50 border-t border-slate-200 pt-24 pb-12 mt-auto">

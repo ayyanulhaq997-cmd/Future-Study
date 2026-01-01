@@ -14,6 +14,8 @@ type SignupStep = 'email' | 'code-entry' | 'complete';
 const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
   const [step, setStep] = useState<SignupStep>('email');
   const [verificationCode, setVerificationCode] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     name: '',
@@ -28,7 +30,7 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
   const handleRequestCode = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.email.includes('@')) {
-      setError("Please enter a valid email.");
+      setError("Incorrect User ID or Password"); 
       return;
     }
     setLoading(true);
@@ -38,7 +40,7 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
       setStep('code-entry');
       setSimulatedCode(MailService.lastCodeDispatched);
     } catch (err: any) {
-      setError("Failed to send code.");
+      setError("Incorrect User ID or Password");
     } finally {
       setLoading(false);
     }
@@ -50,14 +52,14 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
       setStep('complete');
       setError('');
     } else {
-      setError("Invalid verification code.");
+      setError("Incorrect User ID or Password");
     }
   };
 
   const handleFinalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match.");
+      setError("Incorrect User ID or Password");
       return;
     }
     setLoading(true);
@@ -66,20 +68,28 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
       await api.verifyEmail(formData.email);
       onSuccess(user);
     } catch (err: any) {
-      setError(err.message || 'Signup failed.');
+      setError(err.message || 'Incorrect User ID or Password');
       setLoading(false);
     }
   };
 
+  const EyeIcon = ({ visible }: { visible: boolean }) => (
+    visible ? (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+    ) : (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" /></svg>
+    )
+  );
+
   return (
     <div className="max-w-5xl mx-auto py-12 px-6 flex flex-col md:flex-row gap-12 animate-in fade-in duration-700 bg-white">
-      {/* Left: Student Signup Form */}
+      {/* Left: Student Sing Up Form */}
       <div className="flex-1 bg-white p-8 md:p-12 rounded-[3.5rem] border border-slate-100 shadow-2xl relative overflow-hidden h-fit">
         <div className="absolute top-0 left-0 w-full h-1.5 bg-unicou-orange" />
         
         <div className="text-center mb-10">
           <h2 className="text-3xl font-display font-black text-unicou-navy uppercase tracking-tight">
-            Student <span className="text-unicou-orange">Sign Up</span>
+            Student <span className="text-unicou-orange">Sing Up</span>
           </h2>
           <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-2">
             UniCou Ltd Student Registry
@@ -88,18 +98,19 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
 
         {step === 'email' && (
           <form onSubmit={handleRequestCode} className="space-y-6">
+            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">User ID</label>
             <input 
               type="email" required value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               placeholder="Email Address"
               className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-sm font-bold outline-none focus:border-unicou-navy transition-all shadow-inner"
             />
-            {error && <p className="text-red-500 text-xs font-bold text-center">{error}</p>}
+            {error && <div className="text-red-600 text-[10px] font-black uppercase tracking-widest bg-red-50 p-4 rounded-2xl border border-red-100 text-center animate-pulse">{error}</div>}
             <button 
               type="submit" disabled={loading}
               className="w-full py-4 bg-unicou-navy text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-900 transition-all shadow-lg"
             >
-              {loading ? 'Processing...' : 'Send Verification Code'}
+              {loading ? 'Processing...' : 'Sing Up'}
             </button>
           </form>
         )}
@@ -119,22 +130,57 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
               placeholder="••••••"
               className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-3xl font-mono font-black text-center text-unicou-navy outline-none focus:border-unicou-navy shadow-inner"
             />
+            {error && <div className="text-red-600 text-[10px] font-black uppercase tracking-widest bg-red-50 p-4 rounded-2xl border border-red-100 text-center animate-pulse">{error}</div>}
             <button type="submit" className="w-full py-4 bg-unicou-navy text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg">Verify & Continue</button>
           </form>
         )}
 
         {step === 'complete' && (
-          <form onSubmit={handleFinalSubmit} className="space-y-4">
-            <input type="text" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full bg-slate-50 border border-slate-100 rounded-xl p-4 text-sm font-bold outline-none" placeholder="Full Name" />
-            <input type="password" required value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} className="w-full bg-slate-50 border border-slate-100 rounded-xl p-4 text-sm font-bold outline-none" placeholder="Password" />
-            <input type="password" required value={formData.confirmPassword} onChange={e => setFormData({...formData, confirmPassword: e.target.value})} className="w-full bg-slate-50 border border-slate-100 rounded-xl p-4 text-sm font-bold outline-none" placeholder="Confirm Password" />
-            <button type="submit" className="w-full py-5 bg-unicou-orange text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg active:scale-95 transition-all">Setup My Portal</button>
+          <form onSubmit={handleFinalSubmit} className="space-y-5">
+            <div className="space-y-2">
+              <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Identity Name</label>
+              <input type="text" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full bg-slate-50 border border-slate-100 rounded-xl p-4 text-sm font-bold outline-none" placeholder="Full Name" />
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Password</label>
+              <div className="relative">
+                <input 
+                  type={showPassword ? "text" : "password"} required value={formData.password} 
+                  onChange={e => setFormData({...formData, password: e.target.value})} 
+                  className="w-full bg-slate-50 border border-slate-100 rounded-xl p-4 pr-12 text-sm font-bold outline-none focus:border-unicou-navy" 
+                  placeholder="••••••••" 
+                />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-unicou-navy p-1">
+                  <EyeIcon visible={showPassword} />
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Confirm Password</label>
+              <div className="relative">
+                <input 
+                  type={showConfirmPassword ? "text" : "password"} required value={formData.confirmPassword} 
+                  onChange={e => setFormData({...formData, confirmPassword: e.target.value})} 
+                  className="w-full bg-slate-50 border border-slate-100 rounded-xl p-4 pr-12 text-sm font-bold outline-none focus:border-unicou-navy" 
+                  placeholder="••••••••" 
+                />
+                <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-unicou-navy p-1">
+                  <EyeIcon visible={showConfirmPassword} />
+                </button>
+              </div>
+            </div>
+
+            {error && <div className="text-red-600 text-[10px] font-black uppercase tracking-widest bg-red-50 p-4 rounded-2xl border border-red-100 text-center animate-pulse">{error}</div>}
+            
+            <button type="submit" className="w-full py-5 bg-unicou-orange text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg active:scale-95 transition-all">Sing Up Now</button>
           </form>
         )}
 
         <div className="text-center pt-8 mt-8 border-t border-slate-50">
           <button type="button" onClick={onNavigateToLogin} className="text-[10px] text-slate-400 font-bold uppercase tracking-widest hover:text-unicou-orange">
-            Existing Student? <span className="text-unicou-navy font-black">Sign In</span>
+            Existing Student? <span className="text-unicou-navy font-black">Sing In</span>
           </button>
         </div>
       </div>
@@ -146,7 +192,7 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
         </h3>
         
         <p className="text-slate-600 text-sm font-bold italic leading-relaxed mb-8">
-          The registration process for Agents and Training Centers involves high security and significant funds, so careful handling is essential. The process includes:
+          The registration process for Agents and Training Centers involves high security and significant funds, so careful handling is essential.
         </p>
         
         <div className="space-y-6 mb-10">
@@ -155,7 +201,7 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
              { step: 'Verification', desc: 'Thorough review of submitted information.' },
              { step: 'Decision', desc: 'Acceptance, further verification, or rejection.' },
              { step: 'Agreement', desc: 'Signing of the legal agreement.' },
-             { step: 'Record Keeping', desc: 'All agreements and submitted information are securely maintained for future legal reference in case of any violations.' }
+             { step: 'Record Keeping', desc: 'All agreements are securely maintained.' }
            ].map((item, idx) => (
              <div key={idx} className="flex gap-4">
                 <div className="w-7 h-7 rounded-lg bg-unicou-navy text-white flex items-center justify-center text-[10px] font-black shrink-0 shadow-md">{idx + 1}</div>
@@ -174,10 +220,9 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
             rel="noopener noreferrer" 
             className="w-full py-5 bg-unicou-navy text-white text-center rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-xl hover:bg-black transition-all flex items-center justify-center gap-3 active:scale-95"
           >
-            Professional Sign-Up
+            Professional Sing Up
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
           </a>
-          <p className="text-center text-[9px] text-slate-400 font-black uppercase tracking-widest opacity-60">Visit: https://afeic.pk/membership/</p>
         </div>
       </div>
     </div>

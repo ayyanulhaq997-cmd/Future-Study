@@ -8,7 +8,13 @@ const CustomerDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => vo
   const [results, setResults] = useState<TestResult[]>([]);
   const [courses, setCourses] = useState<LMSCourse[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'vouchers' | 'academy' | 'results'>((initialTab as any) || 'vouchers');
+  
+  // Normalized tab state with fallback
+  const [activeTab, setActiveTab] = useState<'vouchers' | 'academy' | 'results'>(
+    (initialTab === 'results' || initialTab === 'academy' || initialTab === 'vouchers') 
+      ? initialTab as any 
+      : 'vouchers'
+  );
 
   useEffect(() => {
     const fetch = async () => {
@@ -20,6 +26,13 @@ const CustomerDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => vo
     };
     fetch();
   }, []);
+
+  // Update tab if initialTab changes externally
+  useEffect(() => {
+    if (initialTab && ['vouchers', 'academy', 'results'].includes(initialTab)) {
+      setActiveTab(initialTab as any);
+    }
+  }, [initialTab]);
 
   if (loading) return <div className="p-40 text-center animate-pulse text-unicou-navy font-black uppercase tracking-widest text-[11px]">Syncing Portal Nodes...</div>;
 
@@ -76,6 +89,33 @@ const CustomerDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => vo
                 </div>
               ))
             )}
+          </div>
+        )}
+
+        {activeTab === 'academy' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {courses.map(c => (
+              <div key={c.id} className="bg-slate-50 p-8 rounded-[3rem] border border-slate-100 flex flex-col group hover:bg-white hover:border-unicou-orange/20 transition-all shadow-sm hover:shadow-xl">
+                 <h3 className="text-xl font-black text-slate-900 uppercase mb-4">{c.title}</h3>
+                 <p className="text-sm text-slate-500 mb-8 flex-grow italic font-bold">"{c.description}"</p>
+                 <button 
+                   onClick={() => onNavigate({ type: 'lms-course-player', courseId: c.id })}
+                   className="w-full py-4 bg-unicou-navy text-white rounded-2xl font-black text-[10px] uppercase tracking-widest"
+                 >Resume Course</button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {activeTab === 'results' && (
+          <div className="bg-slate-50 p-12 rounded-[4rem] border border-slate-100 text-center">
+             <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm border border-slate-100">📊</div>
+             <h3 className="text-xl font-black text-unicou-navy uppercase">Analytics Node</h3>
+             <p className="text-slate-500 mt-2 font-bold italic">Attempt mock exams to populate your performance metrics.</p>
+             <button 
+               onClick={() => onNavigate({ type: 'lms-practice-test', testId: 'full-mock-1' })}
+               className="mt-8 px-10 py-4 bg-unicou-orange text-white rounded-2xl font-black text-[10px] uppercase tracking-widest"
+             >Take Free Mock</button>
           </div>
         )}
       </div>

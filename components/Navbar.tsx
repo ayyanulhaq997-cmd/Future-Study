@@ -71,16 +71,10 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
     e.stopPropagation();
     if (!user) return;
     
-    if (['System Admin/Owner', 'Operation Manager'].includes(user.role)) {
-      onNavigate({ type: 'admin' });
-    } else if (user.role === 'Finance/Audit Team') {
-      onNavigate({ type: 'finance' });
-    } else if (user.role === 'Agent Partner/Prep Center') {
+    if (user.role === 'Agent') {
       onNavigate({ type: 'agent' });
-    } else if (user.role === 'Support/Sales Node') {
-      onNavigate({ type: 'support-portal' });
-    } else if (user.role === 'Lead Trainer') {
-      onNavigate({ type: 'trainer' });
+    } else if (user.role === 'Institute') {
+      onNavigate({ type: 'institute' });
     } else {
       onNavigate({ type: 'lms-dashboard' });
     }
@@ -159,8 +153,8 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <button onClick={(e) => { e.stopPropagation(); onNavigate({ type: 'login' }); }} className="px-4 py-2 text-[11px] font-black uppercase tracking-tight text-unicou-navy hover:text-unicou-orange transition-all">Sign In</button>
-                <button onClick={(e) => { e.stopPropagation(); onNavigate({ type: 'signup' }); }} className="px-6 py-3 bg-unicou-orange text-white rounded-2xl font-black text-[11px] uppercase tracking-tight shadow-action hover:bg-orange-600 transition-all active:scale-95">Sign Up</button>
+                <button onClick={(e) => { e.stopPropagation(); onNavigate({ type: 'login' }); }} className="px-4 py-2 text-[11px] font-black uppercase tracking-tight text-unicou-navy hover:text-unicou-orange transition-all">Sing In</button>
+                <button onClick={(e) => { e.stopPropagation(); onNavigate({ type: 'signup' }); }} className="px-6 py-3 bg-unicou-orange text-white rounded-2xl font-black text-[11px] uppercase tracking-tight shadow-action hover:bg-orange-600 transition-all active:scale-95">Sing Up</button>
               </div>
             )}
           </div>
