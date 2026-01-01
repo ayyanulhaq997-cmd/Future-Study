@@ -104,6 +104,17 @@ const App: React.FC = () => {
     }
   };
 
+  // Reusable login component for auth gating
+  const LoginGate = () => (
+    <div className="view-container">
+      <Login 
+        onLogin={handleAuthorizedNavigation} 
+        onNavigateToSignup={() => navigateTo({ type: 'signup' })} 
+        onNavigateToForgot={() => navigateTo({ type: 'forgot-password' })}
+      />
+    </div>
+  );
+
   const renderContent = () => {
     switch (view.type) {
       case 'home':
@@ -136,11 +147,7 @@ const App: React.FC = () => {
       case 'resources':
         return <div className="view-container"><Resources onNavigate={navigateTo} /></div>;
       case 'login': 
-        return <div className="view-container"><Login 
-          onLogin={handleAuthorizedNavigation} 
-          onNavigateToSignup={() => navigateTo({ type: 'signup' })} 
-          onNavigateToForgot={() => navigateTo({ type: 'forgot-password' })}
-        /></div>;
+        return <LoginGate />;
       case 'signup':
         return <div className="view-container"><Signup 
           onSuccess={handleAuthorizedNavigation} 
@@ -163,13 +170,13 @@ const App: React.FC = () => {
       case 'success':
         return <div className="view-container"><SuccessScreen orderId={(view as any).orderId} onClose={() => navigateTo({ type: 'lms-dashboard' })} /></div>;
       case 'admin':
-        return <div className="view-container">{user ? <AdminDashboard user={user} /> : <div className="pt-40 text-center">Auth Required</div>}</div>;
+        return <div className="view-container">{user ? <AdminDashboard user={user} /> : <LoginGate />}</div>;
       case 'finance':
-        return <div className="view-container">{user ? <FinanceDashboard user={user} /> : <Login onLogin={handleAuthorizedNavigation} onNavigateToSignup={() => navigateTo({ type: 'signup' })} onNavigateToForgot={() => navigateTo({ type: 'forgot-password' })} />}</div>;
+        return <div className="view-container">{user ? <FinanceDashboard user={user} /> : <LoginGate />}</div>;
       case 'trainer':
-        return <div className="view-container">{user ? <TrainerDashboard user={user} /> : <Login onLogin={handleAuthorizedNavigation} onNavigateToSignup={() => navigateTo({ type: 'signup' })} onNavigateToForgot={() => navigateTo({type: 'forgot-password' })} />}</div>;
+        return <div className="view-container">{user ? <TrainerDashboard user={user} /> : <LoginGate />}</div>;
       case 'support-portal':
-        return <div className="view-container">{user ? <SupportDashboard user={user} /> : <Login onLogin={handleAuthorizedNavigation} onNavigateToSignup={() => navigateTo({ type: 'signup' })} onNavigateToForgot={() => navigateTo({ type: 'forgot-password' })} />}</div>;
+        return <div className="view-container">{user ? <SupportDashboard user={user} /> : <LoginGate />}</div>;
       case 'agent':
         if (user && user.role === 'Agent Partner/Prep Center' && !user.isAuthorized) {
           return (
@@ -183,13 +190,13 @@ const App: React.FC = () => {
             </div>
           );
         }
-        return <div className="view-container">{user ? <AgentDashboard user={user} onBuy={(p, q) => navigateTo({ type: 'checkout', productId: p, quantity: q })} /> : <Login onLogin={handleAuthorizedNavigation} onNavigateToSignup={() => navigateTo({ type: 'signup' })} onNavigateToForgot={() => navigateTo({ type: 'forgot-password' })} />}</div>;
+        return <div className="view-container">{user ? <AgentDashboard user={user} onBuy={(p, q) => navigateTo({ type: 'checkout', productId: p, quantity: q })} /> : <LoginGate />}</div>;
       case 'lms-dashboard':
-        return <div className="view-container">{user ? <CustomerDashboard user={user} onNavigate={navigateTo} /> : <LMSDashboard onNavigate={navigateTo} />}</div>;
+        return <div className="view-container">{user ? <CustomerDashboard user={user} onNavigate={navigateTo} /> : <LoginGate />}</div>;
       case 'lms-course-player':
-        return <div className="view-container">{user ? <LMSCoursePlayer courseId={(view as any).courseId} onNavigate={navigateTo} /> : <Login onLogin={handleAuthorizedNavigation} onNavigateToSignup={() => navigateTo({ type: 'signup' })} onNavigateToForgot={() => navigateTo({ type: 'forgot-password' })} />}</div>;
+        return <div className="view-container">{user ? <LMSCoursePlayer courseId={(view as any).courseId} onNavigate={navigateTo} /> : <LoginGate />}</div>;
       case 'lms-practice-test':
-        return <div className="view-container">{user ? <LMSPracticeTest testId={(view as any).testId} onNavigate={navigateTo} /> : <Login onLogin={handleAuthorizedNavigation} onNavigateToSignup={() => navigateTo({ type: 'signup' })} onNavigateToForgot={() => navigateTo({ type: 'forgot-password' })} />}</div>;
+        return <div className="view-container">{user ? <LMSPracticeTest testId={(view as any).testId} onNavigate={navigateTo} /> : <LoginGate />}</div>;
       case 'policy':
         return <div className="view-container"><PolicyPage policyId={(view as any).policyId} /></div>;
       case 'verification':
@@ -220,7 +227,7 @@ const App: React.FC = () => {
             <div className="lg:col-span-2">
                <img src={LOGO_SRC} alt="UniCou" className="h-10 w-auto mb-8 cursor-pointer" onClick={() => navigateTo({type: 'home'})} />
                <p className="text-slate-600 text-sm font-bold italic leading-relaxed max-w-sm">
-                 "UniCou International Ltd is a premier global academic mobility platform, specializing in University Admissions, Official Exam Vouchers, and Professional Certifications."
+                 "UniCou Ltd is a premier global academic mobility platform, specializing in University Admissions, Official Exam Vouchers, and Professional Certifications."
                </p>
                <div className="mt-8 flex gap-4">
                   <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shadow-sm">FB</div>
@@ -272,7 +279,7 @@ const App: React.FC = () => {
           </div>
 
           <div className="mt-16 pt-8 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center gap-6">
-             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em]">© 2025 UNICOU INTERNATIONAL LTD • ALL RIGHTS RESERVED.</p>
+             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em]">© 2025 UNICOU LTD • ALL RIGHTS RESERVED.</p>
              <div className="flex items-center gap-4">
                 <div className="w-1.5 h-1.5 rounded-full bg-unicou-navy"></div>
                 <div className="vibrant-strip w-12"></div>

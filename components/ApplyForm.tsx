@@ -208,7 +208,7 @@ const ApplyForm: React.FC<ApplyFormProps> = ({ type, context, onSuccess }) => {
                 />
               </div>
               <span className="text-[11px] text-slate-500 leading-relaxed font-bold italic group-hover:text-slate-700 transition-colors">
-                I authorize UNICOU International Ltd to process my application under the <strong>Global Privacy Framework</strong>. I confirm that all provided details are authentic for the establishment of my mobility node.
+                I authorize UNICOU Ltd to process my application under the <strong>Global Privacy Framework</strong>. I confirm that all provided details are authentic for the establishment of my mobility node.
               </span>
            </label>
         </div>

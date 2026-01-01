@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { api } from '../services/apiService';
-import { User, ViewState } from '../types';
+import { User } from '../types';
 
 interface LoginProps {
   onLogin: (user: User) => void;
@@ -38,34 +38,34 @@ const Login: React.FC<LoginProps> = ({ onLogin, onNavigateToSignup, onNavigateTo
   ];
 
   return (
-    <div className="max-w-md mx-auto animate-slide-up bg-white py-12 px-4">
-      <div className="bg-white p-12 rounded-[4rem] border border-slate-200 shadow-3xl relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-unicou-navy to-unicou-orange" />
+    <div className="max-w-md mx-auto animate-slide-up bg-white py-6 px-4">
+      <div className="bg-white p-8 md:p-10 rounded-[3rem] border border-slate-200 shadow-3xl relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-unicou-navy to-unicou-orange" />
         
-        <div className="text-center mb-12">
-          <div className="w-20 h-20 bg-slate-50 border border-slate-100 rounded-[2.5rem] mx-auto flex items-center justify-center mb-8 shadow-inner font-black text-2xl text-unicou-navy">
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-slate-50 border border-slate-100 rounded-[2rem] mx-auto flex items-center justify-center mb-6 shadow-inner font-black text-xl text-unicou-navy">
             U
           </div>
-          <h2 className="text-4xl font-display font-black text-slate-900 tracking-tighter uppercase">Sign <span className="text-unicou-orange">In</span></h2>
-          <p className="text-slate-500 text-[10px] mt-3 font-black uppercase tracking-[0.3em]">Access Your Authority Node</p>
+          <h2 className="text-3xl font-display font-black text-slate-900 tracking-tighter uppercase leading-none">Sign <span className="text-unicou-orange">In</span></h2>
+          <p className="text-slate-500 text-[9px] mt-2 font-black uppercase tracking-[0.2em]">Access Your Authority Node</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-3 ml-1">Email ID or Node Alias</label>
+            <label className="block text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2 ml-1">Email ID or Node Alias</label>
             <input 
               type="text" required value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="e.g. user@unicou.uk"
-              className="w-full bg-slate-50 border border-slate-200 rounded-3xl p-5 text-slate-900 outline-none focus:border-unicou-navy focus:bg-white transition-all shadow-inner font-bold"
+              className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-slate-900 outline-none focus:border-unicou-navy focus:bg-white transition-all shadow-inner font-bold text-sm"
             />
-            <div className="flex flex-wrap gap-2 mt-4">
+            <div className="flex flex-wrap gap-1.5 mt-3">
                {staffHints.map(hint => (
                  <button 
                   key={hint.alias} 
                   type="button" 
                   onClick={() => setEmail(hint.alias)}
-                  className="px-3 py-1 bg-slate-100 rounded-lg text-[8px] font-black text-slate-400 hover:text-unicou-navy hover:bg-slate-200 transition-all uppercase tracking-widest"
+                  className="px-2.5 py-1 bg-slate-100 rounded-lg text-[8px] font-black text-slate-400 hover:text-unicou-navy hover:bg-slate-200 transition-all uppercase tracking-widest"
                  >
                    Use {hint.label}
                  </button>
@@ -74,9 +74,9 @@ const Login: React.FC<LoginProps> = ({ onLogin, onNavigateToSignup, onNavigateTo
           </div>
 
           <div className="relative">
-             <div className="flex justify-between items-center mb-3 ml-1">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Security Token</label>
-                <button type="button" onClick={onNavigateToForgot} className="text-[10px] font-black text-unicou-orange hover:underline uppercase tracking-widest">Recovery?</button>
+             <div className="flex justify-between items-center mb-2 ml-1">
+                <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em]">Security Token</label>
+                <button type="button" onClick={onNavigateToForgot} className="text-[9px] font-black text-unicou-orange hover:underline uppercase tracking-widest">Recovery?</button>
              </div>
              <input 
                 type={showPassword ? "text" : "password"} 
@@ -84,30 +84,30 @@ const Login: React.FC<LoginProps> = ({ onLogin, onNavigateToSignup, onNavigateTo
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••" 
-                className="w-full bg-slate-50 border border-slate-200 rounded-3xl p-5 text-slate-900 outline-none focus:border-unicou-navy focus:bg-white transition-all shadow-inner font-bold" 
+                className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-slate-900 outline-none focus:border-unicou-navy focus:bg-white transition-all shadow-inner font-bold text-sm" 
              />
              <button 
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-6 bottom-5 text-slate-400 hover:text-unicou-navy transition-colors"
+                className="absolute right-5 bottom-4 text-slate-400 hover:text-unicou-navy transition-colors text-xs"
              >
                 {showPassword ? 'Hide' : 'Show'}
              </button>
           </div>
 
-          {error && <div className="text-red-600 text-[10px] font-black uppercase tracking-widest bg-red-50 p-4 rounded-2xl border border-red-100 text-center leading-relaxed">{error}</div>}
+          {error && <div className="text-red-600 text-[9px] font-black uppercase tracking-widest bg-red-50 p-3 rounded-xl border border-red-100 text-center leading-tight">{error}</div>}
 
-          <div className="flex flex-col gap-4">
-             <button type="submit" disabled={loading} className="w-full py-6 bg-unicou-navy hover:bg-slate-950 text-white font-black uppercase text-xs tracking-widest rounded-3xl transition-all shadow-2xl active:scale-95 disabled:opacity-50">
-               {loading ? 'Authenticating Node...' : 'Establish Session'}
+          <div className="flex flex-col gap-3">
+             <button type="submit" disabled={loading} className="w-full py-5 bg-unicou-navy hover:bg-slate-950 text-white font-black uppercase text-[10px] tracking-widest rounded-2xl transition-all shadow-2xl active:scale-95 disabled:opacity-50">
+               {loading ? 'Authenticating...' : 'Establish Session'}
              </button>
              {onBack && (
-                <button type="button" onClick={onBack} className="w-full py-5 bg-white border-2 border-unicou-navy text-unicou-navy font-black uppercase text-[10px] tracking-widest rounded-2xl hover:bg-unicou-navy hover:text-white transition-all">Back</button>
+                <button type="button" onClick={onBack} className="w-full py-4 bg-white border-2 border-unicou-navy text-unicou-navy font-black uppercase text-[9px] tracking-widest rounded-xl hover:bg-unicou-navy hover:text-white transition-all">Back</button>
              )}
           </div>
 
-          <div className="text-center pt-8 border-t border-slate-100 mt-10">
-            <p className="text-sm text-slate-600 font-medium">New Entity? <button type="button" onClick={onNavigateToSignup} className="text-unicou-orange font-black hover:underline underline-offset-8 transition-all">Create Node</button></p>
+          <div className="text-center pt-6 border-t border-slate-100 mt-6">
+            <p className="text-xs text-slate-600 font-medium">New Entity? <button type="button" onClick={onNavigateToSignup} className="text-unicou-orange font-black hover:underline underline-offset-4 transition-all">Create Node</button></p>
           </div>
         </form>
       </div>

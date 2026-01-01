@@ -10,7 +10,7 @@ interface Message {
 const CHAT_HISTORY_KEY = 'unicou_chat_v3';
 const INITIAL_MESSAGE: Message = { 
   role: 'model', 
-  text: "Hello! Welcome to UniCou International Ltd. I'm your AI study abroad consultant. How can I help you today? I can guide you through exam vouchers, university admissions, or visa requirements for different countries." 
+  text: "Hello! Welcome to UniCou Ltd. I'm your AI study abroad consultant. How can I help you today? I can guide you through exam vouchers, university admissions, or visa requirements for different countries." 
 };
 
 const AIChat: React.FC = () => {

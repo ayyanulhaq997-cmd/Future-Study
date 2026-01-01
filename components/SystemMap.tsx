@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 const SystemMap: React.FC = () => {
@@ -148,7 +149,7 @@ const SystemMap: React.FC = () => {
       </section>
 
       <footer className="mt-32 pt-16 border-t border-slate-100 text-center space-y-6 print:mt-12">
-         <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.5em]">UNICOU INTERNATIONAL LTD • DOCUMENTATION 2025.1-V4</p>
+         <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.5em]">UNICOU LTD • DOCUMENTATION 2025.1-V4</p>
          <div className="flex justify-center items-center gap-4">
             <div className="w-2 h-2 rounded-full bg-unicou-vibrant" />
             <div className="vibrant-strip w-32" />
