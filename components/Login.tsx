@@ -30,6 +30,12 @@ const Login: React.FC<LoginProps> = ({ onLogin, onNavigateToSignup, onNavigateTo
     }
   };
 
+  const staffHints = [
+    { label: 'Trainer Node', alias: 'trainer' },
+    { label: 'Admin Hub', alias: 'admin' },
+    { label: 'Finance Port', alias: 'finance' }
+  ];
+
   return (
     <div className="max-w-md mx-auto animate-slide-up bg-white py-12 px-4">
       <div className="bg-white p-12 rounded-[4rem] border border-slate-200 shadow-3xl relative overflow-hidden">
@@ -45,13 +51,25 @@ const Login: React.FC<LoginProps> = ({ onLogin, onNavigateToSignup, onNavigateTo
 
         <form onSubmit={handleSubmit} className="space-y-8">
           <div>
-            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-3 ml-1">Email ID</label>
+            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-3 ml-1">Email ID or Node Alias</label>
             <input 
-              type="email" required value={email}
+              type="text" required value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="e.g. user@unicou.uk"
               className="w-full bg-slate-50 border border-slate-200 rounded-3xl p-5 text-slate-900 outline-none focus:border-unicou-navy focus:bg-white transition-all shadow-inner font-bold"
             />
+            <div className="flex flex-wrap gap-2 mt-4">
+               {staffHints.map(hint => (
+                 <button 
+                  key={hint.alias} 
+                  type="button" 
+                  onClick={() => setEmail(hint.alias)}
+                  className="px-3 py-1 bg-slate-100 rounded-lg text-[8px] font-black text-slate-400 hover:text-unicou-navy hover:bg-slate-200 transition-all uppercase tracking-widest"
+                 >
+                   Use {hint.label}
+                 </button>
+               ))}
+            </div>
           </div>
 
           <div className="relative">
@@ -76,11 +94,11 @@ const Login: React.FC<LoginProps> = ({ onLogin, onNavigateToSignup, onNavigateTo
              </button>
           </div>
 
-          {error && <div className="text-red-600 text-[9px] font-black uppercase tracking-widest bg-red-50 p-4 rounded-2xl border border-red-100 text-center">{error}</div>}
+          {error && <div className="text-red-600 text-[10px] font-black uppercase tracking-widest bg-red-50 p-4 rounded-2xl border border-red-100 text-center leading-relaxed">{error}</div>}
 
           <div className="flex flex-col gap-4">
              <button type="submit" disabled={loading} className="w-full py-6 bg-unicou-navy hover:bg-slate-950 text-white font-black uppercase text-xs tracking-widest rounded-3xl transition-all shadow-2xl active:scale-95 disabled:opacity-50">
-               {loading ? 'Authenticating...' : 'Establish Session'}
+               {loading ? 'Authenticating Node...' : 'Establish Session'}
              </button>
              {onBack && (
                 <button type="button" onClick={onBack} className="w-full py-5 bg-white border-2 border-unicou-navy text-unicou-navy font-black uppercase text-[10px] tracking-widest rounded-2xl hover:bg-unicou-navy hover:text-white transition-all">Back</button>

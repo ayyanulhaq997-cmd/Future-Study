@@ -1,6 +1,5 @@
 
 import * as db from './db';
-// Added University, CountryGuide, Course, and LMSPracticeTest to the imports to fix missing name errors
 import { 
   Product, VoucherCode, VoucherStatus, Order, User, ActivityLog, SecurityStatus, LMSCourse, 
   LMSModule, LMSLesson, Enrollment, TestResult, CourseVoucher, Qualification, 
@@ -48,6 +47,16 @@ const generateDemoStock = (productId: string, quantity: number): VoucherCode[] =
   }));
 };
 
+const getLocalUsers = (): User[] => {
+  try {
+    const raw = localStorage.getItem(USERS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    console.error("Local user registry corrupted, initializing fresh node.");
+    return [];
+  }
+};
+
 export const api = {
   getCurrentUser: (): User | null => {
     const session = localStorage.getItem(SESSION_KEY);
@@ -55,20 +64,37 @@ export const api = {
   },
 
   login: async (email: string): Promise<User> => {
-    const cleanEmail = email.trim().toLowerCase();
-    const localUsers: User[] = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+    let cleanEmail = email.trim().toLowerCase();
+    
+    // Staff Aliasing for convenience (e.g. typing "trainer" maps to trainer@unicou.uk)
+    const staffShortcuts: Record<string, string> = {
+      'admin': 'admin@unicou.uk',
+      'trainer': 'trainer@unicou.uk',
+      'finance': 'finance@unicou.uk',
+      'sales': 'sales@unicou.uk',
+      'manager': 'manager@unicou.uk',
+      'partner': 'partner@unicou.uk'
+    };
+    if (staffShortcuts[cleanEmail]) cleanEmail = staffShortcuts[cleanEmail];
+
+    const localUsers = getLocalUsers();
     const allUsers = [...db.users, ...localUsers];
+    
     const user = allUsers.find(u => u.email.toLowerCase() === cleanEmail);
-    if (!user) throw new Error('Account not found. Please check your email or sign up.');
+    if (!user) throw new Error('Identity not found in the UNICOU registry. Please verify your email or create a new node.');
+    
     localStorage.setItem(SESSION_KEY, JSON.stringify(user));
     return user;
   },
 
   signup: async (email: string, role: UserRole): Promise<User> => {
     const cleanEmail = email.trim().toLowerCase();
-    const localUsers: User[] = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+    const localUsers = getLocalUsers();
     const allUsers = [...db.users, ...localUsers];
-    if (allUsers.some(u => u.email.toLowerCase() === cleanEmail)) throw new Error('An account with this email already exists.');
+    
+    if (allUsers.some(u => u.email.toLowerCase() === cleanEmail)) {
+      throw new Error('This email identity is already synchronized with a UNICOU node.');
+    }
     
     const newUser: User = { 
       id: `u-${Math.random().toString(36).substr(2, 9)}`, 
@@ -76,11 +102,12 @@ export const api = {
       email: cleanEmail, 
       role, 
       verified: true, 
-      isPlatinum: false 
+      isPlatinum: false,
+      isAuthorized: true 
     };
     
-    localUsers.push(newUser);
-    localStorage.setItem(USERS_KEY, JSON.stringify(localUsers));
+    const updatedUsers = [...localUsers, newUser];
+    localStorage.setItem(USERS_KEY, JSON.stringify(updatedUsers));
     localStorage.setItem(SESSION_KEY, JSON.stringify(newUser));
     return newUser;
   },
@@ -88,7 +115,7 @@ export const api = {
   logout: () => localStorage.removeItem(SESSION_KEY),
 
   getUsers: async (): Promise<User[]> => {
-    const localUsers: User[] = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+    const localUsers = getLocalUsers();
     return [...db.users, ...localUsers];
   },
 
@@ -241,7 +268,6 @@ export const api = {
   getQualifications: async (): Promise<Qualification[]> => db.qualifications,
   getAllLMSCourses: async (): Promise<LMSCourse[]> => db.lmsCourses,
   getEnrolledCourses: async (): Promise<LMSCourse[]> => {
-    // Return mock courses to simulate access after purchase
     return db.lmsCourses;
   },
   getCourseModules: async (cid: string): Promise<LMSModule[]> => [],
@@ -266,7 +292,6 @@ export const api = {
     if (!currentUser) return [];
     const localResults: TestResult[] = JSON.parse(localStorage.getItem(RESULTS_KEY) || '[]');
     
-    // Add a default result for demo purposes if none exist
     if (localResults.length === 0) {
       return [{
         id: 'res-default',
@@ -302,7 +327,7 @@ export const api = {
           skill: 'Writing',
           testTitle: 'PTE Full Mock Exam A',
           questionText: 'Discuss the impact of social media on modern interpersonal relationships.',
-          studentAnswer: 'In my opinion, social media has a double-edged sword effect on how we interact. On one hand, it allows for global connectivity, but on the other, it creates a shallow environment where deep connections are replaced by likes and short comments. I believe the future of communication depends on how we balance digital tools with physical presence...',
+          studentAnswer: 'In my opinion, social media has a double-edged sword effect on how we interact...',
           maxScore: 90,
           timestamp: new Date().toISOString()
         },
@@ -313,8 +338,8 @@ export const api = {
           userEmail: 'marcus@global.net',
           skill: 'Writing',
           testTitle: 'IELTS Academic Practice Test 1',
-          questionText: 'Some people think that it is better to educate boys and girls in separate schools. Others, however, believe that mixed schools are better.',
-          studentAnswer: 'The debate between single-sex and co-educational schooling is ongoing. Proponents of single-sex education argue that it reduces distractions and allows students to focus more on their academic goals. However, I personally believe that mixed schools provide a more realistic environment that prepares children for the complexities of adult life where they will interact with both genders daily.',
+          questionText: 'Some people think that it is better to educate boys and girls in separate schools...',
+          studentAnswer: 'The debate between single-sex and co-educational schooling is ongoing...',
           maxScore: 9,
           timestamp: new Date().toISOString()
         }
