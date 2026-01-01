@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { api } from '../services/apiService';
-import { LMSCourse, LMSModule, LMSLesson, ViewState } from '../types';
+import { LMSCourse, LMSModule, LMSLesson, ViewState, Enrollment } from '../types';
 
 interface QuizQuestion {
   id: string;
@@ -183,9 +184,10 @@ const LMSCoursePlayer: React.FC<LMSCoursePlayerProps> = ({ courseId, initialLess
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const c = (await api.getAllLMSCourses()).find(x => x.id === courseId);
+        const allCourses = await api.getAllLMSCourses();
+        const c = allCourses.find(x => x.id === courseId);
         const mods = await api.getCourseModules(courseId);
-        const enrollment = await api.getEnrollmentByCourse(courseId);
+        const enrollment: Enrollment | null = await api.getEnrollmentByCourse(courseId);
         
         setCourse(c || null);
         setModules(mods);

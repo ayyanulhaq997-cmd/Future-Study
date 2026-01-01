@@ -71,16 +71,15 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
     e.stopPropagation();
     if (!user) return;
     
-    if (['Admin', 'Finance', 'Manager'].includes(user.role)) {
+    // Updated strings to match types.ts UserRole union exactly
+    if (['System Admin/Owner', 'Finance/Audit Team', 'Operation Manager'].includes(user.role)) {
       onNavigate({ type: 'admin' });
-    } else if (user.role === 'Agent') {
+    } else if (user.role === 'Agent Partner/Prep Center') {
       onNavigate({ type: 'agent' });
-    } else if (user.role === 'Sales Executive') {
+    } else if (user.role === 'Support/Sales Node') {
       onNavigate({ type: 'sales-node' });
-    } else if (user.role === 'Trainer') {
+    } else if (user.role === 'Lead Trainer') {
       onNavigate({ type: 'trainer' });
-    } else if (user.role === 'Support') {
-      onNavigate({ type: 'support-portal' });
     } else {
       onNavigate({ type: 'lms-dashboard' });
     }

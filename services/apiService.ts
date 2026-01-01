@@ -1,10 +1,12 @@
 
 import * as db from './db';
+// Added University, CountryGuide, Course, and LMSPracticeTest to the imports to fix missing name errors
 import { 
   Product, VoucherCode, VoucherStatus, Order, User, ActivityLog, SecurityStatus, LMSCourse, 
   LMSModule, LMSLesson, Enrollment, TestResult, CourseVoucher, Qualification, 
   QualificationLead, TestBooking, ManualSubmission, SkillScore, SkillType, LeadSubmission, 
-  LeadStatus, PromoCode, FinanceReport, UserRole, ImmigrationGuideData, Lead 
+  LeadStatus, PromoCode, FinanceReport, UserRole, ImmigrationGuideData, Lead,
+  University, CountryGuide, Course, LMSPracticeTest
 } from '../types';
 
 const SESSION_KEY = 'unicou_active_session_v4';
@@ -84,18 +86,18 @@ export const api = {
 
   logout: () => localStorage.removeItem(SESSION_KEY),
 
-  getUsers: async () => {
+  getUsers: async (): Promise<User[]> => {
     const localUsers: User[] = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
     return [...db.users, ...localUsers];
   },
 
-  getProducts: async () => db.products,
-  getProductById: async (id: string) => db.products.find(p => p.id === id),
-  getUniversities: async () => db.universities,
-  getUniversityBySlug: async (slug: string) => db.universities.find(u => u.slug === slug) || null,
-  getGuideBySlug: async (slug: string) => db.countryGuides.find(g => g.slug === slug) || null,
-  getUniversitiesByCountry: async (countryId: string) => db.universities.filter(u => u.countryId === countryId),
-  getCoursesByUniversity: async (universityId: string) => db.courses.filter(c => c.universityId === universityId),
+  getProducts: async (): Promise<Product[]> => db.products,
+  getProductById: async (id: string): Promise<Product | undefined> => db.products.find(p => p.id === id),
+  getUniversities: async (): Promise<University[]> => db.universities,
+  getUniversityBySlug: async (slug: string): Promise<University | null> => db.universities.find(u => u.slug === slug) || null,
+  getGuideBySlug: async (slug: string): Promise<CountryGuide | null> => db.countryGuides.find(g => g.slug === slug) || null,
+  getUniversitiesByCountry: async (countryId: string): Promise<University[]> => db.universities.filter(u => u.countryId === countryId),
+  getCoursesByUniversity: async (universityId: string): Promise<Course[]> => db.courses.filter(c => c.universityId === universityId),
 
   getCodes: async (): Promise<VoucherCode[]> => {
     let codes = JSON.parse(localStorage.getItem(CODES_KEY) || '[]');
@@ -113,7 +115,7 @@ export const api = {
     return allOrders.filter(o => o.userId === currentUser.id);
   },
 
-  getOrderById: async (id: string) => {
+  getOrderById: async (id: string): Promise<Order | null> => {
     const orders = await api.getOrders();
     return orders.find(o => o.id === id) || null;
   },
@@ -129,7 +131,7 @@ export const api = {
     };
   },
 
-  processOrderAction: async (orderId: string, action: 'verify' | 'hold' | 'cancel') => {
+  processOrderAction: async (orderId: string, action: 'verify' | 'hold' | 'cancel'): Promise<Order> => {
     const allOrders: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
     const orderIdx = allOrders.findIndex(o => o.id === orderId);
     if (orderIdx === -1) throw new Error('Order not found.');
@@ -156,7 +158,6 @@ export const api = {
       order.voucherCodes = assigned.map(c => c.code);
       localStorage.setItem(CODES_KEY, JSON.stringify(codes));
       dispatchAnnexEmail(order.customerEmail, 'C', order.id);
-      // Formal Notification for Dashboard/Console
       console.log(`Order Processing Completed: The Voucher(s) for Order ${order.id} delivered to the client registered email ID: ${order.customerEmail}`);
     } else if (action === 'hold') {
       order.status = 'On-Hold';
@@ -207,7 +208,7 @@ export const api = {
     return order;
   },
 
-  submitLead: async (type: string, data: any) => {
+  submitLead: async (type: string, data: any): Promise<void> => {
     const leads = JSON.parse(localStorage.getItem(LEADS_KEY) || '[]');
     const newLead = { id: `LD-${Math.random().toString(36).substr(2, 6).toUpperCase()}`, type: type as any, data, status: 'New' as const, timestamp: new Date().toISOString() };
     localStorage.setItem(LEADS_KEY, JSON.stringify([newLead, ...leads]));
@@ -236,34 +237,34 @@ export const api = {
 
   getSecurityStatus: async (): Promise<SecurityStatus> => ({ uptime: '99.99%', rateLimitsTriggered: 0, activeSessions: 1, threatLevel: 'Normal' }),
   getLogs: async () => [],
-  getQualifications: async () => db.qualifications,
-  getAllLMSCourses: async () => db.lmsCourses,
-  getEnrolledCourses: async () => [],
-  getCourseModules: async (cid: string) => [],
-  getEnrollmentByCourse: async (cid: string) => null,
-  updateCourseProgress: async (cid: string, p: number) => {},
-  redeemCourseVoucher: async (code: string) => {},
-  getTestById: async (tid: string) => db.lmsTests.find(t => t.id === tid),
-  submitTestResult: async (tid: string, a: any, t: number) => {
+  getQualifications: async (): Promise<Qualification[]> => db.qualifications,
+  getAllLMSCourses: async (): Promise<LMSCourse[]> => db.lmsCourses,
+  getEnrolledCourses: async (): Promise<LMSCourse[]> => [],
+  getCourseModules: async (cid: string): Promise<LMSModule[]> => [],
+  getEnrollmentByCourse: async (cid: string): Promise<Enrollment | null> => null,
+  updateCourseProgress: async (cid: string, p: number): Promise<void> => {},
+  redeemCourseVoucher: async (code: string): Promise<void> => {},
+  getTestById: async (tid: string): Promise<LMSPracticeTest | undefined> => db.lmsTests.find(t => t.id === tid),
+  submitTestResult: async (tid: string, a: any, t: number): Promise<TestResult> => {
     const currentUser = api.getCurrentUser();
     const newRes: TestResult = { id: `RES-${Date.now()}`, userId: currentUser?.id || 'guest', testId: tid, testTitle: 'Test Result', skillScores: [], overallBand: 'N/A', timeTaken: t, timestamp: new Date().toISOString(), status: 'Pending', reviews: [] };
     const results = JSON.parse(localStorage.getItem(RESULTS_KEY) || '[]');
     localStorage.setItem(RESULTS_KEY, JSON.stringify([newRes, ...results]));
     return newRes;
   },
-  getTestResults: async () => {
+  getTestResults: async (): Promise<TestResult[]> => {
     const currentUser = api.getCurrentUser();
     if (!currentUser) return [];
     const allResults: TestResult[] = JSON.parse(localStorage.getItem(RESULTS_KEY) || '[]');
     if (['System Admin/Owner', 'Lead Trainer'].includes(currentUser.role)) return allResults;
     return allResults.filter(r => r.userId === currentUser.id);
   },
-  getPendingSubmissions: async () => [],
-  gradeSubmission: async (id: string, s: number, f: string) => {},
-  getImmigrationGuides: async () => db.immigrationGuides,
-  updateUserRole: async (uid: string, role: UserRole) => {},
-  getQualificationById: async (id: string) => db.qualifications.find(q => q.id === id),
-  submitQualificationLead: async (data: any) => ({ ...data, id: 'ql', timestamp: new Date().toISOString(), status: 'New', trackingId: 'tr' }),
-  submitTestBooking: async (data: any) => ({ ...data, id: 'bk', trackingRef: 'ref' }),
-  verifyEmail: async (email: string) => {}
+  getPendingSubmissions: async (): Promise<ManualSubmission[]> => [],
+  gradeSubmission: async (id: string, s: number, f: string): Promise<void> => {},
+  getImmigrationGuides: async (): Promise<ImmigrationGuideData[]> => db.immigrationGuides,
+  updateUserRole: async (uid: string, role: UserRole): Promise<void> => {},
+  getQualificationById: async (id: string): Promise<Qualification | undefined> => db.qualifications.find(q => q.id === id),
+  submitQualificationLead: async (data: any): Promise<QualificationLead> => ({ ...data, id: 'ql', timestamp: new Date().toISOString(), status: 'New', trackingId: 'tr' }),
+  submitTestBooking: async (data: any): Promise<TestBooking> => ({ ...data, id: 'bk', trackingRef: 'ref' }),
+  verifyEmail: async (email: string): Promise<void> => {}
 };
