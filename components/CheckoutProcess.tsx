@@ -14,8 +14,10 @@ interface CheckoutProcessProps {
 const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, onSuccess, onCancel, onNavigate }) => {
   const [product, setProduct] = useState<Product | null>(null);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<'BankTransfer' | 'Card'>('Card');
   const [buyerName, setBuyerName] = useState('');
   const [bankRef, setBankRef] = useState('');
+  const [cardData, setCardData] = useState({ number: '', expiry: '', cvv: '', name: '' });
   const [fileAttached, setFileAttached] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [restriction, setRestriction] = useState<string | null>(null);
@@ -26,7 +28,10 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
       const user = api.getCurrentUser();
       const quota = await api.checkUserQuota();
       setCurrentUser(user);
-      if (user) setBuyerName(user.name);
+      if (user) {
+        setBuyerName(user.name);
+        setCardData(prev => ({ ...prev, name: user.name }));
+      }
       
       if (user && !user.verified) setRestriction('EMAIL_VERIFICATION_REQUIRED');
       else if (!quota.allowed) setRestriction(quota.reason || 'SECURITY_RESTRICTION');
@@ -40,14 +45,29 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
   const handleFileChange = () => { if (fileInputRef.current?.files?.length) setFileAttached(true); };
 
   const finalizeOrder = async () => {
-    if (!bankRef.trim() || !fileAttached) {
+    if (paymentMethod === 'BankTransfer' && (!bankRef.trim() || !fileAttached)) {
       alert("Verification Error: Payment reference and proof document mandatory for audit.");
       return;
     }
+    if (paymentMethod === 'Card' && (!cardData.number || !cardData.expiry || !cardData.cvv)) {
+      alert("Transaction Error: Please complete all mandatory card fields.");
+      return;
+    }
+
     setProcessing(true);
     try {
-      const order = await api.submitBankTransfer(productId, quantity, currentUser?.email || '', buyerName, bankRef);
-      onSuccess(order.id);
+      // For Card, we simulate an instant success. For Bank, it goes to registry.
+      const order = await api.submitBankTransfer(productId, quantity, currentUser?.email || '', buyerName, paymentMethod === 'Card' ? 'CARD_AUTH_SUCCESS' : bankRef);
+      
+      // If Card, we auto-fulfill in the background for simulation
+      if (paymentMethod === 'Card') {
+        setTimeout(async () => {
+          await api.fulfillOrder(order.id);
+          onSuccess(order.id);
+        }, 2000);
+      } else {
+        onSuccess(order.id);
+      }
     } catch (err: any) {
       alert(err.message);
       setProcessing(false);
@@ -108,49 +128,127 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
                  <p className="text-6xl font-display font-black tracking-tighter relative z-10">${(product.basePrice * quantity).toFixed(2)}</p>
                  <div className="mt-8 flex items-center gap-3 relative z-10">
                     <div className="w-2 h-2 bg-unicou-orange rounded-full animate-pulse" />
-                    <span className="text-[9px] font-black uppercase tracking-widest text-white/50 italic">Awaiting financial confirmation</span>
+                    <span className="text-[9px] font-black uppercase tracking-widest text-white/50 italic">Secure processing node active</span>
                  </div>
               </div>
            </div>
 
-           {/* Right: Settlement Node */}
+           {/* Right: Payment Method Switch & Form */}
            <div className="lg:col-span-7 p-10 space-y-10">
               <div>
-                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-8">02. Settlement Instructions</h4>
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-6 bg-slate-50 border border-slate-100 rounded-3xl group hover:border-unicou-navy transition-all">
-                       <p className="text-[9px] font-black text-unicou-navy uppercase mb-2">UK Node (GBP)</p>
-                       <p className="text-xs font-bold text-slate-600 leading-relaxed italic">"UniCou International Ltd. <br/> Barclays Bank <br/> SC: 20-00-00 • AC: 12345678"</p>
-                    </div>
-                    <div className="p-6 bg-slate-50 border border-slate-100 rounded-3xl group hover:border-unicou-navy transition-all">
-                       <p className="text-[9px] font-black text-unicou-orange uppercase mb-2">Dubai Node (AED)</p>
-                       <p className="text-xs font-bold text-slate-600 leading-relaxed italic">"UniCou UAE Hub <br/> Emirates NBD <br/> IBAN: AE12 3456 ..."</p>
-                    </div>
-                 </div>
-              </div>
-
-              <div className="space-y-6">
-                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">03. Audit Verification</h4>
-                 <div className="space-y-4">
-                    <input 
-                      required 
-                      className="w-full p-5 bg-unicou-ice border border-slate-200 rounded-2xl font-mono font-bold text-sm outline-none focus:border-unicou-navy focus:bg-white transition-all shadow-inner" 
-                      placeholder="Input Transaction ID / Reference #" 
-                      value={bankRef} 
-                      onChange={e => setBankRef(e.target.value)} 
-                    />
-                    
-                    <input type="file" className="hidden" ref={fileInputRef} onChange={handleFileChange} />
+                 <div className="flex bg-slate-100 p-1.5 rounded-2xl mb-10 border border-slate-200 shadow-inner">
                     <button 
-                      onClick={() => fileInputRef.current?.click()} 
-                      className={`w-full py-8 border-2 border-dashed rounded-[2.5rem] font-black text-xs uppercase tracking-[0.2em] transition-all flex flex-col items-center justify-center gap-3 ${
-                        fileAttached ? 'bg-unicou-navy text-white border-unicou-navy shadow-xl' : 'bg-slate-50 text-slate-400 border-slate-200 hover:bg-white hover:border-unicou-navy'
-                      }`}
+                      onClick={() => setPaymentMethod('Card')}
+                      className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${paymentMethod === 'Card' ? 'bg-unicou-navy text-white shadow-lg' : 'text-slate-400'}`}
                     >
-                      <span className="text-3xl">{fileAttached ? '✓' : '☁️'}</span>
-                      {fileAttached ? 'PROOF DOCUMENT ATTACHED' : 'UPLOAD PAYMENT PROOF (JPG/PDF)'}
+                      Credit / Debit Card
+                    </button>
+                    <button 
+                      onClick={() => setPaymentMethod('BankTransfer')}
+                      className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${paymentMethod === 'BankTransfer' ? 'bg-unicou-navy text-white shadow-lg' : 'text-slate-400'}`}
+                    >
+                      Bank Settlement
                     </button>
                  </div>
+
+                 {paymentMethod === 'BankTransfer' ? (
+                   <div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-500">
+                      <div>
+                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-6">02. Settlement Instructions</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="p-6 bg-slate-50 border border-slate-100 rounded-3xl group hover:border-unicou-navy transition-all">
+                              <p className="text-[9px] font-black text-unicou-navy uppercase mb-2">UK Node (GBP)</p>
+                              <p className="text-xs font-bold text-slate-600 leading-relaxed italic">"UniCou International Ltd. <br/> Barclays Bank <br/> SC: 20-00-00 • AC: 12345678"</p>
+                            </div>
+                            <div className="p-6 bg-slate-50 border border-slate-100 rounded-3xl group hover:border-unicou-navy transition-all">
+                              <p className="text-[9px] font-black text-unicou-orange uppercase mb-2">Dubai Node (AED)</p>
+                              <p className="text-xs font-bold text-slate-600 leading-relaxed italic">"UniCou UAE Hub <br/> Emirates NBD <br/> IBAN: AE12 3456 ..."</p>
+                            </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-6">
+                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">03. Audit Verification</h4>
+                        <div className="space-y-4">
+                            <input 
+                              required 
+                              className="w-full p-5 bg-unicou-ice border border-slate-200 rounded-2xl font-mono font-bold text-sm outline-none focus:border-unicou-navy focus:bg-white transition-all shadow-inner" 
+                              placeholder="Input Transaction ID / Reference #" 
+                              value={bankRef} 
+                              onChange={e => setBankRef(e.target.value)} 
+                            />
+                            
+                            <input type="file" className="hidden" ref={fileInputRef} onChange={handleFileChange} />
+                            <button 
+                              onClick={() => fileInputRef.current?.click()} 
+                              className={`w-full py-8 border-2 border-dashed rounded-[2.5rem] font-black text-xs uppercase tracking-[0.2em] transition-all flex flex-col items-center justify-center gap-3 ${
+                                fileAttached ? 'bg-unicou-navy text-white border-unicou-navy shadow-xl' : 'bg-slate-50 text-slate-400 border-slate-200 hover:bg-white hover:border-unicou-navy'
+                              }`}
+                            >
+                              <span className="text-3xl">{fileAttached ? '✓' : '☁️'}</span>
+                              {fileAttached ? 'PROOF DOCUMENT ATTACHED' : 'UPLOAD PAYMENT PROOF (JPG/PDF)'}
+                            </button>
+                        </div>
+                      </div>
+                   </div>
+                 ) : (
+                   <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-500">
+                      <div className="flex items-center gap-2 mb-6">
+                        <svg className="w-5 h-5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" /></svg>
+                        <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">PCI-DSS Encrypted Channel</span>
+                      </div>
+                      
+                      <div className="space-y-6">
+                        <div className="space-y-2">
+                           <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Cardholder Name</label>
+                           <input 
+                            className="w-full p-5 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm outline-none focus:border-unicou-navy focus:bg-white transition-all shadow-inner" 
+                            placeholder="John Doe"
+                            value={cardData.name}
+                            onChange={e => setCardData({...cardData, name: e.target.value})}
+                           />
+                        </div>
+                        <div className="space-y-2">
+                           <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Card Identity Node (Number)</label>
+                           <input 
+                            className="w-full p-5 bg-slate-50 border border-slate-200 rounded-2xl font-mono font-bold text-lg outline-none focus:border-unicou-navy focus:bg-white transition-all shadow-inner" 
+                            placeholder="0000 0000 0000 0000"
+                            maxLength={19}
+                            value={cardData.number}
+                            onChange={e => setCardData({...cardData, number: e.target.value})}
+                           />
+                        </div>
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                             <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Expiry Node</label>
+                             <input 
+                              className="w-full p-5 bg-slate-50 border border-slate-200 rounded-2xl font-mono font-bold text-sm outline-none focus:border-unicou-navy focus:bg-white transition-all shadow-inner" 
+                              placeholder="MM/YY"
+                              maxLength={5}
+                              value={cardData.expiry}
+                              onChange={e => setCardData({...cardData, expiry: e.target.value})}
+                             />
+                          </div>
+                          <div className="space-y-2">
+                             <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Security Code (CVV)</label>
+                             <input 
+                              className="w-full p-5 bg-slate-50 border border-slate-200 rounded-2xl font-mono font-bold text-sm outline-none focus:border-unicou-navy focus:bg-white transition-all shadow-inner" 
+                              placeholder="***"
+                              type="password"
+                              maxLength={3}
+                              value={cardData.cvv}
+                              onChange={e => setCardData({...cardData, cvv: e.target.value})}
+                             />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="p-6 bg-unicou-navy/5 rounded-[2rem] border border-unicou-navy/10 flex items-start gap-4">
+                         <div className="w-1.5 h-1.5 bg-unicou-navy rounded-full mt-1.5" />
+                         <p className="text-[10px] text-slate-500 font-bold leading-relaxed italic">"Instant Card Payments trigger immediate voucher fulfillment from the digital vault upon gateway authorization."</p>
+                      </div>
+                   </div>
+                 )}
               </div>
            </div>
         </div>
@@ -163,16 +261,16 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
            </div>
            <button 
              onClick={finalizeOrder} 
-             disabled={processing || !bankRef.trim() || !fileAttached}
+             disabled={processing}
              className="w-full sm:w-auto px-16 py-6 bg-unicou-navy text-white rounded-[2rem] font-black text-xs uppercase tracking-[0.3em] shadow-2xl hover:bg-unicou-orange transition-all active:scale-95 disabled:opacity-20 disabled:pointer-events-none group"
            >
              {processing ? (
                <span className="flex items-center gap-3">
                  <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                 SYNCING NODE...
+                 {paymentMethod === 'Card' ? 'AUTHORIZING CARD...' : 'SYNCING NODE...'}
                </span>
              ) : (
-               'COMMIT TO VAULT'
+               paymentMethod === 'Card' ? 'PROCESS CARD PAYMENT' : 'COMMIT BANK TRANSFER'
              )}
            </button>
         </div>
