@@ -35,6 +35,7 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
         setBuyerName(user.name);
         setCardData(prev => ({ ...prev, name: user.name }));
         
+        // Initial quota check (Req 14.I.f)
         const quota = await api.checkUserQuota(paymentMethod, quantity);
         if (user && !user.verified) setRestriction('EMAIL_VERIFICATION_REQUIRED');
         else if (!quota.allowed) {
@@ -68,6 +69,7 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
       let order;
       if (paymentMethod === 'Card') {
         order = await api.submitGatewayPayment(productId, quantity, currentUser?.email || '', buyerName);
+        // Simulate real gateway processing
         setTimeout(async () => { await api.fulfillOrder(order.id); onSuccess(order.id); }, 2000);
       } else {
         order = await api.submitBankTransfer(productId, quantity, currentUser?.email || '', buyerName, bankRef);
@@ -78,6 +80,25 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
       setProcessing(false);
     }
   };
+
+  // Quota Limit POP UP Notification Node
+  if (showLimitPopup) return (
+    <div className="fixed inset-0 z-[400] bg-unicou-charcoal/95 backdrop-blur-2xl flex items-center justify-center p-6 text-center">
+      <div className="bg-white max-w-lg w-full rounded-[3.5rem] p-12 shadow-3xl border border-slate-200 animate-in zoom-in-95 duration-500">
+        <div className="w-20 h-20 bg-orange-50 text-unicou-orange rounded-[2rem] flex items-center justify-center mx-auto mb-10 shadow-inner">
+           <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+        </div>
+        <h2 className="text-3xl font-display font-black text-slate-900 uppercase tracking-tighter mb-6">Order Limit Reached</h2>
+        <p className="text-slate-600 mb-12 font-bold italic text-lg leading-relaxed px-4">
+          "Thank you for your order! Your card, payment, and exam security are our top priority. For additional orders, please contact UniCou support team."
+        </p>
+        <div className="space-y-4">
+          <a href="https://wa.me/4470000000" target="_blank" rel="noopener noreferrer" className="block w-full py-6 bg-emerald-600 hover:bg-emerald-700 text-white rounded-3xl font-black uppercase text-xs tracking-widest shadow-xl transition-all">CONNECT WITH SUPPORT</a>
+          <button onClick={onCancel} className="w-full py-6 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-3xl font-black uppercase text-xs tracking-widest transition-all">RETURN TO HUB</button>
+        </div>
+      </div>
+    </div>
+  );
 
   if (restriction === 'SIGNUP_REQUIRED') return (
     <div className="fixed inset-0 z-[300] bg-unicou-charcoal/95 backdrop-blur-xl flex items-center justify-center p-6 text-center">
@@ -95,7 +116,7 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
         <div className="w-20 h-20 bg-red-50 text-red-600 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-inner text-3xl font-black">!</div>
         <h2 className="text-3xl font-display font-black text-slate-900 uppercase mb-4 tracking-tighter">NODE RESTRICTED</h2>
         <p className="text-slate-600 mb-10 font-bold italic text-lg leading-relaxed">
-          "Requirement 14.I.f: Standard students are restricted to 1 voucher per day. Daily quota reached or identity sync required."
+          {restriction === 'EMAIL_VERIFICATION_REQUIRED' ? '"Complete identity verification before settlement node authorization."' : '"Identity sync required or quota reached. Return to Store for manual sync."'}
         </p>
         <button onClick={onCancel} className="w-full py-6 bg-unicou-navy text-white rounded-3xl font-black uppercase text-xs tracking-[0.3em] shadow-xl hover:bg-unicou-orange transition-all">RETURN TO HUB</button>
       </div>
@@ -133,7 +154,7 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
                  </div>
               </div>
 
-              {/* Standardized Pricing Card (Updated Labels) */}
+              {/* Standardized Pricing Card (Perfect UI - Req 13/14) */}
               <div className="bg-white rounded-[2rem] p-6 border border-slate-100 shadow-xl space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-[9px] font-black text-[#64748b] uppercase tracking-widest">Official Rate:</span>

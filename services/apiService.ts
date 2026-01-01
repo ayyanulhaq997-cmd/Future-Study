@@ -65,13 +65,21 @@ export const api = {
     return newUser;
   },
 
-  checkUserQuota: async (paymentMethod: 'Card' | 'BankTransfer' = 'Card', currentQuantity: number = 1): Promise<{ allowed: boolean; reason?: string }> => {
+  /**
+   * REFINED QUOTA ENGINE (Req 14.I.f)
+   * i. Student can order 1 per 24h
+   * ii. Agent can order 3 with Card per 24h
+   * iii. Agent can order 10 with Bank Transfer per 24h
+   */
+  checkUserQuota: async (paymentMethod: 'Card' | 'BankTransfer', currentQuantity: number = 1): Promise<{ allowed: boolean; reason?: string }> => {
     const security = api.getSecurityState();
     if (security.isGlobalOrderStop) return { allowed: false, reason: 'SYSTEM_LOCKED' };
     
     const currentUser = api.getCurrentUser();
     if (!currentUser) return { allowed: false, reason: 'AUTH_REQUIRED' };
     if (!currentUser.verified) return { allowed: false, reason: 'EMAIL_VERIFICATION_REQUIRED' };
+    
+    // Support manual override node
     if (currentUser.canBypassQuota) return { allowed: true };
 
     const allOrders: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
@@ -79,13 +87,20 @@ export const api = {
     const recentOrders = allOrders.filter(o => o.userId === currentUser.id && o.status !== 'Cancelled' && new Date(o.timestamp).getTime() > oneDayAgo);
 
     if (currentUser.role === 'Student') {
-      const studentQty = recentOrders.reduce((sum, o) => sum + o.quantity, 0);
-      if (studentQty + currentQuantity > 1) return { allowed: false, reason: 'STUDENT_LIMIT' };
+      const studentTotal = recentOrders.reduce((sum, o) => sum + o.quantity, 0);
+      if (studentTotal + currentQuantity > 1) return { allowed: false, reason: 'STUDENT_LIMIT' };
     }
 
     if (currentUser.role === 'Agent Partner/Prep Center') {
-      const cQty = recentOrders.filter(o => o.paymentMethod === 'Gateway').reduce((s, o) => s + o.quantity, 0);
-      if (paymentMethod === 'Card' && (cQty + currentQuantity > 3)) return { allowed: false, reason: 'AGENT_CARD_LIMIT' };
+      const cardTotal = recentOrders.filter(o => o.paymentMethod === 'Gateway').reduce((sum, o) => sum + o.quantity, 0);
+      const bankTotal = recentOrders.filter(o => o.paymentMethod === 'BankTransfer').reduce((sum, o) => sum + o.quantity, 0);
+      
+      if (paymentMethod === 'Card' && (cardTotal + currentQuantity > 3)) {
+        return { allowed: false, reason: 'AGENT_CARD_LIMIT' };
+      }
+      if (paymentMethod === 'BankTransfer' && (bankTotal + currentQuantity > 10)) {
+        return { allowed: false, reason: 'AGENT_BANK_LIMIT' };
+      }
     }
 
     return { allowed: true };

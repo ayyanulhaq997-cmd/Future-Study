@@ -38,7 +38,7 @@ const AgentDashboard: React.FC<{ user: User; onBuy: (pid: string, qty: number) =
              <span className="px-2 py-0.5 bg-unicou-navy text-white text-[7px] font-black uppercase rounded">PARTNER NODE</span>
              <span className="px-2 py-0.5 bg-unicou-ice text-unicou-navy border border-slate-200 text-[7px] font-black uppercase rounded flex items-center gap-1.5">
                <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" /></svg>
-               LOCKED IDENTITY: {user.email}
+               LOCKED IDENTITY (Req 13): {user.email}
              </span>
           </div>
           <h1 className="text-3xl font-display font-black tracking-tight text-slate-900 uppercase">
