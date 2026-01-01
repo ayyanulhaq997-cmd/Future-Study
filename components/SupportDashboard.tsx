@@ -17,7 +17,7 @@ const SupportDashboard: React.FC<{ user: User }> = ({ user }) => {
   useEffect(() => { fetchData(); }, []);
 
   const handleBypass = async (email: string) => {
-    if (confirm(`Authorize manual override for student: ${email}? This allows them to bypass the 1-per-day restriction.`)) {
+    if (confirm(`Requirement 2f: Authorize manual quota override for student: ${email}? This allows them to bypass the 1-per-day restriction for their next purchase.`)) {
        await api.bypassUserQuota(email);
        alert(`Authorization Node Updated: Student can now purchase their next voucher immediately.`);
        fetchData();
@@ -36,11 +36,11 @@ const SupportDashboard: React.FC<{ user: User }> = ({ user }) => {
       <div className="mb-20">
         <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-6 border border-emerald-100">
            <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-           Live Services Hub
+           Requirement 2f: Live Support Override Node
         </div>
         <h1 className="text-5xl md:text-7xl font-display font-black text-slate-950 uppercase tracking-tighter leading-none mb-6">Support <span className="text-emerald-600">Terminal</span></h1>
         <p className="text-xl text-slate-500 font-bold italic leading-relaxed max-w-2xl border-l-4 border-emerald-500 pl-8">
-           "Search student nodes to authorize manual quota overrides or investigate identity synchronization issues."
+           "Search student nodes to authorize manual quota overrides for immediate voucher procurement."
         </p>
       </div>
 
@@ -50,24 +50,24 @@ const SupportDashboard: React.FC<{ user: User }> = ({ user }) => {
             <h3 className="text-[10px] font-black uppercase text-emerald-400 tracking-[0.4em] mb-6">Identity Registry Search</h3>
             <input 
               className="w-full bg-white/5 border border-white/10 rounded-3xl p-8 text-2xl font-bold outline-none focus:border-emerald-500 focus:bg-white/10 transition-all placeholder:text-white/20" 
-              placeholder="Enter Student Email or Full Name Identity..." 
+              placeholder="Search Student Email or Full Name..." 
               value={search} 
               onChange={e => setSearch(e.target.value)} 
             />
          </div>
          
          <div className="space-y-4 relative z-10">
-            {filtered.slice(0, 5).map(u => (
+            {filtered.slice(0, 10).map(u => (
               <div key={u.id} className="p-8 bg-white/5 rounded-[2.5rem] border border-white/10 flex flex-col sm:flex-row justify-between items-start sm:items-center group hover:bg-white/10 transition-all">
                  <div className="mb-6 sm:mb-0">
                    <div className="flex items-center gap-3 mb-2">
                       <h4 className="text-xl font-black uppercase tracking-tight">{u.name}</h4>
-                      {u.verified && <span className="text-[8px] bg-emerald-500 text-white px-2 py-0.5 rounded font-black uppercase">Verified Node</span>}
+                      {u.verified && <span className="text-[8px] bg-emerald-500 text-white px-2 py-0.5 rounded font-black uppercase tracking-widest">Verified Identity</span>}
                    </div>
                    <p className="text-emerald-400 font-mono text-xs opacity-60 tracking-wider">{u.email}</p>
                    <div className="mt-4 flex gap-4">
                       <span className="text-[9px] font-black uppercase tracking-widest text-white/30">Role: {u.role}</span>
-                      {u.canBypassQuota && <span className="text-[9px] font-black uppercase tracking-widest text-emerald-400 animate-pulse">✓ Quota Bypass Active</span>}
+                      {u.canBypassQuota && <span className="text-[9px] font-black uppercase tracking-widest text-emerald-400 animate-pulse">✓ Quota Override Active</span>}
                    </div>
                  </div>
                  

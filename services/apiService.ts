@@ -57,7 +57,7 @@ export const api = {
       email: cleanEmail, 
       role, 
       status: role === 'Agent Partner/Prep Center' ? 'Pending' : 'Active',
-      verified: false, // Mandatory verification for students
+      verified: false, 
       isAuthorized: role !== 'Agent Partner/Prep Center' 
     };
     
@@ -109,12 +109,16 @@ export const api = {
 
     const currentUser = api.getCurrentUser();
     if (!currentUser) return { allowed: false, reason: 'AUTH_REQUIRED' };
+    
+    // Requirement 2c: Mandatory Email Verification for every purchase
+    if (!currentUser.verified) return { allowed: false, reason: 'EMAIL_VERIFICATION_REQUIRED' };
+    
     if (currentUser.canBypassQuota) return { allowed: true };
 
     const allOrders: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
     const oneDayAgo = new Date().getTime() - (24 * 60 * 60 * 1000);
     
-    // Restriction: Student can buy only ONE Voucher in one day
+    // Requirement 2f: Student can buy only ONE Voucher in one day
     if (currentUser.role === 'Student') {
       const recentOrders = allOrders.filter(o => 
         o.userId === currentUser.id && 
@@ -131,6 +135,12 @@ export const api = {
     const localUsers: User[] = raw ? JSON.parse(raw) : [];
     const updated = localUsers.map(u => u.email.toLowerCase() === email.toLowerCase() ? { ...u, canBypassQuota: true } : u);
     localStorage.setItem(USERS_KEY, JSON.stringify(updated));
+    
+    // Sync current session if applicable
+    const active = api.getCurrentUser();
+    if (active && active.email.toLowerCase() === email.toLowerCase()) {
+      localStorage.setItem(SESSION_KEY, JSON.stringify({ ...active, canBypassQuota: true }));
+    }
   },
 
   verifyAgent: async (leadId: string): Promise<void> => {
@@ -139,11 +149,9 @@ export const api = {
     const lead = leads.find(l => l.id === leadId);
     if (!lead) return;
 
-    // 1. Update Lead Status
     const updatedLeads = leads.map(l => l.id === leadId ? { ...l, status: 'Approved' as const } : l);
     localStorage.setItem(LEADS_KEY, JSON.stringify(updatedLeads));
 
-    // 2. Grant Permission to User Node
     const rawUsers = localStorage.getItem(USERS_KEY);
     const localUsers: User[] = rawUsers ? JSON.parse(rawUsers) : [];
     const updatedUsers = localUsers.map(u => 
@@ -199,7 +207,6 @@ export const api = {
     const users: User[] = raw ? JSON.parse(raw) : [];
     const updated = users.map(u => u.email.toLowerCase() === email.toLowerCase() ? { ...u, verified: true } : u);
     localStorage.setItem(USERS_KEY, JSON.stringify(updated));
-    // Update active session
     const active = api.getCurrentUser();
     if (active && active.email.toLowerCase() === email.toLowerCase()) {
       localStorage.setItem(SESSION_KEY, JSON.stringify({ ...active, verified: true }));
