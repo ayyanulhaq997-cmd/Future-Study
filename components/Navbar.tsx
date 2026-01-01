@@ -107,7 +107,7 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
                   >
                     {item.label}
                     {item.subItems && (
-                      <svg className={`w-3 h-3 transition-transform ${activeDropdown === item.label ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" /></svg>
+                      <svg className={`w-3 h-3 transition-transform ${activeDropdown === item.label ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M19 9l-7 7-7-7" /></svg>
                     )}
                   </button>
 
@@ -122,7 +122,7 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
                                 if (sub.slug) onNavigate({ type: 'country-guide', slug: sub.slug });
                                 else if (sub.type) onNavigate({ type: sub.type, initialTab: sub.tab } as any);
                               }}
-                              className="w-full text-left px-4 py-2 rounded-lg text-[10px] font-black text-slate-600 hover:text-unicou-navy hover:bg-slate-50 transition-all uppercase tracking-widest truncate"
+                              className="w-full text-left px-4 py-2 rounded-lg text-[10px] font-black text-unicou-charcoal hover:text-unicou-navy hover:bg-slate-50 transition-all uppercase tracking-widest truncate"
                             >
                               {sub.label}
                             </button>
@@ -138,7 +138,7 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
 
           <div className="flex items-center gap-3">
             <button onClick={(e) => { e.stopPropagation(); onOpenSearch(); }} className="p-2.5 bg-slate-50 hover:bg-slate-100 rounded-xl text-unicou-navy transition-colors border border-slate-100" title="Search Platform">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             </button>
 
             {user ? (
@@ -148,13 +148,13 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
                   <span className="text-[10px] font-black text-white uppercase tracking-widest">{user.name.split(' ')[0]}</span>
                 </button>
                 <button onClick={(e) => { e.stopPropagation(); onLogout(); }} className="p-2 text-slate-400 hover:text-red-500 transition-colors">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
                 </button>
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <button onClick={(e) => { e.stopPropagation(); onNavigate({ type: 'login' }); }} className="px-4 py-2 text-[11px] font-black uppercase tracking-tight text-unicou-navy hover:text-unicou-orange transition-all">Sing In</button>
-                <button onClick={(e) => { e.stopPropagation(); onNavigate({ type: 'signup' }); }} className="px-6 py-3 bg-unicou-orange text-white rounded-2xl font-black text-[11px] uppercase tracking-tight shadow-action hover:bg-orange-600 transition-all active:scale-95">Sing Up</button>
+                <button onClick={(e) => { e.stopPropagation(); onNavigate({ type: 'login' }); }} className="px-4 py-2 text-[11px] font-black uppercase tracking-tight text-unicou-navy hover:text-unicou-orange transition-all">Sign In</button>
+                <button onClick={(e) => { e.stopPropagation(); onNavigate({ type: 'signup' }); }} className="px-6 py-3 bg-unicou-orange text-white rounded-2xl font-black text-[11px] uppercase tracking-tight shadow-action hover:bg-red-600 transition-all active:scale-95">Sign Up</button>
               </div>
             )}
           </div>

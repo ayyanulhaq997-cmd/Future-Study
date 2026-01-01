@@ -21,11 +21,11 @@
             },
             colors: {
               unicou: {
-                navy: '#004a61',    // Color 1: Authority
-                orange: '#f15a24',  // Color 2: Action
-                charcoal: '#333333', // Color 3: Text
-                ice: '#f8fafc',      // Color 4: Neutral
-                slate: '#64748b'     // Secondary Neutral
+                navy: '#194f68',    // Dark Azure
+                orange: '#e95134',  // Vivid Red
+                charcoal: '#4A4A4A', // Charcoal Text
+                ice: '#f8fafc',      // Background
+                slate: '#9ca3af'     // Grey (for hints)
               }
             }
           }
@@ -39,7 +39,7 @@
       }
       body {
         background-color: #ffffff;
-        color: #333333;
+        color: #4A4A4A;
         margin: 0;
         min-height: 100vh;
         -webkit-font-smoothing: antialiased;
@@ -50,14 +50,20 @@
       }
       .vibrant-strip {
         height: 3px;
-        background-color: #f15a24;
+        background-color: #e95134;
         border-radius: 10px;
-        box-shadow: 0 0 10px rgba(241, 90, 36, 0.3);
+        box-shadow: 0 0 10px rgba(233, 81, 52, 0.3);
       }
       .brand-border-orange {
-        border-color: rgba(241, 90, 36, 0.4);
+        border-color: rgba(233, 81, 52, 0.4);
       }
-      h1, h2, h3, h4 { font-weight: 900; color: #004a61; }
+      h1, h2, h3, h4 { font-weight: 900; color: #194f68; }
+      
+      /* Placeholder styling for Grey hints */
+      ::placeholder {
+        color: #9ca3af !important;
+        opacity: 1;
+      }
     </style>
 <script type="importmap">
 {
