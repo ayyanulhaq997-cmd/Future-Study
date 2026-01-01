@@ -74,8 +74,12 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
 
   return (
     <div className="max-w-md mx-auto py-20 px-4 animate-in fade-in duration-500">
-      <div className="bg-white p-8 md:p-10 rounded-3xl border border-slate-200 shadow-xl">
+      <div className="bg-white p-8 md:p-10 rounded-3xl border border-slate-200 shadow-xl relative overflow-hidden">
+        {/* Requirement 1 style consistency: Solid orange line */}
+        <div className="absolute top-0 left-0 w-full h-1.5 bg-unicou-orange" />
+        
         <div className="text-center mb-8">
+          {/* Requirement 6: Sign Up */}
           <h2 className="text-3xl font-display font-black text-unicou-navy uppercase tracking-tight">
             {step === 'complete' ? 'Setup Profile' : 'Sign Up'}
           </h2>
@@ -89,7 +93,7 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
             <input 
               type="email" required value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              placeholder="Email Address"
+              placeholder="Email Address (User ID)"
               className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm font-bold outline-none focus:border-unicou-navy transition-all"
             />
             {error && <p className="text-red-500 text-xs font-bold text-center">{error}</p>}
@@ -128,15 +132,15 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
               <option value="Student">Student (Default)</option>
               <option value="Agent Partner/Prep Center">Agent / Academy Partner</option>
             </select>
-            <input type="password" required value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm font-bold outline-none" placeholder="Create Password" />
+            <input type="password" required value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm font-bold outline-none" placeholder="Password" />
             <input type="password" required value={formData.confirmPassword} onChange={e => setFormData({...formData, confirmPassword: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm font-bold outline-none" placeholder="Confirm Password" />
-            <button type="submit" className="w-full py-4 bg-unicou-orange text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg">Create Account</button>
+            <button type="submit" className="w-full py-4 bg-unicou-orange text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg">Sign Up</button>
           </form>
         )}
 
         <div className="text-center pt-6 mt-6 border-t border-slate-100">
           <button type="button" onClick={onNavigateToLogin} className="text-xs text-slate-400 font-bold uppercase tracking-widest hover:text-unicou-orange">
-            Have an account? <span className="text-unicou-navy font-black">Login</span>
+            Have an account? <span className="text-unicou-navy font-black">Sign In</span>
           </button>
         </div>
       </div>
