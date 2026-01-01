@@ -256,11 +256,11 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                  <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Verification Template</label>
-                    <input type="text" className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 font-mono text-xs focus:border-unicou-navy outline-none value={mailConfig.templateId_verification} onChange={e => setMailConfig({...mailConfig, templateId_verification: e.target.value})} placeholder="template_xxxx" />
+                    <input type="text" className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 font-mono text-xs focus:border-unicou-navy outline-none" value={mailConfig.templateId_verification} onChange={e => setMailConfig({...mailConfig, templateId_verification: e.target.value})} placeholder="template_xxxx" />
                  </div>
                  <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Voucher Template</label>
-                    <input type="text" className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 font-mono text-xs focus:border-unicou-navy outline-none value={mailConfig.templateId_voucher} onChange={e => setMailConfig({...mailConfig, templateId_voucher: e.target.value})} placeholder="template_yyyy" />
+                    <input type="text" className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 font-mono text-xs focus:border-unicou-navy outline-none" value={mailConfig.templateId_voucher} onChange={e => setMailConfig({...mailConfig, templateId_voucher: e.target.value})} placeholder="template_yyyy" />
                  </div>
               </div>
               <div className="space-y-2">

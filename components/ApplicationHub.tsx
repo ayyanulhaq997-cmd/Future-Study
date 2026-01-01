@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ViewState } from '../types';
 
@@ -13,12 +14,11 @@ const ApplicationHub: React.FC<ApplicationHubProps> = ({ onNavigate }) => {
           Your Gateway to International Excellence
         </span>
         <h1 className="text-5xl md:text-7xl font-display font-black tracking-tighter text-unicou-navy mb-8 leading-[1.1] uppercase">
-          Global Education Hub: <br />
+          Global Education Hub <br />
           <span className="text-unicou-orange">Study Abroad & Test Prep Specialist</span>
         </h1>
         <p className="text-xl text-slate-600 max-w-4xl mx-auto leading-relaxed font-bold italic border-b-2 border-slate-100 pb-12">
-          Secure your University Admission, Master your Exams with our LMS, and 
-          Save on Official Vouchers for IELTS, PTE, TOEFL, LanguageCert, Duolingo, GRE and more.
+          Secure your University Admission, Master your Exams with our LMS, and Save on Official Vouchers for IELTS, PTE, TOEFL, LanguageCert, Duolingo, GRE and more.
         </p>
       </div>
 

@@ -20,14 +20,12 @@ const Hero: React.FC<HeroProps> = ({ onStart, onApplyClick }) => {
         </div>
         
         <h1 className="text-5xl md:text-7xl lg:text-[5.8rem] font-display font-black tracking-tighter mb-10 leading-[1.02] text-unicou-navy animate-slide-up uppercase">
-          Empowering Your Global <br />
-          <span className="text-unicou-orange">Success Abroad</span>
+          Global Education Hub <br />
+          <span className="text-unicou-orange">Study Abroad & Test Prep Specialist</span>
         </h1>
         
         <p className="text-lg md:text-xl text-slate-600 max-w-4xl mx-auto mb-16 leading-relaxed font-bold animate-slide-up px-4 italic">
-          Secure your <span className="text-unicou-navy underline decoration-unicou-orange/50 underline-offset-8">University Admission</span>, 
-          prepare with <span className="text-unicou-navy underline decoration-unicou-orange/50 underline-offset-8">Expert Training</span>, and 
-          get <span className="text-unicou-navy underline decoration-unicou-orange/50 underline-offset-8">Official Vouchers</span> for PTE, IELTS, and TOEFL.
+          Secure your University Admission, Master your Exams with our LMS, and Save on Official Vouchers for IELTS, PTE, TOEFL, LanguageCert, Duolingo, GRE and more.
         </p>
         
         <div className="flex flex-col sm:flex-row items-center justify-center gap-8 animate-slide-up">
