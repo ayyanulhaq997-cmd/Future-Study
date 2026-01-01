@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../services/apiService';
-import { Product, User, ViewState } from '../types';
+import { Product, User, ViewState, Order } from '../types';
 
 interface CheckoutProcessProps {
   productId: string;
@@ -35,7 +35,7 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
         setBuyerName(user.name);
         setCardData(prev => ({ ...prev, name: user.name }));
         
-        // Initial quota check (Req 14.I.f)
+        // Initial quota check (Req 14.I.f / Point 6)
         const quota = await api.checkUserQuota(paymentMethod, quantity);
         if (user && !user.verified) setRestriction('EMAIL_VERIFICATION_REQUIRED');
         else if (!quota.allowed) {
@@ -66,11 +66,14 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
 
     setProcessing(true);
     try {
-      let order;
+      let order: Order; // Explicitly typed to fix build error TS7034/TS7005
       if (paymentMethod === 'Card') {
         order = await api.submitGatewayPayment(productId, quantity, currentUser?.email || '', buyerName);
-        // Simulate real gateway processing
-        setTimeout(async () => { await api.fulfillOrder(order.id); onSuccess(order.id); }, 2000);
+        // Simulate real gateway processing and ensure the order ID is passed to success
+        setTimeout(async () => { 
+          await api.fulfillOrder(order.id); 
+          onSuccess(order.id); 
+        }, 2000);
       } else {
         order = await api.submitBankTransfer(productId, quantity, currentUser?.email || '', buyerName, bankRef);
         onSuccess(order.id);
@@ -81,7 +84,7 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
     }
   };
 
-  // Quota Limit POP UP Notification Node
+  // Quota Limit POP UP Notification Node (Point 6)
   if (showLimitPopup) return (
     <div className="fixed inset-0 z-[400] bg-unicou-charcoal/95 backdrop-blur-2xl flex items-center justify-center p-6 text-center">
       <div className="bg-white max-w-lg w-full rounded-[3.5rem] p-12 shadow-3xl border border-slate-200 animate-in zoom-in-95 duration-500">
@@ -154,7 +157,7 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
                  </div>
               </div>
 
-              {/* Standardized Pricing Card (Perfect UI - Req 13/14) */}
+              {/* Point 12: Standardized Pricing Card (Correct Labels) */}
               <div className="bg-white rounded-[2rem] p-6 border border-slate-100 shadow-xl space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-[9px] font-black text-[#64748b] uppercase tracking-widest">Official Rate:</span>
