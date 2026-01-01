@@ -25,17 +25,9 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
         { label: 'United Kingdom', slug: 'uk' },
         { label: 'Australia', slug: 'australia' },
         { label: 'Canada', slug: 'canada' },
-        { label: 'New Zealand', slug: 'new-zealand' },
         { label: 'United States', slug: 'usa' },
-        { label: 'Ireland', slug: 'ireland' },
-        { label: 'Cyprus', slug: 'cyprus' },
         { label: 'Germany', slug: 'germany' },
         { label: 'Italy', slug: 'italy' },
-        { label: 'Sweden', slug: 'sweden' },
-        { label: 'Finland', slug: 'finland' },
-        { label: 'Dubai (UAE)', slug: 'dubai' },
-        { label: 'Malaysia', slug: 'malaysia' },
-        { label: 'Turkey', slug: 'turkey' },
         { label: 'Europe Hub', slug: 'europe' },
       ]
     },
@@ -46,10 +38,7 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
         { label: 'PTE Academic', type: 'store' },
         { label: 'IELTS Vouchers', type: 'store' },
         { label: 'TOEFL iBT', type: 'store' },
-        { label: 'Duolingo', type: 'store' },
-        { label: 'Oxford ELLT', type: 'store' },
-        { label: 'LanguageCert Academic', type: 'store' },
-        { label: 'LanguageCert ESOL', type: 'store' },
+        { label: 'LanguageCert', type: 'store' },
         { label: 'Skills for English', type: 'store' },
       ]
     },
@@ -57,24 +46,33 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
       label: 'Learning Hub', 
       type: 'lms-dashboard',
       subItems: [
-        { label: 'Library', type: 'lms-dashboard' },
-        { label: 'Practice Tests', type: 'lms-dashboard', tab: 'results' },
-        { label: 'Preparation Courses', type: 'lms-dashboard', tab: 'academy' },
+        { label: 'Digital Library', type: 'lms-dashboard' },
+        { label: 'Mock Exams', type: 'lms-dashboard', tab: 'results' },
+        { label: 'Prep Courses', type: 'lms-dashboard', tab: 'academy' },
         { label: 'Qualifications', type: 'qualifications' },
       ]
     },
     { label: 'Resources', type: 'resources' },
-    { label: 'Connect', type: 'join-hub' }
+    { 
+      label: 'Connect', 
+      type: 'join-hub',
+      subItems: [
+        { label: 'Student Admission', type: 'apply', formType: 'student-apply' },
+        { label: 'Agent Registration', type: 'apply', formType: 'agent-reg' },
+        { label: 'Training Centers', type: 'apply', formType: 'prep-center-reg' },
+        { label: 'Institutional Sync', type: 'apply', formType: 'institute-connect' },
+      ]
+    }
   ];
 
   const handleProfileClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!user) return;
     
-    if (user.role === 'Agent') {
+    if (user.role === 'Agent' || user.role === 'Institute') {
       onNavigate({ type: 'agent' });
-    } else if (user.role === 'Institute') {
-      onNavigate({ type: 'institute' });
+    } else if (['System Admin/Owner', 'Operation Manager', 'Finance', 'Support', 'Trainer'].includes(user.role)) {
+       onNavigate({ type: 'lms-dashboard' });
     } else {
       onNavigate({ type: 'lms-dashboard' });
     }
@@ -120,6 +118,7 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
                               key={sub.label}
                               onClick={() => {
                                 if (sub.slug) onNavigate({ type: 'country-guide', slug: sub.slug });
+                                else if (sub.formType) onNavigate({ type: 'apply', formType: sub.formType } as any);
                                 else if (sub.type) onNavigate({ type: sub.type, initialTab: sub.tab } as any);
                               }}
                               className="w-full text-left px-4 py-2 rounded-lg text-[10px] font-black text-unicou-charcoal hover:text-unicou-navy hover:bg-slate-50 transition-all uppercase tracking-widest truncate"

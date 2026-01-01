@@ -8,7 +8,6 @@ export const users: User[] = [
   { id: 'u-ops', name: 'Operations Manager', email: 'ops@unicou.uk', role: 'Operation Manager', isAuthorized: true, verified: true, status: 'Active' },
   { id: 'u-training', name: 'Authorized Training Center', email: 'training@unicou.uk', role: 'Institute', isAuthorized: true, verified: true, status: 'Active' },
   { id: 'u-student-test', name: 'Test Student', email: 'student@unicou.uk', role: 'Student', isAuthorized: true, verified: true, status: 'Active' },
-  { id: 'u-agent', name: 'Global Partner Hub', email: 'partner@unicou.uk', role: 'Agent', tier: 2, isAuthorized: true, status: 'Active' },
 ];
 
 export const products: Product[] = [
@@ -46,7 +45,6 @@ export const countryGuides: CountryGuide[] = [
     costOfLiving: '$1,800 - $2,200 AUD/mo', visaRequirements: 'Subclass 500',
     content: `### Excellence in Research and Innovation...`
   }
-  // ... rest of the 15 countries are implied to exist as per previous restoration
 ];
 
 export const universities: University[] = [
