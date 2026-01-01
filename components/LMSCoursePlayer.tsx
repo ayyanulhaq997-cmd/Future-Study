@@ -165,7 +165,7 @@ const LMSCoursePlayer: React.FC<LMSCoursePlayerProps> = ({ courseId, initialLess
 
   // Flattened lesson list for easy linear navigation
   const allLessons = useMemo(() => {
-    return modules.flatMap(m => m.lessons);
+    return modules.flatMap((m: LMSModule) => m.lessons);
   }, [modules]);
 
   const activeLessonIndex = useMemo(() => {
@@ -195,7 +195,7 @@ const LMSCoursePlayer: React.FC<LMSCoursePlayerProps> = ({ courseId, initialLess
         
         // Auto-select first lesson or initialLessonId
         if (mods.length > 0) {
-          const flat = mods.flatMap(m => m.lessons);
+          const flat = mods.flatMap((m: LMSModule) => m.lessons);
           const initial = initialLessonId ? flat.find(l => l.id === initialLessonId) : flat[0];
           setActiveLesson(initial || null);
         }

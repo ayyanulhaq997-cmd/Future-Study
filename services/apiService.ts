@@ -156,40 +156,40 @@ export const api = {
     return order;
   },
 
-  getCodes: async () => JSON.parse(localStorage.getItem(CODES_KEY) || '[]') || db.voucherCodes,
-  getLeads: async () => JSON.parse(localStorage.getItem(LEADS_KEY) || '[]'),
-  submitLead: async (type: string, data: any) => {
+  getCodes: async (): Promise<VoucherCode[]> => JSON.parse(localStorage.getItem(CODES_KEY) || '[]') || db.voucherCodes,
+  getLeads: async (): Promise<Lead[]> => JSON.parse(localStorage.getItem(LEADS_KEY) || '[]'),
+  submitLead: async (type: string, data: any): Promise<void> => {
     const leads = JSON.parse(localStorage.getItem(LEADS_KEY) || '[]');
     localStorage.setItem(LEADS_KEY, JSON.stringify([{ id: Date.now().toString(), type, data, status: 'New', timestamp: new Date().toISOString() }, ...leads]));
   },
-  getFinanceReport: async () => ({ totalRevenue: 50000, totalVouchersSold: 420, salesByType: [], recentSales: [] }),
-  getUsers: async () => {
+  getFinanceReport: async (): Promise<FinanceReport> => ({ totalRevenue: 50000, totalVouchersSold: 420, salesByType: [], recentSales: [] }),
+  getUsers: async (): Promise<User[]> => {
     const raw = localStorage.getItem('unicou_local_users_v1');
     const localUsers = raw ? JSON.parse(raw) : [];
     const allUsers = [...db.users, ...localUsers];
     return allUsers;
   },
-  getQualifications: async () => db.qualifications,
-  getGuideBySlug: async (slug: string) => db.countryGuides.find(g => g.slug === slug) || null,
-  getUniversities: async () => db.universities,
-  getUniversityBySlug: async (slug: string) => db.universities.find(u => u.slug === slug) || null,
-  getUniversitiesByCountry: async (id: string) => db.universities.filter(u => u.countryId === id),
-  getCoursesByUniversity: async (id: string) => db.courses.filter(c => c.universityId === id),
-  getAllLMSCourses: async () => db.lmsCourses,
-  getEnrolledCourses: async () => db.lmsCourses,
-  getCourseModules: async (id: string) => [],
-  getEnrollmentByCourse: async (id: string) => ({ id: '1', userId: 'u', courseId: id, progress: 0 }),
-  updateCourseProgress: async (id: string, p: number) => {},
-  redeemCourseVoucher: async (c: string) => {},
-  getTestById: async (id: string) => db.lmsTests.find(t => t.id === id),
-  submitTestResult: async (id: string, a: any, t: number) => ({ id: '1', userId: 'u', testId: id, testTitle: 'T', skillScores: [], overallBand: '8', timeTaken: t, timestamp: '', status: 'Completed', reviews: [] } as any),
-  getTestResults: async () => [],
-  getPendingSubmissions: async () => [],
-  gradeSubmission: async (id: string, s: number, f: string) => {},
-  getImmigrationGuides: async () => db.immigrationGuides,
-  processOrderAction: async (id: string, a: string) => ({} as any),
-  verifyEmail: async (e: string) => {},
-  getQualificationById: async (id: string) => db.qualifications.find(q => q.id === id),
-  submitQualificationLead: async (d: any) => ({ ...d, id: '1', timestamp: '', status: 'New', trackingId: 'T' }),
-  submitTestBooking: async (d: any) => ({ ...d, id: '1', trackingRef: 'T' })
+  getQualifications: async (): Promise<Qualification[]> => db.qualifications,
+  getGuideBySlug: async (slug: string): Promise<CountryGuide | null> => db.countryGuides.find(g => g.slug === slug) || null,
+  getUniversities: async (): Promise<University[]> => db.universities,
+  getUniversityBySlug: async (slug: string): Promise<University | null> => db.universities.find(u => u.slug === slug) || null,
+  getUniversitiesByCountry: async (id: string): Promise<University[]> => db.universities.filter(u => u.countryId === id),
+  getCoursesByUniversity: async (id: string): Promise<Course[]> => db.courses.filter(c => c.universityId === id),
+  getAllLMSCourses: async (): Promise<LMSCourse[]> => db.lmsCourses,
+  getEnrolledCourses: async (): Promise<LMSCourse[]> => db.lmsCourses,
+  getCourseModules: async (id: string): Promise<LMSModule[]> => [],
+  getEnrollmentByCourse: async (id: string): Promise<Enrollment | null> => ({ id: '1', userId: 'u', courseId: id, progress: 0 }),
+  updateCourseProgress: async (id: string, p: number): Promise<void> => {},
+  redeemCourseVoucher: async (c: string): Promise<void> => {},
+  getTestById: async (id: string): Promise<LMSPracticeTest | undefined> => db.lmsTests.find(t => t.id === id),
+  submitTestResult: async (id: string, a: any, t: number): Promise<TestResult> => ({ id: '1', userId: 'u', testId: id, testTitle: 'T', skillScores: [], overallBand: '8', timeTaken: t, timestamp: '', status: 'Completed', reviews: [] } as any),
+  getTestResults: async (): Promise<TestResult[]> => [],
+  getPendingSubmissions: async (): Promise<ManualSubmission[]> => [],
+  gradeSubmission: async (id: string, s: number, f: string): Promise<void> => {},
+  getImmigrationGuides: async (): Promise<ImmigrationGuideData[]> => db.immigrationGuides,
+  processOrderAction: async (id: string, a: string): Promise<any> => ({} as any),
+  verifyEmail: async (e: string): Promise<void> => {},
+  getQualificationById: async (id: string): Promise<Qualification | undefined> => db.qualifications.find(q => q.id === id),
+  submitQualificationLead: async (d: any): Promise<QualificationLead> => ({ ...d, id: '1', timestamp: '', status: 'New', trackingId: 'T' }),
+  submitTestBooking: async (d: any): Promise<TestBooking> => ({ ...d, id: '1', trackingRef: 'T' })
 };
