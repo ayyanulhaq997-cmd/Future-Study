@@ -15,6 +15,8 @@ import Signup from './components/Signup';
 import VerificationPending from './components/VerificationPending';
 import AIChat from './components/AIChat';
 import LMSDashboard from './components/LMSDashboard';
+import LMSCoursePlayer from './components/LMSCoursePlayer';
+import LMSPracticeTest from './components/LMSPracticeTest';
 import CheckoutProcess from './components/CheckoutProcess';
 import SuccessScreen from './components/SuccessScreen';
 import AdminDashboard from './components/AdminDashboard';
@@ -22,6 +24,12 @@ import AgentDashboard from './components/AgentDashboard';
 import CustomerDashboard from './components/CustomerDashboard';
 import QualificationCatalogue from './components/QualificationCatalogue';
 import PolicyPage from './components/PolicyPage';
+import Resources from './components/Resources';
+import About from './components/About';
+import TrainerDashboard from './components/TrainerDashboard';
+import FinanceDashboard from './components/FinanceDashboard';
+import SalesDashboard from './components/SalesDashboard';
+import SupportDashboard from './components/SupportDashboard';
 import { ViewState, User } from './types';
 import { api } from './services/apiService';
 import { LOGO_SRC } from './constants/assets';
@@ -53,10 +61,16 @@ const App: React.FC = () => {
 
   const handleAuthorizedNavigation = (u: User) => {
     setUser(u);
-    if (['System Admin/Owner', 'Finance/Audit Team', 'Operation Manager'].includes(u.role)) {
+    if (['System Admin/Owner', 'Operation Manager'].includes(u.role)) {
       navigateTo({ type: 'admin' });
+    } else if (u.role === 'Finance/Audit Team') {
+      navigateTo({ type: 'finance' });
     } else if (u.role === 'Agent Partner/Prep Center') {
       navigateTo({ type: 'agent' });
+    } else if (u.role === 'Lead Trainer') {
+      navigateTo({ type: 'trainer' });
+    } else if (u.role === 'Support/Sales Node') {
+      navigateTo({ type: 'sales-node' });
     } else {
       navigateTo({ type: 'lms-dashboard' });
     }
@@ -89,6 +103,10 @@ const App: React.FC = () => {
         return <div className="view-container"><ApplicationHub onNavigate={navigateTo} /></div>;
       case 'qualifications':
         return <div className="view-container"><QualificationCatalogue onApply={(id) => navigateTo({ type: 'apply', formType: 'student-apply', context: `Qualification ID: ${id}` })} /></div>;
+      case 'about':
+        return <div className="view-container"><About /></div>;
+      case 'resources':
+        return <div className="view-container"><Resources onNavigate={navigateTo} /></div>;
       case 'login': 
         return <div className="view-container"><Login 
           onLogin={handleAuthorizedNavigation} 
@@ -115,13 +133,25 @@ const App: React.FC = () => {
       case 'checkout':
         return <div className="view-container"><CheckoutProcess productId={(view as any).productId} quantity={(view as any).quantity} onSuccess={(oid) => navigateTo({ type: 'success', orderId: oid })} onCancel={() => navigateTo({ type: 'store' })} /></div>;
       case 'success':
-        return <div className="view-container"><SuccessScreen orderId={(view as any).orderId} onClose={() => navigateTo({ type: 'store' })} /></div>;
+        return <div className="view-container"><SuccessScreen orderId={(view as any).orderId} onClose={() => navigateTo({ type: 'lms-dashboard' })} /></div>;
       case 'admin':
         return <div className="view-container"><AdminDashboard /></div>;
+      case 'finance':
+        return <div className="view-container">{user ? <FinanceDashboard user={user} /> : <Login onLogin={handleAuthorizedNavigation} onNavigateToSignup={() => navigateTo({ type: 'signup' })} onNavigateToForgot={() => navigateTo({ type: 'forgot-password' })} />}</div>;
+      case 'trainer':
+        return <div className="view-container">{user ? <TrainerDashboard user={user} /> : <Login onLogin={handleAuthorizedNavigation} onNavigateToSignup={() => navigateTo({ type: 'signup' })} onNavigateToForgot={() => navigateTo({ type: 'forgot-password' })} />}</div>;
+      case 'sales-node':
+        return <div className="view-container">{user ? <SalesDashboard user={user} /> : <Login onLogin={handleAuthorizedNavigation} onNavigateToSignup={() => navigateTo({ type: 'signup' })} onNavigateToForgot={() => navigateTo({ type: 'forgot-password' })} />}</div>;
+      case 'support-portal':
+        return <div className="view-container">{user ? <SupportDashboard user={user} /> : <Login onLogin={handleAuthorizedNavigation} onNavigateToSignup={() => navigateTo({ type: 'signup' })} onNavigateToForgot={() => navigateTo({ type: 'forgot-password' })} />}</div>;
       case 'agent':
         return <div className="view-container">{user ? <AgentDashboard user={user} onBuy={(p, q) => navigateTo({ type: 'checkout', productId: p, quantity: q })} /> : <Login onLogin={handleAuthorizedNavigation} onNavigateToSignup={() => navigateTo({ type: 'signup' })} onNavigateToForgot={() => navigateTo({ type: 'forgot-password' })} />}</div>;
       case 'lms-dashboard':
         return <div className="view-container">{user ? <CustomerDashboard user={user} onNavigate={navigateTo} /> : <LMSDashboard onNavigate={navigateTo} />}</div>;
+      case 'lms-course-player':
+        return <div className="view-container"><LMSCoursePlayer courseId={(view as any).courseId} onNavigate={navigateTo} /></div>;
+      case 'lms-practice-test':
+        return <div className="view-container"><LMSPracticeTest testId={(view as any).testId} onNavigate={navigateTo} /></div>;
       case 'policy':
         return <div className="view-container"><PolicyPage policyId={(view as any).policyId} /></div>;
       default:

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ViewState } from '../types';
 
@@ -29,7 +30,7 @@ const Resources: React.FC<ResourcesProps> = ({ onNavigate }) => {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-6 view-container pb-32 animate-in fade-in duration-1000 bg-white">
+    <div className="max-w-7xl mx-auto px-6 pb-32 animate-in fade-in duration-1000 bg-white">
       <div className="mb-24">
         <span className="text-[11px] font-black text-unicou-orange uppercase tracking-[0.5em] mb-4 block">Knowledge Infrastructure</span>
         <h1 className="text-6xl md:text-[8rem] font-display font-black text-unicou-navy mb-8 tracking-tighter leading-none">Global <span className="text-unicou-orange">Intelligence</span></h1>

@@ -71,9 +71,11 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
     e.stopPropagation();
     if (!user) return;
     
-    // Updated strings to match types.ts UserRole union exactly
-    if (['System Admin/Owner', 'Finance/Audit Team', 'Operation Manager'].includes(user.role)) {
+    // Fixed: Finance/Audit Team role now routes to 'finance' view, not 'admin'
+    if (['System Admin/Owner', 'Operation Manager'].includes(user.role)) {
       onNavigate({ type: 'admin' });
+    } else if (user.role === 'Finance/Audit Team') {
+      onNavigate({ type: 'finance' });
     } else if (user.role === 'Agent Partner/Prep Center') {
       onNavigate({ type: 'agent' });
     } else if (user.role === 'Support/Sales Node') {

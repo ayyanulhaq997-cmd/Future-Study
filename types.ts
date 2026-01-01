@@ -314,6 +314,7 @@ export type ViewState =
   | { type: 'home' }
   | { type: 'store' } 
   | { type: 'admin' }
+  | { type: 'finance' }
   | { type: 'agent' }
   | { type: 'sales-node' }
   | { type: 'trainer' }

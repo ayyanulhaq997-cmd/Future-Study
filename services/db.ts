@@ -3,7 +3,9 @@ import { Product, VoucherCode, User, University, CountryGuide, UserRole, Course,
 
 export const users: User[] = [
   { id: 'u-admin', name: 'Zeeshan (Admin)', email: 'admin@unicou.uk', role: 'System Admin/Owner', isAuthorized: true },
+  { id: 'u-trainer', name: 'Lead Trainer Node', email: 'trainer@unicou.uk', role: 'Lead Trainer', isAuthorized: true },
   { id: 'u-finance', name: 'Finance Node 1', email: 'finance@unicou.uk', role: 'Finance/Audit Team', isAuthorized: true },
+  { id: 'u-sales', name: 'Sales Executive', email: 'sales@unicou.uk', role: 'Support/Sales Node', isAuthorized: true },
   { id: 'u-manager', name: 'Operations Lead', email: 'manager@unicou.uk', role: 'Operation Manager', isAuthorized: true },
   { id: 'u-agent', name: 'Partner Hub', email: 'partner@unicou.uk', role: 'Agent Partner/Prep Center', tier: 2, isAuthorized: true },
   { id: 'u-student', name: 'Alex Smith', email: 'alex@gmail.com', role: 'Student', isAuthorized: true },
@@ -315,7 +317,7 @@ Dubai offers an unmatched lifestyle with endless entertainment and professional 
 To study in Malaysia, you must be verified through the EMGS portal. English tests like **PTE** and **IELTS** are essential nodes. UniCou's voucher vault is optimized for Malaysian applications.
 
 ### Vibrant Life
-Malaysia offers a tropical climate and a high standard of living for students. It is a safe and welcoming destination.`, 
+Malaysia offers a tropical climate and a high standard of living for students. It is a scale and welcoming destination.`, 
     heroImage: 'https://images.unsplash.com/photo-1529655683826-aba9b3e77383?w=1200', 
     costOfLiving: '$500 - $800/mo', 
     visaRequirements: 'Student Pass (VAL)' 

@@ -17,6 +17,7 @@ const USERS_KEY = 'unicou_local_users_v1';
 const RESULTS_KEY = 'unicou_test_results_v1';
 const QUAL_LEADS_KEY = 'unicou_qual_leads_v1';
 const TEST_BOOKINGS_KEY = 'unicou_test_bookings_v1';
+const SUBMISSIONS_KEY = 'unicou_manual_submissions_v1';
 
 export const BANK_DETAILS = {
   bankName: 'UniCou International Ltd Central Finance (UK)',
@@ -239,15 +240,23 @@ export const api = {
   getLogs: async () => [],
   getQualifications: async (): Promise<Qualification[]> => db.qualifications,
   getAllLMSCourses: async (): Promise<LMSCourse[]> => db.lmsCourses,
-  getEnrolledCourses: async (): Promise<LMSCourse[]> => [],
+  getEnrolledCourses: async (): Promise<LMSCourse[]> => {
+    // Return mock courses to simulate access after purchase
+    return db.lmsCourses;
+  },
   getCourseModules: async (cid: string): Promise<LMSModule[]> => [],
-  getEnrollmentByCourse: async (cid: string): Promise<Enrollment | null> => null,
+  getEnrollmentByCourse: async (cid: string): Promise<Enrollment | null> => ({ id: 'enr-1', userId: 'current', courseId: cid, progress: 45 }),
   updateCourseProgress: async (cid: string, p: number): Promise<void> => {},
   redeemCourseVoucher: async (code: string): Promise<void> => {},
   getTestById: async (tid: string): Promise<LMSPracticeTest | undefined> => db.lmsTests.find(t => t.id === tid),
   submitTestResult: async (tid: string, a: any, t: number): Promise<TestResult> => {
     const currentUser = api.getCurrentUser();
-    const newRes: TestResult = { id: `RES-${Date.now()}`, userId: currentUser?.id || 'guest', testId: tid, testTitle: 'Test Result', skillScores: [], overallBand: 'N/A', timeTaken: t, timestamp: new Date().toISOString(), status: 'Pending', reviews: [] };
+    const newRes: TestResult = { id: `RES-${Date.now()}`, userId: currentUser?.id || 'guest', testId: tid, testTitle: 'PTE Full Mock Exam A', skillScores: [
+      { skill: 'Listening', score: 78, total: 90, band: '79', isGraded: true },
+      { skill: 'Reading', score: 82, total: 90, band: '84', isGraded: true },
+      { skill: 'Speaking', score: 88, total: 90, band: '89', isGraded: true },
+      { skill: 'Writing', score: 75, total: 90, band: '76', isGraded: true }
+    ], overallBand: '82', timeTaken: t, timestamp: new Date().toISOString(), status: 'Completed', reviews: [] };
     const results = JSON.parse(localStorage.getItem(RESULTS_KEY) || '[]');
     localStorage.setItem(RESULTS_KEY, JSON.stringify([newRes, ...results]));
     return newRes;
@@ -255,12 +264,70 @@ export const api = {
   getTestResults: async (): Promise<TestResult[]> => {
     const currentUser = api.getCurrentUser();
     if (!currentUser) return [];
-    const allResults: TestResult[] = JSON.parse(localStorage.getItem(RESULTS_KEY) || '[]');
-    if (['System Admin/Owner', 'Lead Trainer'].includes(currentUser.role)) return allResults;
-    return allResults.filter(r => r.userId === currentUser.id);
+    const localResults: TestResult[] = JSON.parse(localStorage.getItem(RESULTS_KEY) || '[]');
+    
+    // Add a default result for demo purposes if none exist
+    if (localResults.length === 0) {
+      return [{
+        id: 'res-default',
+        userId: currentUser.id,
+        testId: 'full-mock-1',
+        testTitle: 'IELTS Academic Practice Test 1',
+        skillScores: [
+          { skill: 'Listening', score: 7.5, total: 9, band: '7.5', isGraded: true },
+          { skill: 'Reading', score: 8.0, total: 9, band: '8.0', isGraded: true },
+          { skill: 'Writing', score: 6.5, total: 9, band: '6.5', isGraded: true },
+          { skill: 'Speaking', score: 7.0, total: 9, band: '7.0', isGraded: true }
+        ],
+        overallBand: '7.5',
+        timeTaken: 10800,
+        timestamp: new Date().toISOString(),
+        status: 'Completed',
+        reviews: ['Excellent reading skills.', 'Work on writing cohesion.']
+      }];
+    }
+
+    if (['System Admin/Owner', 'Lead Trainer'].includes(currentUser.role)) return localResults;
+    return localResults.filter(r => r.userId === currentUser.id);
   },
-  getPendingSubmissions: async (): Promise<ManualSubmission[]> => [],
-  gradeSubmission: async (id: string, s: number, f: string): Promise<void> => {},
+  getPendingSubmissions: async (): Promise<ManualSubmission[]> => {
+    let subs = JSON.parse(localStorage.getItem(SUBMISSIONS_KEY) || '[]');
+    if (subs.length === 0) {
+      subs = [
+        {
+          id: 'sub-1',
+          userId: 'u-student-demo',
+          userName: 'Zoe Thompson',
+          userEmail: 'zoe@example.com',
+          skill: 'Writing',
+          testTitle: 'PTE Full Mock Exam A',
+          questionText: 'Discuss the impact of social media on modern interpersonal relationships.',
+          studentAnswer: 'In my opinion, social media has a double-edged sword effect on how we interact. On one hand, it allows for global connectivity, but on the other, it creates a shallow environment where deep connections are replaced by likes and short comments. I believe the future of communication depends on how we balance digital tools with physical presence...',
+          maxScore: 90,
+          timestamp: new Date().toISOString()
+        },
+        {
+          id: 'sub-2',
+          userId: 'u-student-demo-2',
+          userName: 'Marcus Lin',
+          userEmail: 'marcus@global.net',
+          skill: 'Writing',
+          testTitle: 'IELTS Academic Practice Test 1',
+          questionText: 'Some people think that it is better to educate boys and girls in separate schools. Others, however, believe that mixed schools are better.',
+          studentAnswer: 'The debate between single-sex and co-educational schooling is ongoing. Proponents of single-sex education argue that it reduces distractions and allows students to focus more on their academic goals. However, I personally believe that mixed schools provide a more realistic environment that prepares children for the complexities of adult life where they will interact with both genders daily.',
+          maxScore: 9,
+          timestamp: new Date().toISOString()
+        }
+      ];
+      localStorage.setItem(SUBMISSIONS_KEY, JSON.stringify(subs));
+    }
+    return subs;
+  },
+  gradeSubmission: async (id: string, s: number, f: string): Promise<void> => {
+     const subs = JSON.parse(localStorage.getItem(SUBMISSIONS_KEY) || '[]');
+     localStorage.setItem(SUBMISSIONS_KEY, JSON.stringify(subs.filter((x: any) => x.id !== id)));
+     console.log(`Evaluated submission ${id} with score ${s}`);
+  },
   getImmigrationGuides: async (): Promise<ImmigrationGuideData[]> => db.immigrationGuides,
   updateUserRole: async (uid: string, role: UserRole): Promise<void> => {},
   getQualificationById: async (id: string): Promise<Qualification | undefined> => db.qualifications.find(q => q.id === id),
