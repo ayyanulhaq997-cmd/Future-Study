@@ -19,6 +19,9 @@ import LMSPracticeTest from './components/LMSPracticeTest';
 import CheckoutProcess from './components/CheckoutProcess';
 import SuccessScreen from './components/SuccessScreen';
 import AgentDashboard from './components/AgentDashboard';
+import AdminDashboard from './components/AdminDashboard';
+import FinanceDashboard from './components/FinanceDashboard';
+import TrainerDashboard from './components/TrainerDashboard';
 import CustomerDashboard from './components/CustomerDashboard';
 import CourseCatalogue from './components/CourseCatalogue';
 import QualificationCatalogue from './components/QualificationCatalogue';
@@ -52,7 +55,10 @@ const App: React.FC = () => {
 
   const handleAuthorizedNavigation = (u: User) => {
     setUser(u);
-    if (u.role === 'Agent') {
+    // Route based on role
+    if (['System Admin/Owner', 'Operation Manager'].includes(u.role)) {
+      navigateTo({ type: 'lms-dashboard' }); // The dashboard logic will handle role-specific UI
+    } else if (u.role === 'Agent') {
       navigateTo({ type: 'agent' });
     } else if (u.role === 'Institute') {
       navigateTo({ type: 'institute' });
@@ -98,18 +104,21 @@ const App: React.FC = () => {
       case 'success':
         return <div className="view-container"><SuccessScreen orderId={(view as any).orderId} onClose={() => navigateTo({ type: 'lms-dashboard' })} /></div>;
       
-      // PUBLIC ROLES
       case 'lms-dashboard':
         return (
           <div className="view-container">
-            {user ? (
+            {!user ? (
+              <LMSDashboard onNavigate={navigateTo} />
+            ) : user.role === 'System Admin/Owner' || user.role === 'Operation Manager' ? (
+              <AdminDashboard user={user} />
+            ) : user.role === 'Agent' ? (
+              <AgentDashboard user={user} onBuy={(p, q) => navigateTo({ type: 'checkout', productId: p, quantity: q })} />
+            ) : (
               <CustomerDashboard 
                 user={user} 
                 onNavigate={navigateTo} 
                 initialTab={(view as any).initialTab} 
               />
-            ) : (
-              <LMSDashboard onNavigate={navigateTo} />
             )}
           </div>
         );
