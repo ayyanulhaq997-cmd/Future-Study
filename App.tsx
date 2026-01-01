@@ -22,6 +22,7 @@ import AgentDashboard from './components/AgentDashboard';
 import AdminDashboard from './components/AdminDashboard';
 import FinanceDashboard from './components/FinanceDashboard';
 import TrainerDashboard from './components/TrainerDashboard';
+import SupportDashboard from './components/SupportDashboard';
 import CustomerDashboard from './components/CustomerDashboard';
 import CourseCatalogue from './components/CourseCatalogue';
 import QualificationCatalogue from './components/QualificationCatalogue';
@@ -55,19 +56,30 @@ const App: React.FC = () => {
 
   const handleAuthorizedNavigation = (u: User) => {
     setUser(u);
-    // Route based on role
-    if (['System Admin/Owner', 'Operation Manager'].includes(u.role)) {
-      navigateTo({ type: 'lms-dashboard' }); // The dashboard logic will handle role-specific UI
-    } else if (u.role === 'Agent') {
-      navigateTo({ type: 'agent' });
-    } else if (u.role === 'Institute') {
-      navigateTo({ type: 'institute' });
-    } else {
-      navigateTo({ type: 'lms-dashboard' });
-    }
+    navigateTo({ type: 'lms-dashboard' }); 
   };
 
   const renderContent = () => {
+    // Role-based portal routing override for lms-dashboard view type
+    if (view.type === 'lms-dashboard' && user) {
+       switch (user.role) {
+         case 'System Admin/Owner':
+         case 'Operation Manager':
+           return <div className="view-container"><AdminDashboard user={user} /></div>;
+         case 'Finance':
+           return <div className="view-container"><FinanceDashboard user={user} /></div>;
+         case 'Support':
+           return <div className="view-container"><SupportDashboard user={user} /></div>;
+         case 'Trainer':
+           return <div className="view-container"><TrainerDashboard user={user} /></div>;
+         case 'Agent':
+         case 'Institute':
+           return <div className="view-container"><AgentDashboard user={user} onBuy={(p, q) => navigateTo({ type: 'checkout', productId: p, quantity: q })} /></div>;
+         default:
+           return <div className="view-container"><CustomerDashboard user={user} onNavigate={navigateTo} initialTab={(view as any).initialTab} /></div>;
+       }
+    }
+
     switch (view.type) {
       case 'home':
         return (
@@ -105,23 +117,9 @@ const App: React.FC = () => {
         return <div className="view-container"><SuccessScreen orderId={(view as any).orderId} onClose={() => navigateTo({ type: 'lms-dashboard' })} /></div>;
       
       case 'lms-dashboard':
-        return (
-          <div className="view-container">
-            {!user ? (
-              <LMSDashboard onNavigate={navigateTo} />
-            ) : user.role === 'System Admin/Owner' || user.role === 'Operation Manager' ? (
-              <AdminDashboard user={user} />
-            ) : user.role === 'Agent' ? (
-              <AgentDashboard user={user} onBuy={(p, q) => navigateTo({ type: 'checkout', productId: p, quantity: q })} />
-            ) : (
-              <CustomerDashboard 
-                user={user} 
-                onNavigate={navigateTo} 
-                initialTab={(view as any).initialTab} 
-              />
-            )}
-          </div>
-        );
+        // Handled at top of function for role-based routing
+        return <div className="view-container"><LMSDashboard onNavigate={navigateTo} /></div>;
+        
       case 'agent':
       case 'institute':
         if (user && (user.role === 'Agent' || user.role === 'Institute') && !user.isAuthorized) {

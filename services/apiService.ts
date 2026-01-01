@@ -54,9 +54,9 @@ export const api = {
       name: cleanEmail.split('@')[0].toUpperCase(), 
       email: cleanEmail, 
       role, 
-      status: role === 'Agent' ? 'Pending' : 'Active',
+      status: (role === 'Agent' || role === 'Institute') ? 'Pending' : 'Active',
       verified: true, 
-      isAuthorized: role !== 'Agent',
+      isAuthorized: (role !== 'Agent' && role !== 'Institute'),
       agreementDate: new Date().toISOString() 
     };
     
@@ -65,20 +65,14 @@ export const api = {
     return newUser;
   },
 
-  /**
-   * HARDENED QUOTA ENGINE (Req 14.I.f / Point B)
-   * i. Student can order total 1 unit per 24h
-   * ii. Agent can order 3 via Card / 10 via Bank per 24h
-   */
   checkUserQuota: async (paymentMethod: 'Card' | 'BankTransfer', currentQuantity: number = 1): Promise<{ allowed: boolean; reason?: string }> => {
     const security = api.getSecurityState();
     if (security.isGlobalOrderStop) return { allowed: false, reason: 'SYSTEM_LOCKED' };
     
     const currentUser = api.getCurrentUser();
     if (!currentUser) return { allowed: false, reason: 'AUTH_REQUIRED' };
-    if (!currentUser.verified) return { allowed: false, reason: 'EMAIL_VERIFICATION_REQUIRED' };
     
-    // Admins and Bypassed users have no quota
+    // Admins and Operations Manager have no quota
     if (['System Admin/Owner', 'Operation Manager'].includes(currentUser.role)) return { allowed: true };
     if (currentUser.canBypassQuota) return { allowed: true };
 
@@ -88,11 +82,10 @@ export const api = {
 
     if (currentUser.role === 'Student') {
       const studentTotal = recentOrders.reduce((sum, o) => sum + o.quantity, 0);
-      // Student is restricted to 1 unit total in 24 hours
       if (studentTotal + currentQuantity > 1) return { allowed: false, reason: 'STUDENT_LIMIT' };
     }
 
-    if (currentUser.role === 'Agent') {
+    if (currentUser.role === 'Agent' || currentUser.role === 'Institute') {
       const cardTotal = recentOrders.filter(o => o.paymentMethod === 'Gateway').reduce((sum, o) => sum + o.quantity, 0);
       const bankTotal = recentOrders.filter(o => o.paymentMethod === 'BankTransfer').reduce((sum, o) => sum + o.quantity, 0);
       
@@ -109,11 +102,11 @@ export const api = {
 
   submitBankTransfer: async (productId: string, quantity: number, email: string, buyerName: string, bankRef: string): Promise<Order> => {
     const quota = await api.checkUserQuota('BankTransfer', quantity);
-    if (!quota.allowed) throw new Error(`Security Alert: Procurement limit exceeded (${quota.reason}).`);
+    if (!quota.allowed) throw new Error(`Procurement limit exceeded (${quota.reason}).`);
 
     const p = await api.getProductById(productId);
     const currentUser = api.getCurrentUser();
-    if (!currentUser) throw new Error("Auth Node required.");
+    if (!currentUser) throw new Error("Auth required.");
 
     const order: Order = {
       id: `UNICOU-${Math.random().toString(36).substr(2, 7).toUpperCase()}`,
@@ -140,11 +133,11 @@ export const api = {
 
   submitGatewayPayment: async (productId: string, quantity: number, email: string, buyerName: string): Promise<Order> => {
     const quota = await api.checkUserQuota('Card', quantity);
-    if (!quota.allowed) throw new Error(`Security Alert: Card procurement limit exceeded (${quota.reason}).`);
+    if (!quota.allowed) throw new Error(`Security Alert: Card procurement limit reached.`);
 
     const p = await api.getProductById(productId);
     const currentUser = api.getCurrentUser();
-    if (!currentUser) throw new Error("Auth Node required.");
+    if (!currentUser) throw new Error("Auth required.");
 
     const order: Order = {
       id: `UNICOU-${Math.random().toString(36).substr(2, 7).toUpperCase()}`,
@@ -160,7 +153,7 @@ export const api = {
       paymentMethod: 'Gateway', 
       timestamp: new Date().toISOString(),
       voucherCodes: [],
-      bankRef: 'AUTH_SUCCESS',
+      bankRef: 'CARD_AUTH_OK',
       proofAttached: false
     };
     
@@ -169,20 +162,40 @@ export const api = {
     return order;
   },
 
+  verifyLogin: async (userId: string, code: string): Promise<User> => {
+    const cleanId = userId.trim().toLowerCase();
+    
+    // Check global pre-authorized users from db
+    const dbUser = db.users.find(u => u.email.toLowerCase() === cleanId);
+    if (dbUser) {
+      localStorage.setItem(SESSION_KEY, JSON.stringify(dbUser));
+      return dbUser;
+    }
+
+    // Check local storage users
+    const raw = localStorage.getItem(USERS_KEY);
+    const localUsers: User[] = raw ? JSON.parse(raw) : [];
+    const localMatch = localUsers.find(u => u.email.toLowerCase() === cleanId);
+    
+    if (!localMatch) throw new Error("Incorrect User ID or Password");
+    
+    localStorage.setItem(SESSION_KEY, JSON.stringify(localMatch));
+    return localMatch;
+  },
+
   fulfillOrder: async (orderId: string): Promise<void> => {
     const allOrders: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
     const orderIndex = allOrders.findIndex(o => o.id === orderId);
-    if (orderIndex === -1) throw new Error("Order node missing.");
+    if (orderIndex === -1) return;
     
     const order = allOrders[orderIndex];
     if (order.status !== 'Pending') return;
 
-    const availableCodes: VoucherCode[] = [...db.voucherCodes]; 
-    const targetCodes = availableCodes
+    const targetCodes = db.voucherCodes
       .filter(c => c.productId === order.productId && c.status === 'Available')
       .slice(0, order.quantity);
 
-    if (targetCodes.length < order.quantity) throw new Error("Vault Exhausted: Contact Admin.");
+    if (targetCodes.length < order.quantity) throw new Error("Vault Exhausted.");
 
     const assignedCodes = targetCodes.map(c => c.code);
     allOrders[orderIndex] = { ...order, status: 'Completed', voucherCodes: assignedCodes };
@@ -206,45 +219,13 @@ export const api = {
     const currentUser = api.getCurrentUser();
     if (!currentUser) return [];
     const allOrders: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
-    if (['System Admin/Owner', 'Operation Manager'].includes(currentUser.role)) return allOrders;
+    if (['System Admin/Owner', 'Operation Manager', 'Finance', 'Support'].includes(currentUser.role)) return allOrders;
     return allOrders.filter(o => o.userId === currentUser.id);
   },
 
   getOrderById: async (id: string): Promise<Order | null> => {
     const orders = await api.getOrders();
     return orders.find(o => o.id === id) || null;
-  },
-
-  verifyLogin: async (userId: string, code: string): Promise<User> => {
-    const cleanId = userId.trim().toLowerCase();
-    
-    // Check local users first
-    const raw = localStorage.getItem(USERS_KEY);
-    const localUsers: User[] = raw ? JSON.parse(raw) : [];
-    const allUsers = [...db.users, ...localUsers];
-    
-    // Special admin recognition for the provided email node
-    const user = allUsers.find(u => u.email.toLowerCase() === cleanId);
-    
-    if (!user) {
-      // In this system, we allow admin@unicou.uk to sign in with mock creds if not found
-      if (cleanId === 'admin@unicou.uk') {
-        const adminUser: User = { 
-          id: 'u-master-admin', 
-          name: 'SYSTEM ADMIN', 
-          email: cleanId, 
-          role: 'System Admin/Owner', 
-          isAuthorized: true, 
-          status: 'Active' 
-        };
-        localStorage.setItem(SESSION_KEY, JSON.stringify(adminUser));
-        return adminUser;
-      }
-      throw new Error("Incorrect User ID or Password");
-    }
-    
-    localStorage.setItem(SESSION_KEY, JSON.stringify(user));
-    return user;
   },
 
   logout: () => localStorage.removeItem(SESSION_KEY),
@@ -254,7 +235,7 @@ export const api = {
     const leads = JSON.parse(localStorage.getItem(LEADS_KEY) || '[]');
     localStorage.setItem(LEADS_KEY, JSON.stringify([{ id: Date.now().toString(), type, data, status: 'New', timestamp: new Date().toISOString() }, ...leads]));
   },
-  getFinanceReport: async (): Promise<FinanceReport> => ({ totalRevenue: 50000, totalVouchersSold: 420, salesByType: [], recentSales: [] }),
+  getFinanceReport: async (): Promise<FinanceReport> => ({ totalRevenue: 50000, totalVouchersSold: 420, salesByType: [], recentSales: JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]') }),
   getUsers: async (): Promise<User[]> => {
     const raw = localStorage.getItem(USERS_KEY);
     const localUsers = raw ? JSON.parse(raw) : [];

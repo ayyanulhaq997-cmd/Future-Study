@@ -4,7 +4,10 @@ export type UserRole =
   | 'Agent' 
   | 'Institute'
   | 'System Admin/Owner'
-  | 'Operation Manager';
+  | 'Operation Manager'
+  | 'Finance'
+  | 'Support'
+  | 'Trainer';
 
 export type FormType = 'student-apply' | 'agent-reg' | 'prep-center-reg' | 'institute-connect' | 'careers' | 'general' | 'immigration-consult';
 
