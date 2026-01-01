@@ -15,10 +15,6 @@ const USERS_KEY = 'unicou_local_users_v1';
 const SECURITY_KEY = 'unicou_shield_state';
 const PRODUCTS_KEY = 'unicou_custom_products';
 
-/**
- * UNICOU AUTHORITY API
- * Hardened for Role-Based Access and Quota Enforcement
- */
 export const api = {
   getSecurityState: (): SecurityStatus => {
     const raw = localStorage.getItem(SECURITY_KEY);
@@ -72,7 +68,6 @@ export const api = {
     const currentUser = api.getCurrentUser();
     if (!currentUser) return { allowed: false, reason: 'AUTH_REQUIRED' };
     
-    // Admins and Operations Manager have no quota
     if (['System Admin/Owner', 'Operation Manager'].includes(currentUser.role)) return { allowed: true };
     if (currentUser.canBypassQuota) return { allowed: true };
 
@@ -89,12 +84,8 @@ export const api = {
       const cardTotal = recentOrders.filter(o => o.paymentMethod === 'Gateway').reduce((sum, o) => sum + o.quantity, 0);
       const bankTotal = recentOrders.filter(o => o.paymentMethod === 'BankTransfer').reduce((sum, o) => sum + o.quantity, 0);
       
-      if (paymentMethod === 'Card' && (cardTotal + currentQuantity > 3)) {
-        return { allowed: false, reason: 'AGENT_CARD_LIMIT' };
-      }
-      if (paymentMethod === 'BankTransfer' && (bankTotal + currentQuantity > 10)) {
-        return { allowed: false, reason: 'AGENT_BANK_LIMIT' };
-      }
+      if (paymentMethod === 'Card' && (cardTotal + currentQuantity > 3)) return { allowed: false, reason: 'AGENT_CARD_LIMIT' };
+      if (paymentMethod === 'BankTransfer' && (bankTotal + currentQuantity > 10)) return { allowed: false, reason: 'AGENT_BANK_LIMIT' };
     }
 
     return { allowed: true };
@@ -164,15 +155,12 @@ export const api = {
 
   verifyLogin: async (userId: string, code: string): Promise<User> => {
     const cleanId = userId.trim().toLowerCase();
-    
-    // Check global pre-authorized users from db
     const dbUser = db.users.find(u => u.email.toLowerCase() === cleanId);
     if (dbUser) {
       localStorage.setItem(SESSION_KEY, JSON.stringify(dbUser));
       return dbUser;
     }
 
-    // Check local storage users
     const raw = localStorage.getItem(USERS_KEY);
     const localUsers: User[] = raw ? JSON.parse(raw) : [];
     const localMatch = localUsers.find(u => u.email.toLowerCase() === cleanId);
@@ -263,9 +251,11 @@ export const api = {
   redeemCourseVoucher: async (c: string): Promise<void> => {},
   getTestById: async (id: string): Promise<LMSPracticeTest | undefined> => db.lmsTests[0],
   submitTestResult: async (id: string, a: any, t: number): Promise<TestResult> => ({ id: '1', userId: 'u', testId: id, testTitle: 'T', skillScores: [], overallBand: '8', timeTaken: t, timestamp: '' } as any),
-  getTestResults: async (): Promise<TestResult[]> => [],
-  getPendingSubmissions: async (): Promise<ManualSubmission[]> => [],
-  gradeSubmission: async (id: string, s: number, f: string): Promise<void> => {},
+  getTestResults: async (): Promise<TestResult[]> => db.testResults,
+  getPendingSubmissions: async (): Promise<ManualSubmission[]> => db.manualSubmissions,
+  gradeSubmission: async (id: string, s: number, f: string): Promise<void> => {
+     console.log(`Node Auth: Submission ${id} graded with score ${s}`);
+  },
   getImmigrationGuides: async (): Promise<ImmigrationGuideData[]> => [],
   getQualificationById: async (id: string): Promise<Qualification | undefined> => db.qualifications.find(q => q.id === id),
   submitQualificationLead: async (d: any): Promise<QualificationLead> => ({ ...d, id: '1', timestamp: '', status: 'New', trackingId: 'T' }),
