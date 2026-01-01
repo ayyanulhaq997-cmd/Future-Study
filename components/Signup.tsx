@@ -21,7 +21,6 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
     confirmPassword: '',
     role: 'Student' as UserRole
   });
-  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [simulatedCode, setSimulatedCode] = useState<string | null>(null);
@@ -75,11 +74,10 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
   return (
     <div className="max-w-md mx-auto py-20 px-4 animate-in fade-in duration-500">
       <div className="bg-white p-8 md:p-10 rounded-3xl border border-slate-200 shadow-xl relative overflow-hidden">
-        {/* Requirement 1 style consistency: Solid orange line */}
+        {/* Requirement: Solid orange line */}
         <div className="absolute top-0 left-0 w-full h-1.5 bg-unicou-orange" />
         
         <div className="text-center mb-8">
-          {/* Requirement 6: Sign Up */}
           <h2 className="text-3xl font-display font-black text-unicou-navy uppercase tracking-tight">
             {step === 'complete' ? 'Setup Profile' : 'Sign Up'}
           </h2>
@@ -93,7 +91,7 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
             <input 
               type="email" required value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              placeholder="Email Address (User ID)"
+              placeholder="User ID (Email Address)"
               className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm font-bold outline-none focus:border-unicou-navy transition-all"
             />
             {error && <p className="text-red-500 text-xs font-bold text-center">{error}</p>}
