@@ -18,9 +18,14 @@ const SupportDashboard: React.FC<{ user: User }> = ({ user }) => {
 
   useEffect(() => { fetchData(); }, []);
 
-  const handleAllowNextOrder = (email: string) => {
-    // In a real system, this would toggle a 'can_bypass_quota' flag on the user record in the DB.
-    alert(`SECURITY OVERRIDE: Daily restriction lifted for ${email}. User is authorized for immediate procurement.`);
+  const handleAllowNextOrder = async (email: string) => {
+    try {
+      await api.bypassUserQuota(email);
+      alert(`SECURITY OVERRIDE: Daily restriction lifted for ${email}. User is authorized for immediate procurement.`);
+      fetchData();
+    } catch (e) {
+      alert("Failed to authorize bypass node.");
+    }
   };
 
   const filteredUsers = users.filter(u => u.email.toLowerCase().includes(searchEmail.toLowerCase()));
@@ -60,13 +65,15 @@ const SupportDashboard: React.FC<{ user: User }> = ({ user }) => {
                   <div>
                     <h4 className="text-xl font-black uppercase tracking-tight">{u.name}</h4>
                     <p className="text-emerald-400 font-mono text-sm">{u.email}</p>
-                    <p className="text-[10px] text-white/30 uppercase font-black mt-2 tracking-widest">Status: {u.role} Node</p>
+                    <p className="text-[10px] text-white/30 uppercase font-black mt-2 tracking-widest">Status: {u.role} Node {u.canBypassQuota ? '(BYPASS ACTIVE)' : ''}</p>
                   </div>
                   <div className="flex gap-4">
-                    <button 
-                      onClick={() => handleAllowNextOrder(u.email)}
-                      className="px-10 py-5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl transition-all active:scale-95"
-                    >ALLOW NEXT ORDER</button>
+                    {!u.canBypassQuota && (
+                      <button 
+                        onClick={() => handleAllowNextOrder(u.email)}
+                        className="px-10 py-5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl transition-all active:scale-95"
+                      >ALLOW NEXT ORDER</button>
+                    )}
                     <button className="px-10 py-5 bg-white/10 hover:bg-white/20 text-white rounded-2xl font-black text-xs uppercase tracking-widest border border-white/10 transition-all">View Logs</button>
                   </div>
                </div>
@@ -78,7 +85,7 @@ const SupportDashboard: React.FC<{ user: User }> = ({ user }) => {
         <div className="bg-white p-12 rounded-[4rem] border border-slate-200 shadow-2xl">
            <h3 className="text-xl font-black mb-10 uppercase tracking-tighter text-slate-950">Security Sync Log</h3>
            <div className="space-y-4">
-              {orders.slice(0, 5).map(o => (
+              {orders.slice(0, 10).map(o => (
                 <div key={o.id} className="p-6 bg-slate-50 border border-slate-100 rounded-[2rem] flex justify-between items-center">
                    <div>
                      <p className="text-[10px] font-black text-slate-400 uppercase mb-1">Authorization Ref: {o.id}</p>

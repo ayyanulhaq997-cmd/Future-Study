@@ -56,7 +56,12 @@ const App: React.FC = () => {
   }, []);
 
   const navigateTo = (newView: ViewState) => {
-    setView(newView);
+    // Role-based logic: If an Agent tries to go to the retail store, redirect to their procurement portal
+    if (newView.type === 'store' && user?.role === 'Agent Partner/Prep Center') {
+      setView({ type: 'agent' });
+    } else {
+      setView(newView);
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -91,7 +96,7 @@ const App: React.FC = () => {
           </div>
         );
       case 'store':
-        return <div className="view-container"><VoucherStore onCheckout={(p, q) => navigateTo({ type: 'checkout', productId: p, quantity: q })} onBook={() => {}} onNavigateToAgent={() => navigateTo({ type: 'apply', formType: 'agent-reg' })} /></div>;
+        return <div className="view-container"><VoucherStore onCheckout={(p, q) => navigateTo({ type: 'checkout', productId: p, quantity: q })} onBook={() => {}} onNavigateToAgent={() => navigateTo({ type: 'agent' })} /></div>;
       case 'country-list':
         return <div className="view-container"><CountryList onNavigateToGuide={(slug) => navigateTo({ type: 'country-guide', slug })} /></div>;
       case 'country-guide':
@@ -132,7 +137,7 @@ const App: React.FC = () => {
           </div>
         );
       case 'checkout':
-        return <div className="view-container"><CheckoutProcess productId={(view as any).productId} quantity={(view as any).quantity} onSuccess={(oid) => navigateTo({ type: 'success', orderId: oid })} onCancel={() => navigateTo({ type: 'store' })} /></div>;
+        return <CheckoutProcess productId={(view as any).productId} quantity={(view as any).quantity} onSuccess={(oid) => navigateTo({ type: 'success', orderId: oid })} onCancel={() => navigateTo({ type: 'store' })} />;
       case 'success':
         return <div className="view-container"><SuccessScreen orderId={(view as any).orderId} onClose={() => navigateTo({ type: 'lms-dashboard' })} /></div>;
       case 'admin':
@@ -140,7 +145,7 @@ const App: React.FC = () => {
       case 'finance':
         return <div className="view-container">{user ? <FinanceDashboard user={user} /> : <Login onLogin={handleAuthorizedNavigation} onNavigateToSignup={() => navigateTo({ type: 'signup' })} onNavigateToForgot={() => navigateTo({ type: 'forgot-password' })} />}</div>;
       case 'trainer':
-        return <div className="view-container">{user ? <TrainerDashboard user={user} /> : <Login onLogin={handleAuthorizedNavigation} onNavigateToSignup={() => navigateTo({ type: 'signup' })} onNavigateToForgot={() => navigateTo({ type: 'forgot-password' })} />}</div>;
+        return <div className="view-container">{user ? <TrainerDashboard user={user} /> : <Login onLogin={handleAuthorizedNavigation} onNavigateToSignup={() => navigateTo({ type: 'signup' })} onNavigateToForgot={() => navigateTo({type: 'forgot-password' })} />}</div>;
       case 'sales-node':
         return <div className="view-container">{user ? <SalesDashboard user={user} /> : <Login onLogin={handleAuthorizedNavigation} onNavigateToSignup={() => navigateTo({ type: 'signup' })} onNavigateToForgot={() => navigateTo({ type: 'forgot-password' })} />}</div>;
       case 'support-portal':

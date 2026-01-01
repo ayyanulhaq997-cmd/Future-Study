@@ -31,9 +31,10 @@ const Login: React.FC<LoginProps> = ({ onLogin, onNavigateToSignup, onNavigateTo
   };
 
   const staffHints = [
-    { label: 'Trainer Node', alias: 'trainer' },
-    { label: 'Admin Hub', alias: 'admin' },
-    { label: 'Finance Port', alias: 'finance' }
+    { label: 'Trainer', alias: 'trainer' },
+    { label: 'Admin', alias: 'admin' },
+    { label: 'Finance', alias: 'finance' },
+    { label: 'Sales', alias: 'sales' }
   ];
 
   return (

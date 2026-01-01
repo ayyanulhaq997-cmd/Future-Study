@@ -71,7 +71,6 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
     e.stopPropagation();
     if (!user) return;
     
-    // Fixed: Finance/Audit Team role now routes to 'finance' view, not 'admin'
     if (['System Admin/Owner', 'Operation Manager'].includes(user.role)) {
       onNavigate({ type: 'admin' });
     } else if (user.role === 'Finance/Audit Team') {
@@ -94,8 +93,8 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
           scrolled ? 'shadow-premium bg-white border border-slate-100' : 'bg-white/90 border border-slate-100 backdrop-blur-md'
         }`}>
           <div className="flex items-center gap-6 xl:gap-8">
-            <button onClick={() => onNavigate({ type: 'home' })} className="flex items-center transition-transform hover:scale-105 active:scale-95 shrink-0">
-              <img src={LOGO_SRC} alt="UniCou" className="h-8 w-auto object-contain" />
+            <button onClick={() => onNavigate({ type: 'home' })} className="flex items-center transition-transform hover:scale-[1.03] active:scale-95 shrink-0 py-1">
+              <img src={LOGO_SRC} alt="UniCou" className="h-10 w-auto object-contain" />
             </button>
 
             <div className="hidden lg:flex items-center gap-0.5">
@@ -119,20 +118,22 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
                   </button>
 
                   {item.subItems && activeDropdown === item.label && (
-                    <div className="absolute top-full left-0 mt-2 w-64 bg-white border border-slate-100 rounded-2xl shadow-premium p-4 animate-in fade-in slide-in-from-top-1">
-                      <div className={`grid grid-cols-1 gap-1`}>
-                        {item.subItems.map((sub: any) => (
-                          <button
-                            key={sub.label}
-                            onClick={() => {
-                              if (sub.slug) onNavigate({ type: 'country-guide', slug: sub.slug });
-                              else if (sub.type) onNavigate({ type: sub.type, initialTab: sub.tab } as any);
-                            }}
-                            className="w-full text-left px-4 py-2 rounded-lg text-[10px] font-black text-slate-600 hover:text-unicou-navy hover:bg-slate-50 transition-all uppercase tracking-widest truncate"
-                          >
-                            {sub.label}
-                          </button>
-                        ))}
+                    <div className="absolute top-full left-0 pt-2 w-64 animate-in fade-in slide-in-from-top-1">
+                      <div className="bg-white border border-slate-100 rounded-2xl shadow-premium p-4">
+                        <div className={`grid grid-cols-1 gap-1`}>
+                          {item.subItems.map((sub: any) => (
+                            <button
+                              key={sub.label}
+                              onClick={() => {
+                                if (sub.slug) onNavigate({ type: 'country-guide', slug: sub.slug });
+                                else if (sub.type) onNavigate({ type: sub.type, initialTab: sub.tab } as any);
+                              }}
+                              className="w-full text-left px-4 py-2 rounded-lg text-[10px] font-black text-slate-600 hover:text-unicou-navy hover:bg-slate-50 transition-all uppercase tracking-widest truncate"
+                            >
+                              {sub.label}
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   )}

@@ -19,6 +19,7 @@ export interface User {
   verified?: boolean;
   isPlatinum?: boolean;
   isAuthorized?: boolean;
+  canBypassQuota?: boolean; // New: Support override flag
 }
 
 export interface Lead {

@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" class="light">
 <head>
@@ -29,10 +30,13 @@
             },
             colors: {
               unicou: {
-                navy: '#004a61',
-                orange: '#f15a24',
-                vibrant: '#00f2ff',
-                electric: '#fffc00',
+                navy: '#004a61', // Official Brand Navy
+                orange: '#f15a24', // Official Brand Orange
+                vibrant: '#00f2ff', // Global Mobility Cyan
+                electric: '#fffc00', // Warning/Alert Yellow
+                emerald: '#10b981', // Discount/Success Green
+                indigo: '#6366f1',  // Tech/Audit Indigo
+                charcoal: '#333333'
               }
             },
             boxShadow: {
@@ -52,7 +56,7 @@
       }
       body {
         background-color: #ffffff;
-        color: #333333; /* Charcoal Black */
+        color: #333333;
         margin: 0;
         min-height: 100vh;
         -webkit-font-smoothing: antialiased;
@@ -65,10 +69,6 @@
         transition: padding-top 0.5s ease-in-out;
       }
 
-      .view-container.full-view {
-        padding-top: 40px;
-      }
-
       .glass {
         background: rgba(255, 255, 255, 0.7);
         backdrop-filter: blur(12px);
@@ -76,38 +76,9 @@
         border: 1px solid rgba(255, 255, 255, 0.2);
       }
 
-      .glass-dark {
-        background: rgba(0, 74, 97, 0.9);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-      }
-
-      .pop-circle-cyan {
-        position: fixed;
-        top: 15%;
-        right: -5%;
-        width: 280px;
-        height: 280px;
-        background: radial-gradient(circle, rgba(0, 242, 255, 0.1) 0%, transparent 75%);
-        z-index: -1;
-        pointer-events: none;
-      }
-      
-      .pop-circle-yellow {
-        position: fixed;
-        bottom: 10%;
-        left: -8%;
-        width: 350px;
-        height: 350px;
-        background: radial-gradient(circle, rgba(255, 252, 0, 0.08) 0%, transparent 75%);
-        z-index: -1;
-        pointer-events: none;
-      }
-
       .vibrant-strip {
-        height: 5px;
-        background: linear-gradient(90deg, #f15a24 0%, #fffc00 50%, #00f2ff 100%);
+        height: 6px;
+        background: linear-gradient(90deg, #004a61 0%, #f15a24 50%, #004a61 100%);
         border-radius: 10px;
       }
 
@@ -119,19 +90,12 @@
         animation: slide-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       }
       
-      ::selection {
-        background-color: #f15a24;
-        color: white;
-      }
-      
-      h1, h2, h3, h4, h5, h6 { font-weight: 700; letter-spacing: -0.015em; color: #004a61; }
+      h1, h2, h3, h4, h5, h6 { font-weight: 900; letter-spacing: -0.015em; color: #004a61; }
       
       .no-scrollbar::-webkit-scrollbar { display: none; }
       .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-      .navbar-fixed {
-        transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
-      }
+      p { line-height: 1.625; }
     </style>
 <script type="importmap">
 {
@@ -148,8 +112,6 @@
 </script>
 </head>
 <body class="font-sans antialiased">
-    <div class="pop-circle-cyan"></div>
-    <div class="pop-circle-yellow"></div>
     <div id="root"></div>
     <script type="module" src="index.tsx"></script>
 </body>

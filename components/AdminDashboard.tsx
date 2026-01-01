@@ -301,28 +301,41 @@ const AdminDashboard: React.FC = () => {
 
       {activeTab === 'team' && (
         <div className="bg-white rounded-[4rem] border border-slate-200 overflow-hidden shadow-2xl">
+           <div className="p-10 border-b border-slate-100 bg-slate-50/50">
+              <h3 className="text-xl font-black uppercase tracking-tight text-slate-900">Global Node Governance</h3>
+              <p className="text-[10px] font-black text-slate-400 uppercase mt-2">Security Note: Registered Email IDs and User IDs are immutable nodes and cannot be modified.</p>
+           </div>
            <table className="w-full text-left">
              <thead className="bg-slate-50 text-[10px] font-black uppercase text-slate-400 tracking-widest border-b border-slate-100">
-               <tr><th className="px-8 py-6">User Node</th><th className="px-8 py-6">Authority Level</th><th className="px-8 py-6 text-right">Action</th></tr>
+               <tr><th className="px-8 py-6">Identity Node</th><th className="px-8 py-6">Authority Level</th><th className="px-8 py-6 text-right">Lifecycle Management</th></tr>
              </thead>
              <tbody className="divide-y divide-slate-100">
                {data.users.map(u => (
-                 <tr key={u.id} className="hover:bg-slate-50">
+                 <tr key={u.id} className="hover:bg-slate-50 transition-colors">
                    <td className="px-8 py-6">
                       <div className="font-black text-slate-900 uppercase tracking-tight">{u.name}</div>
-                      <div className="text-[11px] text-slate-500 font-mono italic">{u.email}</div>
+                      <div className="flex items-center gap-2 mt-1">
+                         <span className="text-[9px] font-black text-slate-400 uppercase">UID:</span>
+                         <span className="text-[10px] text-slate-400 font-mono italic">{u.id}</span>
+                         <span className="text-[9px] font-black text-slate-400 uppercase ml-2">Email:</span>
+                         <span className="text-[10px] text-slate-400 font-mono italic">{u.email}</span>
+                      </div>
                    </td>
                    <td className="px-8 py-6">
-                      <span className="px-4 py-1.5 bg-white border border-slate-200 rounded-full text-[9px] font-black text-unicou-navy uppercase tracking-widest">{u.role}</span>
+                      <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${u.role === 'Student' ? 'bg-slate-100 text-slate-500 border-slate-200' : 'bg-unicou-navy text-white border-unicou-navy shadow-md'}`}>
+                        {u.role}
+                      </span>
                    </td>
                    <td className="px-8 py-6 text-right">
-                      <select className="bg-white border border-slate-200 rounded-xl px-4 py-2 text-[10px] font-black uppercase outline-none focus:border-unicou-orange cursor-pointer">
-                         <option>Modify Role...</option>
-                         <option>Finance/Audit Team</option>
-                         <option>Operation Manager</option>
-                         <option>Support/Sales Node</option>
-                         <option>Deactivate</option>
-                      </select>
+                      <div className="flex justify-end gap-2">
+                        <select className="bg-white border border-slate-200 rounded-xl px-4 py-2 text-[10px] font-black uppercase outline-none focus:border-unicou-orange cursor-pointer shadow-sm">
+                           <option>Elevate Role...</option>
+                           <option>Finance/Audit Team</option>
+                           <option>Operation Manager</option>
+                           <option>Support/Sales Node</option>
+                        </select>
+                        <button className="px-4 py-2 bg-red-50 text-red-600 border border-red-100 rounded-xl text-[10px] font-black uppercase hover:bg-red-600 hover:text-white transition-all">Suspend Node</button>
+                      </div>
                    </td>
                  </tr>
                ))}
