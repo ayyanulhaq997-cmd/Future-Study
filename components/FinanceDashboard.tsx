@@ -10,6 +10,7 @@ const FinanceDashboard: React.FC<{ user: User }> = ({ user }) => {
   const [codes, setCodes] = useState<VoucherCode[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<FinanceTab>('audit-ledger');
 
   // Filters
@@ -21,6 +22,7 @@ const FinanceDashboard: React.FC<{ user: User }> = ({ user }) => {
   const [endDate, setEndDate] = useState('');
 
   const fetchData = async () => {
+    setRefreshing(true);
     try {
       const [r, c, p] = await Promise.all([api.getFinanceReport(), api.getCodes(), api.getProducts()]);
       setReport(r);
@@ -30,6 +32,7 @@ const FinanceDashboard: React.FC<{ user: User }> = ({ user }) => {
       console.error(e);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -42,13 +45,12 @@ const FinanceDashboard: React.FC<{ user: User }> = ({ user }) => {
       const sold = relevantCodes.filter(c => c.status === 'Used').length;
       const available = relevantCodes.filter(c => c.status === 'Available').length;
       const expired = relevantCodes.filter(c => c.status === 'Expired').length;
-      // For demo, opening stock = current total
       const total = relevantCodes.length;
       return {
         id: p.id,
         name: p.name,
         opening: total, 
-        purchased: 0, // In real DB, tracked by stock entry logs
+        purchased: 0, 
         sold,
         expired,
         closing: available
@@ -63,12 +65,12 @@ const FinanceDashboard: React.FC<{ user: User }> = ({ user }) => {
       return {
         uploadDate: code.uploadDate,
         orderNo: code.orderId || 'N/A',
-        salesExec: code.salesExecutiveName || 'System',
+        salesExec: code.salesExecutiveName || 'Digital Portal',
         type: products.find(p => p.id === code.productId)?.name || 'Voucher',
         code: code.code,
         buyer: code.buyerName || 'N/A',
         saleDate: code.assignmentDate || 'N/A',
-        paymentRef: order?.bankRef || 'N/A',
+        paymentRef: order?.bankRef || 'CARD_AUTH_OK',
         currency: order?.currency || 'USD',
         regEmail: order?.customerEmail || 'N/A'
       };
@@ -91,7 +93,9 @@ const FinanceDashboard: React.FC<{ user: User }> = ({ user }) => {
         <div>
           <div className="flex items-center gap-3 mb-4">
              <span className="px-4 py-1 bg-emerald-600 text-white text-[9px] font-black uppercase tracking-widest rounded-full shadow-lg">Authority Node: Finance</span>
-             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Production v1.2</span>
+             <button onClick={fetchData} className={`flex items-center gap-2 px-3 py-1 bg-slate-100 rounded-full text-[9px] font-black uppercase tracking-widest hover:bg-unicou-orange hover:text-white transition-all ${refreshing ? 'animate-pulse' : ''}`}>
+               {refreshing ? 'Syncing...' : 'System Re-Sync'}
+             </button>
           </div>
           <h1 className="text-6xl font-display font-black tracking-tighter text-slate-950 uppercase leading-none">
             FINANCE <span className="text-unicou-orange">PORTAL</span>
@@ -113,7 +117,6 @@ const FinanceDashboard: React.FC<{ user: User }> = ({ user }) => {
         </div>
       </div>
 
-      {/* FILTER PANEL */}
       {activeTab === 'audit-ledger' && (
         <div className="bg-slate-50 p-8 rounded-[3rem] border border-slate-200 mb-10 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6 items-end shadow-inner">
           <div className="space-y-2">
@@ -249,31 +252,24 @@ const FinanceDashboard: React.FC<{ user: User }> = ({ user }) => {
       {activeTab === 'performance-metrics' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
            <div className="bg-slate-900 p-12 rounded-[4rem] text-white shadow-3xl">
-              <h3 className="text-2xl font-display font-black uppercase tracking-tight mb-10">Sales Executive Performance</h3>
+              <h3 className="text-2xl font-display font-black uppercase tracking-tight mb-10">Sales Productivity</h3>
               <div className="space-y-8">
-                 {/* Aggregate sales by Executive */}
-                 {Array.from(new Set(auditLedger.map(r => r.salesExec))).map(exec => {
-                   const count = auditLedger.filter(r => r.salesExec === exec).length;
-                   return (
-                     <div key={exec} className="space-y-3">
-                        <div className="flex justify-between items-baseline">
-                           <span className="font-black uppercase text-xs tracking-widest text-slate-400">{exec}</span>
-                           <span className="text-2xl font-display font-black text-unicou-orange">{count} Units</span>
-                        </div>
-                        <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-                           <div className="h-full bg-unicou-orange" style={{ width: `${(count / auditLedger.length) * 100}%` }} />
-                        </div>
-                     </div>
-                   );
-                 })}
+                 <div className="p-8 bg-white/5 border border-white/10 rounded-3xl">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Total Unit Sales</p>
+                    <p className="text-5xl font-display font-black text-unicou-orange">{report?.totalVouchersSold}</p>
+                 </div>
+                 <div className="p-8 bg-white/5 border border-white/10 rounded-3xl">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Total Settled Revenue</p>
+                    <p className="text-5xl font-display font-black text-white">${report?.totalRevenue.toLocaleString()}</p>
+                 </div>
               </div>
            </div>
 
            <div className="bg-white p-12 rounded-[4rem] border border-slate-200 shadow-3xl">
               <h3 className="text-2xl font-display font-black uppercase tracking-tight text-slate-950 mb-10">Revenue Streams</h3>
-              <div className="space-y-8">
+              <div className="space-y-6">
                  {report?.salesByType.map(type => (
-                   <div key={type.name} className="flex justify-between items-center p-6 bg-slate-50 rounded-3xl border border-slate-100 hover:scale-[1.02] transition-transform">
+                   <div key={type.name} className="flex justify-between items-center p-6 bg-slate-50 rounded-3xl border border-slate-100 hover:scale-[1.02] transition-all">
                       <div>
                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{type.name}</p>
                          <p className="text-3xl font-display font-black text-unicou-navy">${type.value.toLocaleString()}</p>
@@ -281,6 +277,7 @@ const FinanceDashboard: React.FC<{ user: User }> = ({ user }) => {
                       <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-xl shadow-sm">📊</div>
                    </div>
                  ))}
+                 {report?.salesByType.length === 0 && <div className="p-12 text-center italic text-slate-300 font-bold uppercase">No revenue nodes detected.</div>}
               </div>
            </div>
         </div>
@@ -299,23 +296,26 @@ const FinanceDashboard: React.FC<{ user: User }> = ({ user }) => {
            </div>
 
            <div className="space-y-4">
-              {filterCodeSearch.length > 2 && codes.filter(c => c.code.includes(filterCodeSearch.toUpperCase())).slice(0, 5).map(c => {
+              {filterCodeSearch.length > 2 && codes.filter(c => c.code.toLowerCase().includes(filterCodeSearch.toLowerCase())).slice(0, 10).map(c => {
                 const order = report?.recentSales.find(o => o.id === c.orderId);
                 return (
                   <div key={c.id} className="p-8 bg-slate-50 border border-slate-100 rounded-3xl flex justify-between items-center group hover:bg-white hover:border-unicou-navy/20 transition-all shadow-sm">
                      <div>
-                        <p className="text-xl font-mono font-black text-unicou-navy">{c.code}</p>
+                        <p className="text-xl font-mono font-black text-unicou-navy uppercase">{c.code}</p>
                         <p className="text-[10px] font-black text-slate-400 uppercase mt-1">Status: {c.status} Node</p>
                      </div>
                      <div className="text-right">
-                        <p className="text-[11px] font-bold text-slate-900">{order?.buyerName || 'Unassigned'}</p>
-                        <p className="text-[9px] font-mono text-slate-400">{order?.id || 'NO_ORDER_LINK'}</p>
+                        <p className="text-[11px] font-bold text-slate-900">{c.buyerName || 'Vault (Available)'}</p>
+                        <p className="text-[9px] font-mono text-slate-400 uppercase">{c.orderId || 'UNASSIGNED'}</p>
                      </div>
                   </div>
                 );
               })}
-              {filterCodeSearch.length > 2 && codes.filter(c => c.code.includes(filterCodeSearch.toUpperCase())).length === 0 && (
-                <div className="py-20 text-center italic text-slate-300 font-black uppercase tracking-widest">No matching record in current cache.</div>
+              {filterCodeSearch.length > 2 && codes.filter(c => c.code.toLowerCase().includes(filterCodeSearch.toLowerCase())).length === 0 && (
+                <div className="py-20 text-center italic text-slate-300 font-black uppercase tracking-widest">"Audit query returned 0 results in current vault."</div>
+              )}
+              {filterCodeSearch.length <= 2 && (
+                <div className="py-20 text-center text-slate-300 italic font-bold">Input at least 3 characters to query the vault.</div>
               )}
            </div>
         </div>

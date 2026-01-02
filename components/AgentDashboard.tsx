@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/apiService';
 import { Product, Order, User } from '../types';
-import { EXAM_LOGOS } from '../constants/assets';
 
 const AgentDashboard: React.FC<{ user: User; onBuy: (pid: string, qty: number) => void }> = ({ user, onBuy }) => {
   const [products, setProducts] = useState<Product[]>([]);

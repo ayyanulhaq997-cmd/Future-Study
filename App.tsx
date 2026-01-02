@@ -59,11 +59,9 @@ const App: React.FC = () => {
     navigateTo({ type: 'lms-dashboard' }); 
   };
 
-  // Focus mode hides global header/footer for distraction-free learning (Fixes overlap bug)
   const isFocusMode = view.type === 'lms-course-player' || view.type === 'lms-practice-test';
 
   const renderContent = () => {
-    // Role-based portal routing override for lms-dashboard view type
     if (view.type === 'lms-dashboard' && user) {
        switch (user.role) {
          case 'System Admin/Owner':
@@ -118,10 +116,8 @@ const App: React.FC = () => {
         return <CheckoutProcess productId={(view as any).productId} quantity={(view as any).quantity} onSuccess={(oid) => navigateTo({ type: 'success', orderId: oid })} onCancel={() => navigateTo({ type: 'store' })} onNavigate={navigateTo} />;
       case 'success':
         return <div className="view-container"><SuccessScreen orderId={(view as any).orderId} onClose={() => navigateTo({ type: 'lms-dashboard' })} /></div>;
-      
       case 'lms-dashboard':
         return <div className="view-container"><LMSDashboard onNavigate={navigateTo} /></div>;
-        
       case 'agent':
       case 'institute':
         if (user && (user.role === 'Agent' || user.role === 'Institute') && !user.isAuthorized) {
@@ -137,7 +133,6 @@ const App: React.FC = () => {
           );
         }
         return <div className="view-container">{user ? <AgentDashboard user={user} onBuy={(p, q) => navigateTo({ type: 'checkout', productId: p, quantity: q })} /> : <div className="p-20 text-center">Unauthorized Access Node...</div>}</div>;
-
       case 'course-catalogue':
         return <div className="view-container"><CourseCatalogue onCheckout={(p, q) => navigateTo({ type: 'checkout', productId: p, quantity: q })} /></div>;
       case 'lms-course-player':
@@ -146,7 +141,6 @@ const App: React.FC = () => {
       case 'lms-practice-test':
         if (!user) { navigateTo({ type: 'login' }); return null; }
         return <LMSPracticeTest testId={(view as any).testId} onNavigate={navigateTo} />;
-      
       case 'policy':
         return <div className="view-container"><PolicyPage policyId={(view as any).policyId} /></div>;
       default:
@@ -166,33 +160,58 @@ const App: React.FC = () => {
           <div className="max-w-7xl mx-auto px-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 pb-16 border-b border-slate-200">
               <div className="lg:col-span-2">
-                 <img src={LOGO_SRC} alt="UniCou Ltd" className="h-10 w-auto mb-8 cursor-pointer" onClick={() => navigateTo({type: 'home'})} />
-                 <p className="text-slate-600 text-sm font-bold italic leading-relaxed max-w-sm">"UniCou Ltd is a premier global academic mobility platform."</p>
+                 <img src={LOGO_SRC} alt="UniCou Ltd" className="h-12 w-auto mb-8 cursor-pointer object-contain" onClick={() => navigateTo({type: 'home'})} />
+                 <p className="text-slate-600 text-sm font-bold italic leading-relaxed max-w-sm mb-10">"UniCou Ltd is a premier global academic mobility platform with a physical presence in key educational nodes."</p>
+                 
+                 <div className="space-y-6">
+                    <h5 className="text-[10px] font-black text-unicou-navy uppercase tracking-[0.3em] mb-4">Regional Headquarters</h5>
+                    <div className="space-y-4 text-[11px] font-bold text-slate-500 uppercase tracking-tight">
+                       <p className="flex items-start gap-4">
+                        <span className="w-8 py-1 bg-unicou-navy text-white text-[8px] flex items-center justify-center rounded shrink-0">UK</span> 
+                        <span className="leading-relaxed">26 Chepstow Avenue, Sale Manchester, United Kingdom</span>
+                       </p>
+                       <p className="flex items-start gap-4">
+                        <span className="w-8 py-1 bg-unicou-orange text-white text-[8px] flex items-center justify-center rounded shrink-0">UAE</span> 
+                        <span className="leading-relaxed">24695 Deira, Dubai, UAE</span>
+                       </p>
+                       <p className="flex items-start gap-4">
+                        <span className="w-8 py-1 bg-unicou-navy text-white text-[8px] flex items-center justify-center rounded shrink-0">PK</span> 
+                        <span className="leading-relaxed">Plot No.23-17-B-1, Township, Lahore, Pakistan</span>
+                       </p>
+                    </div>
+                 </div>
               </div>
               <div>
-                <h5 className="text-[10px] font-black text-unicou-navy uppercase tracking-widest mb-6">Our Verticals</h5>
+                <h5 className="text-[10px] font-black text-unicou-navy uppercase tracking-widest mb-6">Verticals</h5>
                 <ul className="space-y-4 text-xs font-bold text-slate-500 uppercase">
                   <li><button onClick={() => navigateTo({type: 'store'})} className="hover:text-unicou-orange">Exam Vouchers</button></li>
                   <li><button onClick={() => navigateTo({type: 'lms-dashboard'})} className="hover:text-unicou-orange">Study Hub</button></li>
+                  <li><button onClick={() => navigateTo({type: 'join-hub'})} className="hover:text-unicou-orange">Application Hub</button></li>
                 </ul>
               </div>
               <div>
-                <h5 className="text-[10px] font-black text-unicou-navy uppercase tracking-widest mb-6">Legal</h5>
+                <h5 className="text-[10px] font-black text-unicou-navy uppercase tracking-widest mb-6">Legal & Policy</h5>
                 <ul className="space-y-4 text-xs font-bold text-slate-500 uppercase">
                   <li><button onClick={() => navigateTo({type: 'policy', policyId: 'privacy'})} className="hover:text-unicou-orange">Privacy Policy</button></li>
                   <li><button onClick={() => navigateTo({type: 'policy', policyId: 'terms-of-use'})} className="hover:text-unicou-orange">Terms of Use</button></li>
+                  <li><button onClick={() => navigateTo({type: 'policy', policyId: 'modern-slavery'})} className="hover:text-unicou-orange">Modern Slavery</button></li>
+                  <li><button onClick={() => navigateTo({type: 'policy', policyId: 'accessibility'})} className="hover:text-unicou-orange">Accessibility</button></li>
+                  <li><button onClick={() => navigateTo({type: 'policy', policyId: 'cookies'})} className="hover:text-unicou-orange">Cookies Policy</button></li>
+                  <li><button onClick={() => navigateTo({type: 'policy', policyId: 'whistleblowing'})} className="hover:text-unicou-orange">Whistleblowing</button></li>
+                  <li><button onClick={() => navigateTo({type: 'policy', policyId: 'carbon-reduction'})} className="hover:text-unicou-orange">Carbon Reduction</button></li>
                 </ul>
               </div>
               <div>
-                <h5 className="text-[10px] font-black text-unicou-navy uppercase tracking-widest mb-6">Global Connect</h5>
+                <h5 className="text-[10px] font-black text-unicou-navy uppercase tracking-widest mb-6">Connect</h5>
                 <ul className="space-y-4 text-xs font-bold text-slate-500 uppercase">
-                  <li><button onClick={() => navigateTo({type: 'join-hub'})} className="hover:text-unicou-orange">Application Hub</button></li>
-                  <li><a href="mailto:connect@unicou.uk" className="hover:text-unicou-orange">connect@unicou.uk</a></li>
+                  <li><a href="mailto:connect@unicou.uk" className="hover:text-unicou-orange lowercase italic">connect@unicou.uk</a></li>
+                  <li><a href="https://wa.me/4470000000" target="_blank" rel="noopener noreferrer" className="hover:text-unicou-orange">WhatsApp Support</a></li>
+                  <li><button onClick={() => navigateTo({type: 'about'})} className="hover:text-unicou-orange">About Us</button></li>
                 </ul>
               </div>
             </div>
             <div className="mt-16 pt-8 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center gap-6">
-               <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em]">© 2025 UNICOU LTD • ALL RIGHTS RESERVED.</p>
+               <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em]">© 2025 UNICOU LTD • ALL RIGHTS RESERVED • REGISTERED IN ENGLAND & WALES.</p>
             </div>
           </div>
         </footer>

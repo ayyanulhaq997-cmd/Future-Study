@@ -5,7 +5,7 @@ import {
   Product, VoucherCode, Order, User, SecurityStatus, LMSCourse, 
   LMSModule, Enrollment, TestResult, Qualification, 
   QualificationLead, TestBooking, ManualSubmission, FinanceReport, UserRole, 
-  ImmigrationGuideData, Lead, University, CountryGuide, Course, LMSPracticeTest
+  Lead, University, CountryGuide, Course, LMSPracticeTest, ImmigrationGuideData
 } from '../types';
 
 const SESSION_KEY = 'unicou_active_session_v4';
@@ -14,6 +14,7 @@ const ORDERS_KEY = 'unicou_orders_v1';
 const USERS_KEY = 'unicou_local_users_v1';
 const SECURITY_KEY = 'unicou_shield_state';
 const PRODUCTS_KEY = 'unicou_custom_products';
+const CODES_KEY = 'unicou_inventory_vault_v1';
 
 export const api = {
   getSecurityState: (): SecurityStatus => {
@@ -34,6 +35,13 @@ export const api = {
   getCurrentUser: (): User | null => {
     const session = localStorage.getItem(SESSION_KEY);
     return session ? JSON.parse(session) : null;
+  },
+
+  getCodes: async (): Promise<VoucherCode[]> => {
+    const raw = localStorage.getItem(CODES_KEY);
+    if (raw) return JSON.parse(raw);
+    localStorage.setItem(CODES_KEY, JSON.stringify(db.voucherCodes));
+    return db.voucherCodes;
   },
 
   signup: async (email: string, role: UserRole): Promise<User> => {
@@ -179,13 +187,31 @@ export const api = {
     const order = allOrders[orderIndex];
     if (order.status !== 'Pending') return;
 
-    const targetCodes = db.voucherCodes
+    const allCodes = await api.getCodes();
+    const targetCodes = allCodes
       .filter(c => c.productId === order.productId && c.status === 'Available')
       .slice(0, order.quantity);
 
     if (targetCodes.length < order.quantity) throw new Error("Vault Exhausted.");
 
     const assignedCodes = targetCodes.map(c => c.code);
+    
+    // Update local inventory state
+    const updatedCodes = allCodes.map(c => {
+      if (assignedCodes.includes(c.code)) {
+        return { 
+          ...c, 
+          status: 'Used' as const, 
+          orderId: order.id, 
+          buyerName: order.buyerName,
+          assignmentDate: new Date().toISOString()
+        };
+      }
+      return c;
+    });
+    localStorage.setItem(CODES_KEY, JSON.stringify(updatedCodes));
+
+    // Update order state
     allOrders[orderIndex] = { ...order, status: 'Completed', voucherCodes: assignedCodes };
     localStorage.setItem(ORDERS_KEY, JSON.stringify(allOrders));
 
@@ -217,13 +243,31 @@ export const api = {
   },
 
   logout: () => localStorage.removeItem(SESSION_KEY),
-  getCodes: async (): Promise<VoucherCode[]> => db.voucherCodes,
   getLeads: async (): Promise<Lead[]> => JSON.parse(localStorage.getItem(LEADS_KEY) || '[]'),
   submitLead: async (type: string, data: any): Promise<void> => {
     const leads = JSON.parse(localStorage.getItem(LEADS_KEY) || '[]');
     localStorage.setItem(LEADS_KEY, JSON.stringify([{ id: Date.now().toString(), type, data, status: 'New', timestamp: new Date().toISOString() }, ...leads]));
   },
-  getFinanceReport: async (): Promise<FinanceReport> => ({ totalRevenue: 50000, totalVouchersSold: 420, salesByType: [], recentSales: JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]') }),
+  getFinanceReport: async (): Promise<FinanceReport> => {
+    const orders = await api.getOrders();
+    const completed = orders.filter(o => o.status === 'Completed');
+    const revenue = completed.reduce((sum, o) => sum + o.totalAmount, 0);
+    const sold = completed.reduce((sum, o) => sum + o.quantity, 0);
+    
+    // Group revenue by product category
+    const salesByType: Record<string, number> = {};
+    completed.forEach(o => {
+      const cat = o.productName.split(' ')[0];
+      salesByType[cat] = (salesByType[cat] || 0) + o.totalAmount;
+    });
+
+    return { 
+      totalRevenue: revenue, 
+      totalVouchersSold: sold, 
+      salesByType: Object.entries(salesByType).map(([name, value]) => ({ name, value })), 
+      recentSales: orders 
+    };
+  },
   getUsers: async (): Promise<User[]> => {
     const raw = localStorage.getItem(USERS_KEY);
     const localUsers = raw ? JSON.parse(raw) : [];
@@ -256,6 +300,7 @@ export const api = {
   gradeSubmission: async (id: string, s: number, f: string): Promise<void> => {
      console.log(`Node Auth: Submission ${id} graded with score ${s}`);
   },
+  // Added ImmigrationGuideData to the imports and fixed the type missing on line 303
   getImmigrationGuides: async (): Promise<ImmigrationGuideData[]> => [],
   getQualificationById: async (id: string): Promise<Qualification | undefined> => db.qualifications.find(q => q.id === id),
   submitQualificationLead: async (d: any): Promise<QualificationLead> => ({ ...d, id: '1', timestamp: '', status: 'New', trackingId: 'T' }),
