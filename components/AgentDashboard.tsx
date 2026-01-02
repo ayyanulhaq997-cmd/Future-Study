@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/apiService';
 import { Product, Order, User } from '../types';
+import { EXAM_LOGOS } from '../constants/assets';
 
 const AgentDashboard: React.FC<{ user: User; onBuy: (pid: string, qty: number) => void }> = ({ user, onBuy }) => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -25,6 +26,19 @@ const AgentDashboard: React.FC<{ user: User; onBuy: (pid: string, qty: number) =
   const handleQtyChange = (pid: string, val: string) => {
     const num = Math.max(1, Math.min(20, parseInt(val) || 1));
     setQuantities(prev => ({ ...prev, [pid]: num }));
+  };
+
+  const getBrandLogo = (category: string) => {
+    const map: Record<string, string> = { 
+      'IELTS': 'IELTS', 
+      'PTE': 'PTE', 
+      'LanguageCert': 'LanguageCertAcademic', 
+      'ETS': 'TOEFL', 
+      'Duolingo': 'Duolingo', 
+      'Oxford ELLT': 'ELLT',
+      'Skills for English': 'Skills for English'
+    };
+    return EXAM_LOGOS[map[category] || category] || EXAM_LOGOS['OTHER'];
   };
 
   if (loading) return <div className="p-20 text-center animate-pulse text-unicou-navy font-black uppercase tracking-widest text-[10px]">Syncing Hub...</div>;
@@ -72,14 +86,23 @@ const AgentDashboard: React.FC<{ user: User; onBuy: (pid: string, qty: number) =
                 const discountAmount = p.basePrice * tierDiscountRate;
                 const netPrice = p.basePrice - discountAmount;
                 const qty = quantities[p.id] || 1;
-                const totalSettlement = netPrice * qty;
+                const logoSrc = getBrandLogo(p.category);
 
                 return (
                   <div key={p.id} className="bg-white p-7 rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col group transition-all hover:border-unicou-navy relative overflow-hidden">
-                    <p className="text-[8px] font-black text-unicou-orange uppercase tracking-widest mb-2">{p.category} NODE</p>
-                    <h3 className="text-xl font-display font-black text-slate-950 leading-tight uppercase mb-8 group-hover:text-unicou-navy transition-colors">{p.name}</h3>
+                    {/* BRAND LOGO INTEGRATION */}
+                    <div className="h-24 flex items-center justify-center mb-6">
+                      <img 
+                        src={logoSrc} 
+                        alt={p.category} 
+                        className="h-14 w-auto object-contain transition-transform group-hover:scale-105" 
+                        onError={(e) => { (e.target as HTMLImageElement).src = EXAM_LOGOS['OTHER']; }}
+                      />
+                    </div>
 
-                    {/* Point 12: Perfect Pricing Terminal UI (Updated Labels) */}
+                    <p className="text-[8px] font-black text-unicou-orange uppercase tracking-widest mb-2 text-center">{p.category} NODE</p>
+                    <h3 className="text-xl font-display font-black text-slate-950 leading-tight uppercase mb-8 group-hover:text-unicou-navy transition-colors text-center line-clamp-1">{p.name}</h3>
+
                     <div className="bg-[#f8fafc] p-6 rounded-[1.8rem] border border-slate-100 mb-8 shadow-inner">
                        <div className="flex justify-between items-center mb-1">
                           <span className="text-[9px] font-black text-[#64748b] uppercase tracking-widest">Official Rate:</span>

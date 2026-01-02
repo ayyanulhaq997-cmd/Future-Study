@@ -120,6 +120,12 @@ const App: React.FC = () => {
         return <div className="view-container"><LMSDashboard onNavigate={navigateTo} /></div>;
       case 'agent':
       case 'institute':
+        // Mandatory Identity Verification: Redirect Students away from Partner Nodes
+        if (user && user.role === 'Student') {
+           navigateTo({ type: 'lms-dashboard' });
+           return null;
+        }
+        
         if (user && (user.role === 'Agent' || user.role === 'Institute') && !user.isAuthorized) {
           return (
             <div className="view-container flex items-center justify-center p-12">

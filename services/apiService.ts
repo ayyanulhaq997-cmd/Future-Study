@@ -73,8 +73,12 @@ export const api = {
     const security = api.getSecurityState();
     if (security.isGlobalOrderStop) return { allowed: false, reason: 'SYSTEM_LOCKED' };
     
-    const currentUser = api.getCurrentUser();
-    if (!currentUser) return { allowed: false, reason: 'AUTH_REQUIRED' };
+    const sessionUser = api.getCurrentUser();
+    if (!sessionUser) return { allowed: false, reason: 'AUTH_REQUIRED' };
+
+    // Dynamic Registry Lookup: Fetch the ABSOLUTE LATEST record for the user to catch Support bypasses
+    const allUsers = await api.getUsers();
+    const currentUser = allUsers.find(u => u.id === sessionUser.id || u.email.toLowerCase() === sessionUser.email.toLowerCase()) || sessionUser;
     
     if (['System Admin/Owner', 'Operation Manager'].includes(currentUser.role)) return { allowed: true };
     if (currentUser.canBypassQuota) return { allowed: true };
@@ -300,7 +304,6 @@ export const api = {
   gradeSubmission: async (id: string, s: number, f: string): Promise<void> => {
      console.log(`Node Auth: Submission ${id} graded with score ${s}`);
   },
-  // Added ImmigrationGuideData to the imports and fixed the type missing on line 303
   getImmigrationGuides: async (): Promise<ImmigrationGuideData[]> => [],
   getQualificationById: async (id: string): Promise<Qualification | undefined> => db.qualifications.find(q => q.id === id),
   submitQualificationLead: async (d: any): Promise<QualificationLead> => ({ ...d, id: '1', timestamp: '', status: 'New', trackingId: 'T' }),
@@ -324,8 +327,12 @@ export const api = {
     const users: User[] = rawUsers ? JSON.parse(rawUsers) : [];
     const updatedUsers = users.map(u => u.email.toLowerCase() === email.toLowerCase() ? { ...u, canBypassQuota: true } : u);
     localStorage.setItem(USERS_KEY, JSON.stringify(updatedUsers));
+    
+    // Sync current session locally if email matches, although logic now checks USERS_KEY directly
     const active = api.getCurrentUser();
-    if (active && active.email.toLowerCase() === email.toLowerCase()) localStorage.setItem(SESSION_KEY, JSON.stringify({ ...active, canBypassQuota: true }));
+    if (active && active.email.toLowerCase() === email.toLowerCase()) {
+      localStorage.setItem(SESSION_KEY, JSON.stringify({ ...active, canBypassQuota: true }));
+    }
   },
   addProduct: async (p: Product): Promise<void> => {
     const raw = localStorage.getItem(PRODUCTS_KEY);
