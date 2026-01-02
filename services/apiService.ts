@@ -44,6 +44,20 @@ export const api = {
     return db.voucherCodes;
   },
 
+  // ADDED: Bulk stock injection for existing or new products
+  addVoucherCodes: async (productId: string, codes: string[]): Promise<void> => {
+    const allCodes = await api.getCodes();
+    const newCodes: VoucherCode[] = codes.map(code => ({
+      id: `vc-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+      productId,
+      code: code.trim().toUpperCase(),
+      status: 'Available',
+      expiryDate: '2026-12-31',
+      uploadDate: new Date().toISOString()
+    }));
+    localStorage.setItem(CODES_KEY, JSON.stringify([...allCodes, ...newCodes]));
+  },
+
   signup: async (email: string, role: UserRole): Promise<User> => {
     const cleanEmail = email.trim().toLowerCase();
     const raw = localStorage.getItem(USERS_KEY);
@@ -65,8 +79,32 @@ export const api = {
     };
     
     localStorage.setItem(USERS_KEY, JSON.stringify([...localUsers, newUser]));
-    localStorage.setItem(SESSION_KEY, JSON.stringify(newUser));
     return newUser;
+  },
+
+  // ADDED: Admin User/Staff Management
+  upsertUser: async (userData: Partial<User>): Promise<void> => {
+    const users = await api.getUsers();
+    let updated;
+    if (userData.id) {
+      updated = users.map(u => u.id === userData.id ? { ...u, ...userData } : u);
+    } else {
+      const newUser = {
+        ...userData,
+        id: `u-staff-${Date.now()}`,
+        status: 'Active',
+        verified: true,
+        isAuthorized: true
+      } as User;
+      updated = [...users, newUser];
+    }
+    localStorage.setItem(USERS_KEY, JSON.stringify(updated));
+  },
+
+  deleteUser: async (id: string): Promise<void> => {
+    const users = await api.getUsers();
+    const filtered = users.filter(u => u.id !== id);
+    localStorage.setItem(USERS_KEY, JSON.stringify(filtered));
   },
 
   checkUserQuota: async (paymentMethod: 'Card' | 'BankTransfer', currentQuantity: number = 1): Promise<{ allowed: boolean; reason?: string }> => {
@@ -76,7 +114,6 @@ export const api = {
     const sessionUser = api.getCurrentUser();
     if (!sessionUser) return { allowed: false, reason: 'AUTH_REQUIRED' };
 
-    // Dynamic Registry Lookup: Fetch the ABSOLUTE LATEST record for the user to catch Support bypasses
     const allUsers = await api.getUsers();
     const currentUser = allUsers.find(u => u.id === sessionUser.id || u.email.toLowerCase() === sessionUser.email.toLowerCase()) || sessionUser;
     
@@ -200,7 +237,6 @@ export const api = {
 
     const assignedCodes = targetCodes.map(c => c.code);
     
-    // Update local inventory state
     const updatedCodes = allCodes.map(c => {
       if (assignedCodes.includes(c.code)) {
         return { 
@@ -215,7 +251,6 @@ export const api = {
     });
     localStorage.setItem(CODES_KEY, JSON.stringify(updatedCodes));
 
-    // Update order state
     allOrders[orderIndex] = { ...order, status: 'Completed', voucherCodes: assignedCodes };
     localStorage.setItem(ORDERS_KEY, JSON.stringify(allOrders));
 
@@ -258,7 +293,6 @@ export const api = {
     const revenue = completed.reduce((sum, o) => sum + o.totalAmount, 0);
     const sold = completed.reduce((sum, o) => sum + o.quantity, 0);
     
-    // Group revenue by product category
     const salesByType: Record<string, number> = {};
     completed.forEach(o => {
       const cat = o.productName.split(' ')[0];
@@ -317,10 +351,28 @@ export const api = {
     localStorage.setItem(LEADS_KEY, JSON.stringify(leads));
     const email = leads[leadIndex].data.email;
     if (!email) return;
+    
+    // Check if user already exists
     const rawUsers = localStorage.getItem(USERS_KEY);
     const users: User[] = rawUsers ? JSON.parse(rawUsers) : [];
-    const updatedUsers = users.map(u => u.email.toLowerCase() === email.toLowerCase() ? { ...u, isAuthorized: true, status: 'Active' as const } : u);
-    localStorage.setItem(USERS_KEY, JSON.stringify(updatedUsers));
+    const existing = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+    
+    if (existing) {
+      const updatedUsers = users.map(u => u.email.toLowerCase() === email.toLowerCase() ? { ...u, isAuthorized: true, status: 'Active' as const } : u);
+      localStorage.setItem(USERS_KEY, JSON.stringify(updatedUsers));
+    } else {
+      // Create new Agent user if not present
+      const newUser: User = {
+        id: `u-agent-${Date.now()}`,
+        name: leads[leadIndex].data.agency_name || 'PARTNER NODE',
+        email: email.toLowerCase(),
+        role: 'Agent',
+        status: 'Active',
+        verified: true,
+        isAuthorized: true
+      };
+      localStorage.setItem(USERS_KEY, JSON.stringify([...users, newUser]));
+    }
   },
   bypassUserQuota: async (email: string): Promise<void> => {
     const rawUsers = localStorage.getItem(USERS_KEY);
@@ -328,7 +380,6 @@ export const api = {
     const updatedUsers = users.map(u => u.email.toLowerCase() === email.toLowerCase() ? { ...u, canBypassQuota: true } : u);
     localStorage.setItem(USERS_KEY, JSON.stringify(updatedUsers));
     
-    // Sync current session locally if email matches, although logic now checks USERS_KEY directly
     const active = api.getCurrentUser();
     if (active && active.email.toLowerCase() === email.toLowerCase()) {
       localStorage.setItem(SESSION_KEY, JSON.stringify({ ...active, canBypassQuota: true }));
