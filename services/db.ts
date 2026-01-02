@@ -44,15 +44,55 @@ export const countryGuides: CountryGuide[] = [
     heroImage: 'https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?w=1200', 
     costOfLiving: '$1,800 - $2,200 AUD/mo', visaRequirements: 'Subclass 500',
     content: `### Excellence in Research and Innovation\nAustralia offers a unique blend of high-ranking universities and an unparalleled quality of life. Post-study work rights make it a primary target for global mobility.`
+  },
+  { 
+    id: 'usa', countryId: 'usa', slug: 'usa', title: 'Study in United States', 
+    heroImage: 'https://images.unsplash.com/photo-1508433957232-3107f5ee2045?w=1200', 
+    costOfLiving: '$1,500 - $2,500/mo', visaRequirements: 'F-1 Student Visa',
+    content: `### Global Innovation and Opportunity\nThe USA is the world leader in STEM and Business education. With Silicon Valley and Wall Street connections, American universities provide an unparalleled launchpad for global leaders.`
+  },
+  { 
+    id: 'canada', countryId: 'canada', slug: 'canada', title: 'Study in Canada', 
+    heroImage: 'https://images.unsplash.com/photo-1503614472-8c93d56e92ce?w=1200', 
+    costOfLiving: '$1,200 - $1,800 CAD/mo', visaRequirements: 'Study Permit (SDS/Non-SDS)',
+    content: `### A Safe Haven for Excellence\nCanada combines top-tier academic standards with a welcoming multicultural environment. Post-graduation work permits and clear permanent residency pathways make it a favorite for ambitious students.`
+  },
+  { 
+    id: 'germany', countryId: 'germany', slug: 'germany', title: 'Study in Germany', 
+    heroImage: 'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=1200', 
+    costOfLiving: '€900 - €1,100/mo', visaRequirements: 'National Visa (Type D)',
+    content: `### The Engineering and Tech Hub\nGermany offers world-class education with low or no tuition fees at public universities. It is the industrial heart of Europe, providing immense opportunities in engineering and research.`
+  },
+  { 
+    id: 'italy', countryId: 'italy', slug: 'italy', title: 'Study in Italy', 
+    heroImage: 'https://images.unsplash.com/photo-1529243856184-fd5465488984?w=1200', 
+    costOfLiving: '€700 - €1,000/mo', visaRequirements: 'D-Type Visa',
+    content: `### Art, Design, and Affordable Excellence\nItaly is home to some of the world's oldest and most prestigious universities. With DSU regional grants and lower living costs, Italy is a strategic node for creative and technical studies.`
+  },
+  { 
+    id: 'ireland', countryId: 'ireland', slug: 'ireland', title: 'Study in Ireland', 
+    heroImage: 'https://images.unsplash.com/photo-1590089415225-401ed6f9db8e?w=1200', 
+    costOfLiving: '€1,000 - €1,400/mo', visaRequirements: 'Student Visa (Stamp 2)',
+    content: `### The European Silicon Docks\nIreland is the European headquarters for global tech giants like Google and Meta. Its English-speaking environment and friendly culture make it an ideal choice for international students.`
+  },
+  { 
+    id: 'europe', countryId: 'europe', slug: 'europe', title: 'Europe Hub', 
+    heroImage: 'https://images.unsplash.com/photo-1491557345352-5929e343eb89?w=1200', 
+    costOfLiving: 'Variable (€600 - €1,500/mo)', visaRequirements: 'Schengen Area Study Visas',
+    content: `### A Continent of Boundless Potential\nFrom the high-tech hubs of the Nordics to the historic campuses of France and Spain, Europe offers a diverse range of high-quality education and PR pathways.`
   }
 ];
 
 export const universities: University[] = [
-  { id: 'uni-manchester', name: 'University of Manchester', slug: 'manchester', location: 'Manchester, UK', ranking: 32, description: 'Global research powerhouse and member of the Russell Group.', logo: 'https://images.unsplash.com/photo-1541339907198-e08756ebafe3?w=200', countryId: 'uk', website: 'https://www.manchester.ac.uk' }
+  { id: 'uni-manchester', name: 'University of Manchester', slug: 'manchester', location: 'Manchester, UK', ranking: 32, description: 'Global research powerhouse and member of the Russell Group.', logo: 'https://images.unsplash.com/photo-1541339907198-e08756ebafe3?w=200', countryId: 'uk', website: 'https://www.manchester.ac.uk' },
+  { id: 'uni-toronto', name: 'University of Toronto', slug: 'toronto', location: 'Toronto, Canada', ranking: 21, description: 'Canada\'s leading institution for global research and innovation.', logo: 'https://images.unsplash.com/photo-1541339907198-e08756ebafe3?w=200', countryId: 'canada', website: 'https://www.utoronto.ca' },
+  { id: 'uni-melbourne', name: 'University of Melbourne', slug: 'melbourne', location: 'Melbourne, Australia', ranking: 14, description: 'The #1 University in Australia for academic excellence.', logo: 'https://images.unsplash.com/photo-1541339907198-e08756ebafe3?w=200', countryId: 'australia', website: 'https://www.unimelb.edu.au' }
 ];
 
 export const courses: Course[] = [
-  { id: 'c-1', universityId: 'uni-manchester', title: 'MSc Data Science', degree: 'Postgraduate', duration: '1 Year', tuitionFee: '£28,000' }
+  { id: 'c-1', universityId: 'uni-manchester', title: 'MSc Data Science', degree: 'Postgraduate', duration: '1 Year', tuitionFee: '£28,000' },
+  { id: 'c-2', universityId: 'uni-toronto', title: 'MBA International', degree: 'Postgraduate', duration: '2 Years', tuitionFee: '$45,000 CAD' },
+  { id: 'c-3', universityId: 'uni-melbourne', title: 'Bachelor of Arts', degree: 'Undergraduate', duration: '3 Years', tuitionFee: '$35,000 AUD' }
 ];
 
 export const qualifications: Qualification[] = [
