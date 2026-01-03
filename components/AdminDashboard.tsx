@@ -61,6 +61,23 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
     }).sort((a, b) => new Date(b.saleDate).getTime() - new Date(a.saleDate).getTime());
   }, [data]);
 
+  // RESET ACTIONS
+  const handleWipeOrders = async () => {
+    if (confirm("CRITICAL: This will permanently DELETE ALL PREVIOUS ORDERS and reset voucher availability. Proceed?")) {
+      await api.clearAllOrders();
+      alert("Order Ledger Purged Successfully.");
+      fetchData();
+    }
+  };
+
+  const handleFactoryReset = async () => {
+    if (confirm("NUCLEAR RESET: This will wipe ALL Custom Products (LC 123, etc), Orders, Leads, and LMS Enrollments. Return to factory default?")) {
+      await api.resetSystemData();
+      alert("System Reset Complete. Portal re-initialized.");
+      window.location.reload();
+    }
+  };
+
   // LMS Actions
   const handleSaveCourse = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -170,6 +187,10 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
            </div>
 
            <div className="bg-white rounded-[3rem] border border-slate-200 shadow-2xl overflow-hidden">
+              <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                 <h3 className="text-sm font-black uppercase tracking-widest text-[#004a61]">Global Audit Ledger</h3>
+                 <button onClick={handleWipeOrders} className="px-6 py-3 bg-red-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-black shadow-lg">Purge Order History</button>
+              </div>
               <table className="w-full text-left">
                  <thead className="bg-slate-900 text-[10px] font-black uppercase text-slate-400 tracking-widest">
                     <tr>
@@ -195,13 +216,16 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
                         <td className="px-10 py-6 text-right font-display font-black text-slate-950 text-xl">${row.amount}</td>
                       </tr>
                     ))}
+                    {auditLedger.length === 0 && (
+                      <tr><td colSpan={6} className="p-20 text-center text-slate-300 font-bold uppercase italic">Audit Ledger is currently empty.</td></tr>
+                    )}
                  </tbody>
               </table>
            </div>
         </div>
       )}
 
-      {/* LMS CONTENT STUDIO (New Uploading System) */}
+      {/* LMS CONTENT STUDIO */}
       {activeTab === 'lms-content' && (
         <div className="animate-in fade-in duration-500">
            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
@@ -461,11 +485,22 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
       {activeTab === 'security' && (
         <div className="max-w-3xl mx-auto py-20 text-center animate-in zoom-in-95 duration-500">
            <div className={`p-16 rounded-[4rem] border-2 shadow-3xl transition-all ${security.isGlobalOrderStop ? 'bg-red-50 border-red-200' : 'bg-white border-slate-100'}`}>
-              <h2 className="text-4xl font-display font-black text-slate-950 uppercase mb-4 tracking-tighter">Emergency Shutdown</h2>
-              <p className="text-slate-500 font-bold italic mb-12 italic">"Deactivates all checkout nodes globally across all vertical registries."</p>
-              <button onClick={() => { api.setGlobalStop(!security.isGlobalOrderStop); fetchData(); }} className={`w-full py-8 rounded-[2.5rem] font-black text-sm uppercase tracking-[0.3em] shadow-2xl transition-all ${security.isGlobalOrderStop ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white hover:bg-black'}`}>
-                {security.isGlobalOrderStop ? 'RESUME PORTAL SETTLEMENTS' : 'TRIGGER GLOBAL LOCK'}
-              </button>
+              <h2 className="text-4xl font-display font-black text-slate-950 uppercase mb-4 tracking-tighter">Control & <span className="text-red-600">Recovery</span></h2>
+              <p className="text-slate-500 font-bold italic mb-12">"Authorized overrides for system re-initialization and emergency lock."</p>
+              
+              <div className="space-y-6">
+                <button onClick={() => { api.setGlobalStop(!security.isGlobalOrderStop); fetchData(); }} className={`w-full py-8 rounded-[2.5rem] font-black text-sm uppercase tracking-[0.3em] shadow-2xl transition-all ${security.isGlobalOrderStop ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-white hover:bg-black'}`}>
+                  {security.isGlobalOrderStop ? 'RESUME PORTAL SETTLEMENTS' : 'TRIGGER GLOBAL LOCK'}
+                </button>
+
+                <div className="pt-12 border-t border-slate-100">
+                  <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-6">Danger Zone</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <button onClick={handleWipeOrders} className="py-6 bg-red-50 border border-red-200 text-red-600 rounded-[2rem] font-black text-[10px] uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all">WIPE ALL PREVIOUS ORDERS</button>
+                    <button onClick={handleFactoryReset} className="py-6 bg-slate-900 text-white rounded-[2rem] font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all">FULL FACTORY RESET</button>
+                  </div>
+                </div>
+              </div>
            </div>
         </div>
       )}

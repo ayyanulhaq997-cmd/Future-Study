@@ -298,6 +298,32 @@ export const api = {
     return orders.find(o => o.id === id) || null;
   },
 
+  clearAllOrders: async (): Promise<void> => {
+    // 1. Delete all order history
+    localStorage.removeItem(ORDERS_KEY);
+    
+    // 2. Reset all vouchers back to Available state
+    const allCodes = await api.getCodes();
+    const resetCodes = allCodes.map(c => ({
+      ...c,
+      status: 'Available' as const,
+      orderId: undefined,
+      buyerName: undefined,
+      assignmentDate: undefined
+    }));
+    localStorage.setItem(CODES_KEY, JSON.stringify(resetCodes));
+  },
+
+  resetSystemData: async (): Promise<void> => {
+    // 1. Wipe everything custom
+    localStorage.removeItem(ORDERS_KEY);
+    localStorage.removeItem(LEADS_KEY);
+    localStorage.removeItem(PRODUCTS_KEY);
+    localStorage.removeItem(CODES_KEY);
+    localStorage.removeItem(LMS_ENROLLMENTS_KEY);
+    // Note: USERS_KEY is kept for admin session but can be cleared if needed
+  },
+
   logout: () => localStorage.removeItem(SESSION_KEY),
   getLeads: async (): Promise<Lead[]> => JSON.parse(localStorage.getItem(LEADS_KEY) || '[]'),
   submitLead: async (type: string, data: any): Promise<void> => {
