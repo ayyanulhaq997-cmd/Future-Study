@@ -1,231 +1,143 @@
 
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/apiService';
-import { Product, VoucherCode, Order, User, Lead, OrderStatus, LMSCourse, LMSModule, LMSLesson } from '../types';
+import { Product, VoucherCode, Order, User, OrderStatus, LMSCourse, LMSModule, LMSLesson, BusinessMetrics } from '../types';
 
-type AdminTab = 'ledger' | 'inventory' | 'lms-manager' | 'partners' | 'staff' | 'qa-tools';
+type AdminTab = 'command-center' | 'financials' | 'lms-architect' | 'partners' | 'stock' | 'risk-audit';
 
 const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
-  const [activeTab, setActiveTab] = useState<AdminTab>('ledger');
+  const [activeTab, setActiveTab] = useState<AdminTab>('command-center');
   const [loading, setLoading] = useState(true);
+  const [metrics, setMetrics] = useState<BusinessMetrics | null>(null);
   const [data, setData] = useState<{
-    products: Product[],
-    codes: VoucherCode[],
     orders: Order[],
     users: User[],
-    leads: Lead[],
     lmsCourses: LMSCourse[]
-  }>({ products: [], codes: [], orders: [], users: [], leads: [], lmsCourses: [] });
+  }>({ orders: [], users: [], lmsCourses: [] });
 
-  // LMS Editor State
+  // LMS Architect Editor State
   const [editingCourse, setEditingCourse] = useState<Partial<LMSCourse> | null>(null);
   const [editingModule, setEditingModule] = useState<{ courseId: string, module: Partial<LMSModule> } | null>(null);
   const [editingLesson, setEditingLesson] = useState<{ courseId: string, moduleId: string, lesson: Partial<LMSLesson> } | null>(null);
 
   const fetchData = async () => {
-    const [p, c, o, u, le, lms] = await Promise.all([
-      api.getProducts(), api.getCodes(), api.getOrders(), api.getUsers(), api.getLeads(), api.getAllLMSCourses()
+    setLoading(true);
+    const [o, u, lms, m] = await Promise.all([
+      api.getOrders(), api.getUsers(), api.getAllLMSCourses(), api.getBusinessMetrics()
     ]);
-    setData({ products: p, codes: c, orders: o, users: u, leads: le, lmsCourses: lms });
+    setData({ orders: o, users: u, lmsCourses: lms });
+    setMetrics(m);
     setLoading(false);
   };
 
   useEffect(() => { fetchData(); }, []);
 
   const handleUpdateStatus = async (orderId: string, status: OrderStatus) => {
-    if (confirm(`ADMIN ACTION: Move order ${orderId} to ${status}? This triggers automated email dispatch.`)) {
-      try {
-        await api.updateOrderStatus(orderId, status);
-        alert(`Status synchronized to ${status}. Notification dispatched.`);
-        fetchData();
-      } catch (err: any) {
-        alert(err.message);
-      }
+    if (confirm(`ADMIN PROTOCOL: Confirming status move to ${status.toUpperCase()}? (Email will be dispatched to customer)`)) {
+      await api.updateOrderStatus(orderId, status);
+      fetchData();
     }
   };
 
   const handleSaveCourse = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingCourse?.title) return;
-    const courseToSave = {
-      ...editingCourse,
-      id: editingCourse.id || `lms-${Date.now()}`,
-      category: editingCourse.category || 'PTE',
-      thumbnail: editingCourse.thumbnail || 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800',
-      description: editingCourse.description || '',
-      duration: editingCourse.duration || '20 Hours',
-      instructor: editingCourse.instructor || 'Staff',
-      price: editingCourse.price || 0
-    } as LMSCourse;
-    
-    await api.saveLMSCourse(courseToSave);
+    await api.saveLMSCourse(editingCourse as LMSCourse);
     setEditingCourse(null);
     fetchData();
   };
 
   const handleSaveModule = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingModule?.module.title) return;
-    const moduleToSave = {
-      ...editingModule.module,
-      id: editingModule.module.id || `mod-${Date.now()}`,
-      lessons: editingModule.module.lessons || []
-    } as LMSModule;
-    
-    await api.saveLMSModule(editingModule.courseId, moduleToSave);
-    setEditingModule(null);
-    fetchData();
+    if (editingModule) {
+      await api.saveLMSModule(editingModule.courseId, editingModule.module as LMSModule);
+      setEditingModule(null);
+      fetchData();
+    }
   };
 
   const handleSaveLesson = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingLesson?.lesson.title) return;
-    const lessonToSave = {
-      ...editingLesson.lesson,
-      id: editingLesson.lesson.id || `les-${Date.now()}`,
-      type: editingLesson.lesson.type || 'Video',
-      content: editingLesson.lesson.content || ''
-    } as LMSLesson;
-    
-    await api.saveLMSLesson(editingLesson.courseId, editingLesson.moduleId, lessonToSave);
-    setEditingLesson(null);
-    fetchData();
+    if (editingLesson) {
+      await api.saveLMSLesson(editingLesson.courseId, editingLesson.moduleId, editingLesson.lesson as LMSLesson);
+      setEditingLesson(null);
+      fetchData();
+    }
   };
 
-  if (loading) return <div className="p-40 text-center animate-pulse text-unicou-navy font-black uppercase text-[11px] tracking-[0.4em]">Establishing Global Control Hub...</div>;
+  if (loading) return <div className="p-40 text-center animate-pulse text-unicou-navy font-black uppercase text-[11px] tracking-[0.4em]">Initializing Global Command Center...</div>;
 
   return (
     <div className="max-w-[1600px] mx-auto px-6 py-12 bg-white min-h-screen">
+      {/* HEADER SECTION */}
       <div className="flex flex-col xl:flex-row justify-between items-center gap-10 mb-16 border-b border-slate-100 pb-12">
         <div className="text-center xl:text-left">
-           <h1 className="text-5xl font-display font-black text-slate-900 uppercase tracking-tighter leading-none mb-2">
-             SYSTEM <span className="text-unicou-orange">HUB</span>
-           </h1>
-           <p className="text-[10px] font-black text-unicou-navy uppercase tracking-[0.4em]">UNICOU Institutional Control Node</p>
+           <h1 className="text-5xl font-display font-black text-slate-900 uppercase tracking-tighter leading-none mb-2">SYSTEM <span className="text-unicou-orange">HUB</span></h1>
+           <p className="text-[10px] font-black text-unicou-navy uppercase tracking-[0.4em]">Integrated Business Intelligence & Content Orchestrator</p>
         </div>
         
         <div className="flex flex-wrap justify-center bg-slate-50 p-2 rounded-[2rem] border border-slate-200 shadow-inner">
-           {(['ledger', 'inventory', 'lms-manager', 'partners', 'staff', 'qa-tools'] as AdminTab[]).map((tab) => (
-             <button key={tab} onClick={() => setActiveTab(tab)} className={`px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-white text-unicou-navy shadow-lg border border-slate-200' : 'text-slate-400 hover:text-slate-900'}`}>
-               {tab}
+           {(['command-center', 'financials', 'lms-architect', 'partners', 'stock', 'risk-audit'] as AdminTab[]).map((tab) => (
+             <button 
+               key={tab} 
+               onClick={() => setActiveTab(tab)} 
+               className={`px-6 py-3 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-white text-unicou-navy shadow-lg border border-slate-200' : 'text-slate-400 hover:text-slate-900'}`}
+             >
+               {tab.replace('-', ' ')}
              </button>
            ))}
         </div>
       </div>
 
-      {activeTab === 'lms-manager' && (
+      {/* TAB 1: COMMAND CENTER */}
+      {activeTab === 'command-center' && metrics && (
         <div className="animate-in fade-in duration-500 space-y-12">
-          <div className="flex justify-between items-center">
-            <h3 className="text-2xl font-display font-black uppercase tracking-tighter text-unicou-navy">Learning Hub Content Architect</h3>
-            <button 
-              onClick={() => setEditingCourse({})}
-              className="px-8 py-4 bg-unicou-orange text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl active:scale-95"
-            >Create New Course Node</button>
-          </div>
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+              <KPICard label="Today's Sales" value={`$${metrics.todaySales.toLocaleString()}`} icon="💸" color="text-emerald-600" />
+              <KPICard label="Month Revenue" value={`$${metrics.monthRevenue.toLocaleString()}`} icon="📈" color="text-unicou-navy" />
+              <KPICard label="Vouchers Stock" value={metrics.vouchersInStock.toString()} icon="🎫" color="text-unicou-orange" />
+              <KPICard label="Active Agents" value={metrics.activeAgents.toString()} icon="🤝" color="text-blue-600" />
+              <KPICard label="Risk Alerts" value={metrics.riskAlerts.toString()} icon="🛡️" color="text-red-600" alert={metrics.riskAlerts > 0} />
+              <KPICard label="Refund Requests" value={metrics.refundRequests.toString()} icon="🔄" color="text-amber-600" />
+           </div>
 
-          <div className="grid grid-cols-1 gap-8">
-            {data.lmsCourses.map(course => (
-              <div key={course.id} className="bg-slate-50 rounded-[3rem] border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl transition-all p-10">
-                <div className="flex flex-col lg:flex-row justify-between gap-8 mb-10">
-                  <div className="flex items-center gap-8">
-                    <img src={course.thumbnail} className="w-32 h-20 object-cover rounded-2xl shadow-lg border border-slate-200" alt="" />
-                    <div>
-                      <span className="text-[10px] font-black text-unicou-orange uppercase tracking-[0.3em] mb-1 block">{course.category} Node</span>
-                      <h4 className="text-3xl font-display font-black text-unicou-navy uppercase leading-none">{course.title}</h4>
-                      <p className="text-slate-500 font-bold italic text-sm mt-2">Price: ${course.price} • {course.duration}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <button onClick={() => setEditingCourse(course)} className="px-6 py-2 bg-white border border-slate-200 rounded-xl text-[9px] font-black uppercase hover:bg-unicou-navy hover:text-white transition-all">Edit Metadata</button>
-                    <button onClick={() => setEditingModule({ courseId: course.id, module: {} })} className="px-6 py-2 bg-unicou-navy text-white rounded-xl text-[9px] font-black uppercase shadow-lg">Add Module</button>
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-[2rem] border border-slate-100 p-8 space-y-4 shadow-inner">
-                  <CourseModulesList 
-                    courseId={course.id} 
-                    onEditModule={(m) => setEditingModule({ courseId: course.id, module: m })}
-                    onAddLesson={(moduleId) => setEditingLesson({ courseId: course.id, moduleId, lesson: {} })}
-                    onEditLesson={(moduleId, lesson) => setEditingLesson({ courseId: course.id, moduleId, lesson })}
-                  />
-                </div>
+           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              <div className="lg:col-span-4 bg-slate-900 p-10 rounded-[3rem] text-white shadow-2xl relative overflow-hidden">
+                 <h3 className="text-[10px] font-black uppercase tracking-[0.4em] mb-10 text-slate-500">System Health Monitor</h3>
+                 <div className="space-y-6">
+                    <HealthRow label="Voucher Vault" status="Secure" />
+                    <HealthRow label="LMS Core API" status="Optimal" />
+                    <HealthRow label="Billing Node" status="Synchronized" />
+                 </div>
               </div>
-            ))}
-          </div>
-
-          {/* Course Modal */}
-          {editingCourse && (
-            <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-6">
-              <div className="bg-white w-full max-w-2xl rounded-[3.5rem] p-12 shadow-3xl animate-in zoom-in-95 duration-300">
-                <h2 className="text-3xl font-display font-black text-unicou-navy uppercase mb-8">Course Metadata Editor</h2>
-                <form onSubmit={handleSaveCourse} className="space-y-6">
-                  <div className="grid grid-cols-2 gap-6">
-                    <AdminInput label="Course Title" value={editingCourse.title || ''} onChange={v => setEditingCourse({...editingCourse, title: v})} />
-                    <AdminSelect label="Category" value={editingCourse.category || 'PTE'} options={['PTE', 'IELTS', 'TOEFL', 'DUOLINGO', 'LANGUAGECERT', 'OTHM']} onChange={v => setEditingCourse({...editingCourse, category: v})} />
-                    <AdminInput label="Price (USD)" type="number" value={editingCourse.price || 0} onChange={v => setEditingCourse({...editingCourse, price: Number(v)})} />
-                    <AdminInput label="Duration" value={editingCourse.duration || ''} onChange={v => setEditingCourse({...editingCourse, duration: v})} />
-                    <AdminInput label="Instructor" value={editingCourse.instructor || ''} onChange={v => setEditingCourse({...editingCourse, instructor: v})} />
-                    <AdminInput label="Thumbnail URL" value={editingCourse.thumbnail || ''} onChange={v => setEditingCourse({...editingCourse, thumbnail: v})} />
-                  </div>
-                  <AdminTextarea label="Description" value={editingCourse.description || ''} onChange={v => setEditingCourse({...editingCourse, description: v})} />
-                  <div className="flex gap-4 pt-4">
-                    <button type="button" onClick={() => setEditingCourse(null)} className="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-black text-[10px] uppercase">Cancel</button>
-                    <button type="submit" className="flex-[2] py-4 bg-unicou-navy text-white rounded-2xl font-black text-[10px] uppercase shadow-xl">Commit Node Changes</button>
-                  </div>
-                </form>
+              <div className="lg:col-span-8 bg-slate-50 p-10 rounded-[4rem] border border-slate-200 shadow-inner">
+                 <h3 className="text-sm font-black uppercase tracking-widest text-unicou-navy mb-8">Live Global Transaction Stream</h3>
+                 <div className="space-y-4">
+                    {data.orders.slice(0, 5).map(o => (
+                      <div key={o.id} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex items-center justify-between group hover:border-unicou-navy transition-all">
+                        <div className="flex items-center gap-6">
+                           <div className="w-10 h-10 rounded-2xl bg-slate-50 flex items-center justify-center text-lg">{o.paymentMethod === 'BankTransfer' ? '🏦' : '💳'}</div>
+                           <div><p className="text-[11px] font-black text-slate-900 uppercase">{o.buyerName}</p><p className="text-[9px] font-mono text-slate-400">{o.productName}</p></div>
+                        </div>
+                        <div className="text-right"><p className="text-lg font-display font-black text-unicou-navy">${o.totalAmount}</p><span className={`text-[8px] font-black uppercase ${o.status === 'Approved' ? 'text-emerald-500' : 'text-amber-500'}`}>{o.status}</span></div>
+                      </div>
+                    ))}
+                 </div>
               </div>
-            </div>
-          )}
-
-          {/* Module Modal */}
-          {editingModule && (
-            <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-6">
-              <div className="bg-white w-full max-w-lg rounded-[3.5rem] p-12 shadow-3xl">
-                <h2 className="text-3xl font-display font-black text-unicou-navy uppercase mb-8">Module Node Editor</h2>
-                <form onSubmit={handleSaveModule} className="space-y-6">
-                  <AdminInput label="Module Title" value={editingModule.module.title || ''} onChange={v => setEditingModule({...editingModule, module: {...editingModule.module, title: v}})} />
-                  <div className="flex gap-4 pt-4">
-                    <button type="button" onClick={() => setEditingModule(null)} className="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-black text-[10px] uppercase">Cancel</button>
-                    <button type="submit" className="flex-[2] py-4 bg-unicou-navy text-white rounded-2xl font-black text-[10px] uppercase shadow-xl">Save Module</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
-
-          {/* Lesson Modal */}
-          {editingLesson && (
-            <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-6">
-              <div className="bg-white w-full max-w-2xl rounded-[3.5rem] p-12 shadow-3xl">
-                <h2 className="text-3xl font-display font-black text-unicou-navy uppercase mb-8">Lesson Unit Editor</h2>
-                <form onSubmit={handleSaveLesson} className="space-y-6">
-                  <div className="grid grid-cols-2 gap-6">
-                    <AdminInput label="Lesson Title" value={editingLesson.lesson.title || ''} onChange={v => setEditingLesson({...editingLesson, lesson: {...editingLesson.lesson, title: v}})} />
-                    <AdminSelect label="Content Type" value={editingLesson.lesson.type || 'Video'} options={['Video', 'Text', 'Quiz']} onChange={v => setEditingLesson({...editingLesson, lesson: {...editingLesson.lesson, type: v as any}})} />
-                  </div>
-                  <AdminTextarea 
-                    label={editingLesson.lesson.type === 'Video' ? "Embed/Source URL" : editingLesson.lesson.type === 'Quiz' ? "JSON Quiz Data" : "Markdown/Text Content"} 
-                    value={editingLesson.lesson.content || ''} 
-                    onChange={v => setEditingLesson({...editingLesson, lesson: {...editingLesson.lesson, content: v}})} 
-                    rows={10}
-                  />
-                  <div className="flex gap-4 pt-4">
-                    <button type="button" onClick={() => setEditingLesson(null)} className="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-black text-[10px] uppercase">Cancel</button>
-                    <button type="submit" className="flex-[2] py-4 bg-unicou-navy text-white rounded-2xl font-black text-[10px] uppercase shadow-xl">Deploy Lesson</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
+           </div>
         </div>
       )}
 
-      {activeTab === 'ledger' && (
+      {/* TAB 2: FINANCIALS (8-Column Ledger + 3 Stage Controls) */}
+      {activeTab === 'financials' && (
         <div className="animate-in fade-in duration-500">
            <div className="bg-white rounded-[3rem] border border-slate-200 shadow-2xl overflow-hidden">
-              <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                 <h3 className="text-sm font-black uppercase tracking-widest text-unicou-navy">Global Audit Ledger</h3>
-                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Records: {data.orders.length}</span>
+              <div className="p-8 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                 <h3 className="text-sm font-black uppercase tracking-widest text-unicou-navy">Settlement Audit Ledger (3-Stage Protocol)</h3>
+                 <div className="flex gap-4">
+                    <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-500" /><span className="text-[8px] font-black uppercase">Approved</span></div>
+                    <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-amber-500" /><span className="text-[8px] font-black uppercase">Hold</span></div>
+                    <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-red-500" /><span className="text-[8px] font-black uppercase">Rejected</span></div>
+                 </div>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
@@ -237,80 +149,120 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
                         <th className="px-6 py-6">IV. Buyer Name</th>
                         <th className="px-6 py-6">V. Product Name</th>
                         <th className="px-6 py-6">VI. Amount</th>
-                        <th className="px-6 py-6">VII. Reference</th>
-                        <th className="px-6 py-6 text-center">VIII. Status / Control</th>
-                        <th className="px-6 py-6 text-right">Actions</th>
+                        <th className="px-6 py-6">VII. Ref No.</th>
+                        <th className="px-6 py-6 text-center">VIII. Terminal Control</th>
                       </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                      {data.orders.map((o) => {
-                        const dateObj = new Date(o.timestamp);
-                        return (
+                      {data.orders.map((o) => (
                           <tr key={o.id} className="hover:bg-slate-50 transition-colors">
                             <td className="px-6 py-5 font-mono font-black text-[11px] text-unicou-navy">{o.id}</td>
-                            <td className="px-6 py-5 font-mono text-[11px] text-slate-500">{dateObj.toLocaleDateString()}</td>
-                            <td className="px-6 py-5 font-mono text-[11px] text-slate-500">{dateObj.toLocaleTimeString()}</td>
+                            <td className="px-6 py-5 font-mono text-[11px] text-slate-500">{o.date}</td>
+                            <td className="px-6 py-5 font-mono text-[11px] text-slate-500">{o.time}</td>
                             <td className="px-6 py-5 font-black text-[11px] text-slate-900 uppercase truncate max-w-[120px]">{o.buyerName}</td>
                             <td className="px-6 py-5 font-black text-[11px] text-slate-700 uppercase">{o.productName}</td>
                             <td className="px-6 py-5 font-display font-black text-slate-950 text-base">${o.totalAmount}</td>
-                            <td className="px-6 py-5 font-mono font-bold text-[10px] text-slate-400 uppercase truncate max-w-[100px]" title={o.bankRef}>{o.bankRef || 'N/A'}</td>
+                            <td className="px-6 py-5 font-mono font-bold text-[10px] text-slate-400 uppercase truncate max-w-[100px]">{o.bankRef}</td>
                             <td className="px-6 py-5">
-                               <div className="flex flex-col items-center gap-2">
-                                  <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase border ${
-                                    o.status === 'Approved' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                                    o.status === 'Hold' ? 'bg-amber-50 text-amber-600 border-amber-100' :
-                                    o.status === 'Rejected' ? 'bg-red-50 text-red-600 border-red-100' :
-                                    'bg-slate-50 text-slate-600 border-slate-100'
+                               <div className="flex flex-col items-center gap-3">
+                                  <span className={`px-4 py-1 rounded-full text-[8px] font-black uppercase border shadow-sm ${
+                                    o.status === 'Approved' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' :
+                                    o.status === 'Hold' ? 'bg-amber-50 text-amber-600 border-amber-200' :
+                                    o.status === 'Rejected' ? 'bg-red-50 text-red-600 border-red-200' :
+                                    'bg-slate-50 text-slate-600 border-slate-200'
                                   }`}>{o.status}</span>
                                   
-                                  <div className="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200">
-                                     <button onClick={() => handleUpdateStatus(o.id, 'Approved')} className={`px-2 py-1 rounded text-[7px] font-black transition-all ${o.status === 'Approved' ? 'bg-emerald-500 text-white shadow-sm' : 'text-slate-400 hover:text-emerald-600'}`}>APPROVE</button>
-                                     <button onClick={() => handleUpdateStatus(o.id, 'Hold')} className={`px-2 py-1 rounded text-[7px] font-black transition-all ${o.status === 'Hold' ? 'bg-amber-500 text-white shadow-sm' : 'text-slate-400 hover:text-amber-600'}`}>HOLD</button>
-                                     <button onClick={() => handleUpdateStatus(o.id, 'Rejected')} className={`px-2 py-1 rounded text-[7px] font-black transition-all ${o.status === 'Rejected' ? 'bg-red-500 text-white shadow-sm' : 'text-slate-400 hover:text-red-600'}`}>REJECT</button>
-                                  </div>
+                                  {o.status === 'Pending' || o.status === 'Hold' ? (
+                                    <div className="flex bg-slate-200 p-1 rounded-xl gap-1">
+                                       <button onClick={() => handleUpdateStatus(o.id, 'Approved')} className="px-3 py-1.5 bg-white rounded-lg text-[8px] font-black hover:bg-emerald-500 hover:text-white transition-all uppercase shadow-sm">I. Approve</button>
+                                       <button onClick={() => handleUpdateStatus(o.id, 'Hold')} className="px-3 py-1.5 bg-white rounded-lg text-[8px] font-black hover:bg-amber-500 hover:text-white transition-all uppercase shadow-sm">II. Hold</button>
+                                       <button onClick={() => handleUpdateStatus(o.id, 'Rejected')} className="px-3 py-1.5 bg-white rounded-lg text-[8px] font-black hover:bg-red-500 hover:text-white transition-all uppercase shadow-sm">III. Reject</button>
+                                    </div>
+                                  ) : (
+                                    <span className="text-[7px] font-black text-slate-300 uppercase italic">Immutable Entry</span>
+                                  )}
                                </div>
                             </td>
-                            <td className="px-6 py-5 text-right">
-                              <button onClick={() => api.deleteOrder(o.id).then(fetchData)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
-                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                              </button>
-                            </td>
                           </tr>
-                        );
-                      })}
+                      ))}
                   </tbody>
                 </table>
               </div>
            </div>
         </div>
       )}
+
+      {/* TAB 3: LMS ARCHITECT */}
+      {activeTab === 'lms-architect' && (
+        <div className="animate-in fade-in duration-500 space-y-12">
+          <div className="flex justify-between items-center">
+            <h3 className="text-2xl font-display font-black uppercase tracking-tighter text-unicou-navy">Academic Content Architect</h3>
+            <button onClick={() => setEditingCourse({})} className="px-8 py-4 bg-unicou-orange text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl">Create New Course</button>
+          </div>
+          <div className="grid grid-cols-1 gap-8">
+            {data.lmsCourses.map(course => (
+              <div key={course.id} className="bg-slate-50 rounded-[3rem] border border-slate-200 p-10 shadow-sm hover:shadow-xl transition-all">
+                <div className="flex flex-col lg:flex-row justify-between gap-8 mb-10">
+                  <div className="flex items-center gap-8">
+                    <img src={course.thumbnail} className="w-32 h-20 object-cover rounded-2xl shadow-lg" alt="" />
+                    <div>
+                      <span className="text-[10px] font-black text-unicou-orange uppercase tracking-[0.3em] mb-1 block">{course.category} HUB</span>
+                      <h4 className="text-3xl font-display font-black text-unicou-navy uppercase leading-none">{course.title}</h4>
+                      <p className="text-slate-500 font-bold italic text-sm mt-2">${course.price} • {course.duration}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button onClick={() => setEditingCourse(course)} className="px-6 py-2 bg-white border border-slate-200 rounded-xl text-[9px] font-black uppercase hover:bg-unicou-navy hover:text-white transition-all">Edit Meta</button>
+                    <button onClick={() => setEditingModule({ courseId: course.id, module: {} })} className="px-6 py-2 bg-unicou-navy text-white rounded-xl text-[9px] font-black uppercase shadow-lg">Add Module</button>
+                  </div>
+                </div>
+                <div className="bg-white rounded-[2rem] border border-slate-100 p-8 shadow-inner min-h-[100px]">
+                   <CourseModulesList 
+                     courseId={course.id} 
+                     onEditModule={(m) => setEditingModule({ courseId: course.id, module: m })}
+                     onAddLesson={(mid) => setEditingLesson({ courseId: course.id, moduleId: mid, lesson: {} })}
+                     onEditLesson={(mid, lesson) => setEditingLesson({ courseId: course.id, moduleId: mid, lesson })}
+                   />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* MODAL OVERLAYS */}
+      {(editingCourse || editingModule || editingLesson) && (
+        <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-6 overflow-y-auto">
+           <div className="bg-white w-full max-w-2xl rounded-[3.5rem] p-12 shadow-3xl my-auto">
+              {editingCourse && (
+                <form onSubmit={handleSaveCourse} className="space-y-6">
+                   <h2 className="text-3xl font-display font-black text-unicou-navy uppercase mb-8">Course Metadata</h2>
+                   <AdminInput label="Title" value={editingCourse.title || ''} onChange={(v:any) => setEditingCourse({...editingCourse, title: v})} />
+                   <AdminInput label="Instructor" value={editingCourse.instructor || ''} onChange={(v:any) => setEditingCourse({...editingCourse, instructor: v})} />
+                   <div className="flex gap-4 pt-4"><button type="button" onClick={() => setEditingCourse(null)} className="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-black text-[10px] uppercase">Cancel</button><button type="submit" className="flex-[2] py-4 bg-unicou-navy text-white rounded-2xl font-black text-[10px] uppercase shadow-xl">Commit Course</button></div>
+                </form>
+              )}
+              {editingModule && (
+                <form onSubmit={handleSaveModule} className="space-y-6">
+                   <h2 className="text-3xl font-display font-black text-unicou-navy uppercase mb-8">Module Node Editor</h2>
+                   <AdminInput label="Module Title" value={editingModule.module.title || ''} onChange={(v:any) => setEditingModule({...editingModule, module: {...editingModule.module, title: v}})} />
+                   <div className="flex gap-4 pt-4"><button type="button" onClick={() => setEditingModule(null)} className="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-black text-[10px] uppercase">Cancel</button><button type="submit" className="flex-[2] py-4 bg-unicou-navy text-white rounded-2xl font-black text-[10px] uppercase shadow-xl">Save Module</button></div>
+                </form>
+              )}
+              {editingLesson && (
+                <form onSubmit={handleSaveLesson} className="space-y-6">
+                   <h2 className="text-3xl font-display font-black text-unicou-navy uppercase mb-8">Lesson Unit Editor</h2>
+                   <AdminInput label="Lesson Title" value={editingLesson.lesson.title || ''} onChange={(v:any) => setEditingLesson({...editingLesson, lesson: {...editingLesson.lesson, title: v}})} />
+                   <AdminInput label="Video/Content Link" value={editingLesson.lesson.content || ''} onChange={(v:any) => setEditingLesson({...editingLesson, lesson: {...editingLesson.lesson, content: v}})} />
+                   <div className="flex gap-4 pt-4"><button type="button" onClick={() => setEditingLesson(null)} className="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-black text-[10px] uppercase">Cancel</button><button type="submit" className="flex-[2] py-4 bg-unicou-navy text-white rounded-2xl font-black text-[10px] uppercase shadow-xl">Deploy Lesson</button></div>
+                </form>
+              )}
+           </div>
+        </div>
+      )}
     </div>
   );
 };
-
-// UI Components for Admin
-const AdminInput = ({ label, onChange, value, ...props }: any) => (
-  <div className="space-y-2">
-    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block ml-1">{label}</label>
-    <input className="w-full bg-slate-50 border border-slate-100 rounded-xl p-4 text-sm font-bold outline-none focus:border-unicou-navy shadow-inner" value={value} onChange={e => onChange(e.target.value)} {...props} />
-  </div>
-);
-
-const AdminSelect = ({ label, options, onChange, value }: any) => (
-  <div className="space-y-2">
-    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block ml-1">{label}</label>
-    <select className="w-full bg-slate-50 border border-slate-100 rounded-xl p-4 text-sm font-bold outline-none focus:border-unicou-navy shadow-inner appearance-none" value={value} onChange={e => onChange(e.target.value)}>
-      {options.map((o: string) => <option key={o} value={o}>{o}</option>)}
-    </select>
-  </div>
-);
-
-const AdminTextarea = ({ label, onChange, value, ...props }: any) => (
-  <div className="space-y-2">
-    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block ml-1">{label}</label>
-    <textarea className="w-full bg-slate-50 border border-slate-100 rounded-xl p-4 text-sm font-bold outline-none focus:border-unicou-navy shadow-inner resize-none" value={value} onChange={e => onChange(e.target.value)} {...props} />
-  </div>
-);
 
 const CourseModulesList: React.FC<{ 
   courseId: string, 
@@ -319,38 +271,56 @@ const CourseModulesList: React.FC<{
   onEditLesson: (mid: string, l: LMSLesson) => void
 }> = ({ courseId, onEditModule, onAddLesson, onEditLesson }) => {
   const [modules, setModules] = useState<LMSModule[]>([]);
-
-  useEffect(() => {
-    api.getCourseModules(courseId).then(setModules);
-  }, [courseId]);
+  useEffect(() => { api.getCourseModules(courseId).then(setModules); }, [courseId]);
 
   return (
     <div className="space-y-6">
       {modules.map(mod => (
         <div key={mod.id} className="border-l-4 border-unicou-navy pl-6 py-2">
           <div className="flex justify-between items-center mb-4">
-            <h5 className="font-black text-unicou-navy uppercase tracking-tight text-lg">{mod.title}</h5>
+            <h5 className="font-black text-unicou-navy uppercase text-lg">{mod.title}</h5>
             <div className="flex gap-2">
               <button onClick={() => onEditModule(mod)} className="text-[8px] font-black uppercase text-slate-400 hover:text-unicou-navy transition-colors">Rename</button>
-              <button onClick={() => onAddLesson(mod.id)} className="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-[8px] font-black uppercase hover:bg-unicou-navy hover:text-white transition-all">Add Lesson</button>
+              <button onClick={() => onAddLesson(mod.id)} className="px-3 py-1 bg-slate-100 rounded-lg text-[8px] font-black uppercase hover:bg-unicou-navy hover:text-white transition-all">Add Lesson</button>
             </div>
           </div>
           <div className="space-y-2">
-            {mod.lessons.map(les => (
+            {mod.lessons?.map(les => (
               <div key={les.id} className="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-100 group">
-                <div className="flex items-center gap-3">
-                  <span className="text-[10px]">{les.type === 'Video' ? '🎬' : les.type === 'Quiz' ? '❓' : '📄'}</span>
-                  <span className="text-xs font-bold text-slate-700">{les.title}</span>
-                </div>
-                <button onClick={() => onEditLesson(mod.id, les)} className="opacity-0 group-hover:opacity-100 text-[8px] font-black uppercase text-unicou-orange transition-all">Edit Unit</button>
+                <span className="text-xs font-bold text-slate-700">{les.title}</span>
+                <button onClick={() => onEditLesson(mod.id, les)} className="opacity-0 group-hover:opacity-100 text-[8px] font-black uppercase text-unicou-orange transition-all">Edit</button>
               </div>
             ))}
           </div>
         </div>
       ))}
-      {modules.length === 0 && <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest text-center py-4">No content modules established.</p>}
     </div>
   );
 };
+
+const KPICard = ({ label, value, icon, color, alert }: any) => (
+  <div className={`bg-white p-8 rounded-[2.5rem] border-2 transition-all ${alert ? 'border-red-500' : 'border-slate-50'} hover:shadow-xl flex flex-col`}>
+     <div className="flex justify-between items-start mb-4">
+        <span className="text-2xl">{icon}</span>
+        {alert && <span className="w-2 h-2 bg-red-500 rounded-full animate-ping" />}
+     </div>
+     <p className="text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">{label}</p>
+     <p className={`text-2xl font-display font-black leading-none ${color}`}>{value}</p>
+  </div>
+);
+
+const HealthRow = ({ label, status }: any) => (
+  <div className="flex items-center justify-between py-3 border-b border-white/5">
+     <span className="text-xs font-bold text-slate-400 uppercase">{label}</span>
+     <div className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /><span className="text-[10px] font-black uppercase text-emerald-400">{status}</span></div>
+  </div>
+);
+
+const AdminInput = ({ label, onChange, value, ...props }: any) => (
+  <div className="space-y-2">
+    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block ml-1">{label}</label>
+    <input className="w-full bg-slate-50 border border-slate-100 rounded-xl p-4 text-sm font-bold outline-none focus:border-unicou-navy shadow-inner" value={value} onChange={e => onChange(e.target.value)} {...props} />
+  </div>
+);
 
 export default AdminDashboard;

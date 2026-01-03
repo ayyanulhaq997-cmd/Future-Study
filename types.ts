@@ -60,31 +60,36 @@ export interface VoucherCode {
   salesExecutiveName?: string;
 }
 
-// Updated Status Registry to support 3-stage processing
-export type OrderStatus = 'Pending' | 'Approved' | 'Hold' | 'Rejected';
+export type OrderStatus = 'Pending' | 'Approved' | 'Hold' | 'Rejected' | 'RefundRequested' | 'Refunded';
 
 export interface Order {
-  id: string;
+  id: string; // I. Number
+  date: string; // II. Date
+  time: string; // III. Time
+  buyerName: string; // IV. Buyer name
+  productName: string; // V. Product Name
+  totalAmount: number; // VI. Amount
+  bankRef: string; // VII. Payment Reference number
+  proofAttached: boolean; // VIII. Payment proof (Indicator)
   userId: string;
   productId: string;
-  productName: string;
-  quantity: number;
-  totalAmount: number;
   currency: string;
   customerEmail: string;
-  buyerName: string;
   status: OrderStatus;
   paymentMethod: 'Gateway' | 'BankTransfer';
   timestamp: string;
   voucherCodes: string[];
-  bankRef: string;
-  proofAttached: boolean;
+  quantity: number;
 }
 
-export interface SecurityStatus {
-  isGlobalOrderStop: boolean;
-  threatLevel: 'Normal' | 'Observed' | 'Critical';
-  lastAudit: string;
+export interface BusinessMetrics {
+  todaySales: number;
+  monthRevenue: number;
+  vouchersInStock: number;
+  activeAgents: number;
+  riskAlerts: number;
+  refundRequests: number;
+  systemHealth: 'Optimal' | 'Degraded' | 'Critical';
 }
 
 export type ViewState = 
@@ -111,51 +116,6 @@ export type ViewState =
   | { type: 'university'; slug: string }
   | { type: 'policy'; policyId: string }
   | { type: 'verification'; email: string };
-
-export interface University {
-  id: string;
-  name: string;
-  slug: string;
-  location: string;
-  ranking: number;
-  description: string;
-  logo: string;
-  countryId: string;
-  website: string;
-}
-
-export interface CountryGuide {
-  id: string;
-  countryId: string;
-  slug: string;
-  title: string;
-  content: string;
-  heroImage: string;
-  costOfLiving: string;
-  visaRequirements: string;
-}
-
-export interface Course {
-  id: string;
-  universityId: string;
-  title: string;
-  degree: string;
-  duration: string;
-  tuitionFee: string;
-  description?: string;
-}
-
-export interface Qualification {
-  id: string;
-  title: string;
-  qualificationBody: string;
-  level: string;
-  duration: string;
-  tuitionFees: string;
-  description: string;
-  image: string;
-  requirements: string[];
-}
 
 export interface LMSCourse {
   id: string;
@@ -199,23 +159,6 @@ export interface TestResult {
   timestamp: string;
 }
 
-export interface LMSTestQuestion {
-  id: string;
-  text: string;
-  type: 'MCQ' | 'Essay' | 'Audio-Record';
-  skill: 'Listening' | 'Reading' | 'Writing' | 'Speaking';
-  options?: string[];
-  audioUrl?: string;
-}
-
-export interface LMSTestSection {
-  id: string;
-  title: string;
-  skill: string;
-  timeLimit: number;
-  questions: LMSTestQuestion[];
-}
-
 export interface LMSPracticeTest {
   id: string;
   title: string;
@@ -242,32 +185,130 @@ export interface FinanceReport {
   recentSales: Order[];
 }
 
-export interface QualificationLead {
+// Fixed missing exported member 'University'
+export interface University {
   id: string;
-  qualificationId: string;
-  qualificationTitle: string;
-  timestamp: string;
+  name: string;
+  slug: string;
+  location: string;
+  ranking: number;
+  description: string;
+  logo: string;
+  countryId: string;
+  website: string;
 }
 
-export interface TestBooking {
+// Fixed missing exported member 'CountryGuide'
+export interface CountryGuide {
   id: string;
-  trackingRef: string;
+  countryId: string;
+  slug: string;
+  title: string;
+  heroImage: string;
+  costOfLiving: string;
+  visaRequirements: string;
+  content: string;
 }
 
+// Fixed missing exported member 'Course'
+export interface Course {
+  id: string;
+  universityId: string;
+  title: string;
+  degree: string;
+  duration: string;
+  tuitionFee: string;
+  description?: string;
+}
+
+// Fixed missing exported member 'Qualification'
+export interface Qualification {
+  id: string;
+  title: string;
+  qualificationBody: string;
+  level: string;
+  duration: string;
+  tuitionFees: string;
+  description: string;
+  image: string;
+  requirements: string[];
+}
+
+// Fixed missing exported member 'Pathway'
+export interface Pathway {
+  id: string;
+  title: string;
+  description: string;
+  requirements: string[];
+}
+
+// Fixed missing exported member 'ImmigrationGuideData'
 export interface ImmigrationGuideData {
   id: string;
   slug: string;
   title: string;
   content: string;
   heroImage: string;
-  pathways: any[];
+  pathways: Pathway[];
 }
 
+// Fixed missing exported member 'SecurityStatus'
+export interface SecurityStatus {
+  lastScan: string;
+  threatLevel: 'Low' | 'Medium' | 'High';
+  status: 'Secure' | 'Vulnerable';
+}
+
+// Fixed missing exported member 'APIEndpoint'
 export interface APIEndpoint {
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  method: string;
   path: string;
   description: string;
   authRequired: boolean;
   params?: string[];
   response: string;
+}
+
+// Fixed missing exported member 'LMSTestQuestion'
+export interface LMSTestQuestion {
+  id: string;
+  skill: 'Listening' | 'Reading' | 'Writing' | 'Speaking';
+  type: 'MCQ' | 'Essay' | 'Audio-Record';
+  text: string;
+  options?: string[];
+  audioUrl?: string;
+}
+
+export interface LMSTestSection {
+  id: string;
+  title: string;
+  skill: string;
+  timeLimit: number;
+  questions: LMSTestQuestion[];
+}
+
+// Fixed missing exported member 'QualificationLead'
+export interface QualificationLead {
+  id: string;
+  studentName: string;
+  studentEmail: string;
+  studentPhone: string;
+  highestQualification: string;
+  workExperience: string;
+  qualificationId: string;
+  qualificationTitle: string;
+  timestamp: string;
+}
+
+// Fixed missing exported member 'TestBooking'
+export interface TestBooking {
+  id: string;
+  productId: string;
+  productName: string;
+  studentName: string;
+  studentEmail: string;
+  preferredDate: string;
+  testCenter: string;
+  serviceType: string;
+  timestamp: string;
 }
