@@ -70,7 +70,7 @@ const CustomerDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => vo
                 <div key={o.id} className="bg-white border border-slate-100 py-2 px-6 rounded-2xl transition-all hover:border-unicou-navy/20 flex flex-wrap items-center justify-between gap-4 shadow-sm">
                     <div className="flex items-center gap-8">
                       <div className="flex items-center gap-3">
-                        <div className={`w-2 h-2 rounded-full ${o.status === 'Completed' ? 'bg-emerald-500' : 'bg-orange-500'}`} />
+                        <div className={`w-2 h-2 rounded-full ${o.status === 'Approved' ? 'bg-emerald-500' : o.status === 'Rejected' ? 'bg-red-500' : 'bg-orange-500'}`} />
                         <span className="text-[10px] font-black text-[#004a61] uppercase tracking-[0.1em] whitespace-nowrap">{o.id}</span>
                       </div>
                       <span className="text-[10px] text-slate-400 font-mono font-bold uppercase">{new Date(o.timestamp).toLocaleDateString()}</span>
@@ -83,7 +83,13 @@ const CustomerDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => vo
                           <span className="font-mono text-xs font-black text-[#004a61] tracking-widest">{code}</span>
                         </div>
                       )) : (
-                        <span className="text-[9px] font-black text-orange-600 bg-orange-50 px-4 py-1.5 rounded-full uppercase border border-orange-100">Audit in Progress</span>
+                        <span className={`text-[9px] font-black px-4 py-1.5 rounded-full uppercase border ${
+                          o.status === 'Hold' ? 'bg-amber-50 text-amber-600 border-amber-100' : 
+                          o.status === 'Rejected' ? 'bg-red-50 text-red-600 border-red-100' : 
+                          'bg-orange-50 text-orange-600 border-orange-100'
+                        }`}>
+                          {o.status === 'Hold' ? 'Audit Hold' : o.status === 'Rejected' ? 'Order Declined' : 'Audit in Progress'}
+                        </span>
                       )}
                     </div>
                 </div>

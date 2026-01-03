@@ -87,7 +87,12 @@ const SalesDashboard: React.FC<{ user: User }> = ({ user }) => {
                     <td className="px-8 py-6 font-black text-slate-900 uppercase text-xs">{o.productName} (x{o.quantity})</td>
                     <td className="px-8 py-6 font-display font-black text-slate-950">${o.totalAmount}</td>
                     <td className="px-8 py-6">
-                      <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase ${o.status === 'Completed' ? 'bg-emerald-50 text-emerald-600' : 'bg-orange-50 text-orange-600'}`}>{o.status}</span>
+                      <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase ${
+                        o.status === 'Approved' ? 'bg-emerald-50 text-emerald-600' : 
+                        o.status === 'Hold' ? 'bg-amber-50 text-amber-600' :
+                        o.status === 'Rejected' ? 'bg-red-50 text-red-600' :
+                        'bg-orange-50 text-orange-600'
+                      }`}>{o.status}</span>
                     </td>
                   </tr>
                 ))}
