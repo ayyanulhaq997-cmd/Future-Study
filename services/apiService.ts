@@ -284,6 +284,14 @@ export const api = {
     const all = await api.getProducts();
     return all.find(p => p.id === id);
   },
+
+  deleteProduct: async (id: string): Promise<void> => {
+    const raw = localStorage.getItem(PRODUCTS_KEY);
+    if (!raw) return;
+    const custom: Product[] = JSON.parse(raw);
+    const filtered = custom.filter(p => p.id !== id);
+    localStorage.setItem(PRODUCTS_KEY, JSON.stringify(filtered));
+  },
   
   getOrders: async (): Promise<Order[]> => {
     const currentUser = api.getCurrentUser();
@@ -315,13 +323,12 @@ export const api = {
   },
 
   resetSystemData: async (): Promise<void> => {
-    // 1. Wipe everything custom
     localStorage.removeItem(ORDERS_KEY);
     localStorage.removeItem(LEADS_KEY);
     localStorage.removeItem(PRODUCTS_KEY);
     localStorage.removeItem(CODES_KEY);
     localStorage.removeItem(LMS_ENROLLMENTS_KEY);
-    // Note: USERS_KEY is kept for admin session but can be cleared if needed
+    localStorage.removeItem(SECURITY_KEY);
   },
 
   logout: () => localStorage.removeItem(SESSION_KEY),
@@ -383,7 +390,6 @@ export const api = {
     const enrollments: Enrollment[] = JSON.parse(localStorage.getItem(LMS_ENROLLMENTS_KEY) || '[]');
     const userEnrollments = enrollments.filter(e => e.userId === user.id);
     const allCourses = await api.getAllLMSCourses();
-    // Also include default demo enrollment for new students
     if (userEnrollments.length === 0 && user.role === 'Student') {
        return allCourses.slice(0, 1);
     }
@@ -463,7 +469,6 @@ export const api = {
   },
 
   redeemCourseVoucher: async (code: string): Promise<void> => {
-     // Mock logic: Codes ending in '-LMS' authorize PTE Masterclass
      const user = api.getCurrentUser();
      if (!user) throw new Error("Auth required.");
      if (code.toUpperCase().endsWith('-LMS')) {
@@ -494,7 +499,6 @@ export const api = {
     const email = leads[leadIndex].data.email;
     if (!email) return;
     
-    // Check if user already exists
     const rawUsers = localStorage.getItem(USERS_KEY);
     const users: User[] = rawUsers ? JSON.parse(rawUsers) : [];
     const existing = users.find(u => u.email.toLowerCase() === email.toLowerCase());
@@ -503,7 +507,6 @@ export const api = {
       const updatedUsers = users.map(u => u.email.toLowerCase() === email.toLowerCase() ? { ...u, isAuthorized: true, status: 'Active' as const } : u);
       localStorage.setItem(USERS_KEY, JSON.stringify(updatedUsers));
     } else {
-      // Create new Agent user if not present
       const newUser: User = {
         id: `u-agent-${Date.now()}`,
         name: leads[leadIndex].data.agency_name || 'PARTNER NODE',
