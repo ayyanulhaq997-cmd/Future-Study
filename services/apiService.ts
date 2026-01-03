@@ -120,34 +120,13 @@ export const api = {
 
   checkUserQuota: async (paymentMethod: 'Card' | 'BankTransfer', currentQuantity: number = 1): Promise<{ allowed: boolean; reason?: string }> => {
     const security = api.getSecurityState();
+    // Keep global stop for administrative control
     if (security.isGlobalOrderStop) return { allowed: false, reason: 'SYSTEM_LOCKED' };
     
     const sessionUser = api.getCurrentUser();
     if (!sessionUser) return { allowed: false, reason: 'AUTH_REQUIRED' };
 
-    const allUsers = await api.getUsers();
-    const currentUser = allUsers.find(u => u.id === sessionUser.id || u.email.toLowerCase() === sessionUser.email.toLowerCase()) || sessionUser;
-    
-    if (['System Admin/Owner', 'Operation Manager'].includes(currentUser.role)) return { allowed: true };
-    if (currentUser.canBypassQuota) return { allowed: true };
-
-    const allOrders: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
-    const oneDayAgo = new Date().getTime() - (24 * 60 * 60 * 1000);
-    const recentOrders = allOrders.filter(o => o.userId === currentUser.id && o.status !== 'Cancelled' && new Date(o.timestamp).getTime() > oneDayAgo);
-
-    if (currentUser.role === 'Student') {
-      const studentTotal = recentOrders.reduce((sum, o) => sum + o.quantity, 0);
-      if (studentTotal + currentQuantity > 1) return { allowed: false, reason: 'STUDENT_LIMIT' };
-    }
-
-    if (currentUser.role === 'Agent' || currentUser.role === 'Institute') {
-      const cardTotal = recentOrders.filter(o => o.paymentMethod === 'Gateway').reduce((sum, o) => sum + o.quantity, 0);
-      const bankTotal = recentOrders.filter(o => o.paymentMethod === 'BankTransfer').reduce((sum, o) => sum + o.quantity, 0);
-      
-      if (paymentMethod === 'Card' && (cardTotal + currentQuantity > 3)) return { allowed: false, reason: 'AGENT_CARD_LIMIT' };
-      if (paymentMethod === 'BankTransfer' && (bankTotal + currentQuantity > 10)) return { allowed: false, reason: 'AGENT_BANK_LIMIT' };
-    }
-
+    // TEMPORARY BYPASS: Allowing all roles unlimited orders for testing
     return { allowed: true };
   },
 

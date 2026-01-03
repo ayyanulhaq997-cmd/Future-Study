@@ -43,6 +43,14 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
     }
   };
 
+  const handleFactoryReset = async () => {
+    if (confirm("NUCLEAR RESET: This will wipe ALL Custom Products, Orders, Leads, and LMS Enrollments. Return to factory default?")) {
+      await api.resetSystemData();
+      alert("System Reset Complete. Portal re-initialized.");
+      window.location.reload();
+    }
+  };
+
   const handleBypassUser = async (email: string) => {
     await api.bypassUserQuota(email);
     alert(`Node Authority Updated: ${email} now has infinite procurement quota.`);
@@ -56,6 +64,22 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
     }
   };
 
+  const handleStaffAction = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newStaff.email || !newStaff.name) return;
+    await api.upsertUser({ ...newStaff });
+    alert("Staff Registry Updated.");
+    setNewStaff({ role: 'Finance' });
+    fetchData();
+  };
+
+  const handleDeleteUser = async (id: string, name: string) => {
+    if (confirm(`REVOKE ACCESS: Permanently remove node for ${name}?`)) {
+      await api.deleteUser(id);
+      fetchData();
+    }
+  };
+
   const handleInjectCodes = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!targetProductId || !bulkCodes.trim()) return alert("Select product and paste codes.");
@@ -64,6 +88,11 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
     alert(`Vault Synced: ${codesArray.length} codes injected.`);
     setBulkCodes('');
     fetchData();
+  };
+
+  const saveSettings = () => {
+    api.updateSystemSettings(settings);
+    alert("System settings synchronized.");
   };
 
   if (loading) return <div className="p-40 text-center animate-pulse text-[#004a61] font-black uppercase text-[11px] tracking-[0.4em]">Initializing Global Control Hub...</div>;
@@ -97,7 +126,6 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
                  <p className="text-slate-400 font-bold italic text-lg mb-12 max-w-2xl">"Tools to reset procurement limits and bypass security protocols for development testing."</p>
 
                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                    {/* Quota Reset Box */}
                     <div className="bg-white/5 border border-white/10 p-10 rounded-[3rem] space-y-6">
                        <h3 className="text-xl font-black uppercase text-cyan-400 tracking-widest">Global Limit Reset</h3>
                        <p className="text-sm text-slate-400 leading-relaxed italic">"If you have hit the Agent or Center order limits, use this to wipe order history and start fresh."</p>
@@ -109,7 +137,6 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
                        </button>
                     </div>
 
-                    {/* Infinite Quota Box */}
                     <div className="bg-white/5 border border-white/10 p-10 rounded-[3rem] space-y-6">
                        <h3 className="text-xl font-black uppercase text-cyan-400 tracking-widest">Authorize Infinite Quota</h3>
                        <div className="space-y-4">
@@ -137,10 +164,6 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
                           </div>
                        </div>
                     </div>
-                 </div>
-
-                 <div className="mt-16 pt-12 border-t border-white/10 text-center">
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Requirement 14.IV-QA • Deployment Node Environment</p>
                  </div>
               </div>
            </div>
@@ -184,6 +207,134 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
                     })}
                  </tbody>
               </table>
+           </div>
+        </div>
+      )}
+
+      {activeTab === 'staff' && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 animate-in fade-in duration-500">
+          <div className="lg:col-span-4">
+             <div className="bg-[#004a61] p-10 rounded-[3rem] text-white shadow-2xl relative overflow-hidden">
+                <h3 className="text-xl font-black uppercase mb-8 tracking-tighter">Provision staff node</h3>
+                <form onSubmit={handleStaffAction} className="space-y-6">
+                   <input required className="w-full bg-white/10 border border-white/20 p-4 rounded-2xl text-xs font-bold outline-none focus:bg-white focus:text-[#004a61]" value={newStaff.name || ''} onChange={e => setNewStaff({...newStaff, name: e.target.value})} placeholder="Legal Full Name" />
+                   <input required type="email" className="w-full bg-white/10 border border-white/20 p-4 rounded-2xl text-xs font-bold outline-none focus:bg-white focus:text-[#004a61]" value={newStaff.email || ''} onChange={e => setNewStaff({...newStaff, email: e.target.value})} placeholder="Official Email (user@unicou.uk)" />
+                   <select required className="w-full bg-white/10 border border-white/20 p-4 rounded-2xl text-xs font-black outline-none text-white appearance-none" value={newStaff.role} onChange={e => setNewStaff({...newStaff, role: e.target.value as UserRole})}>
+                     <option value="Finance" className="text-black">Finance Team</option>
+                     <option value="Operation Manager" className="text-black">Ops Manager</option>
+                     <option value="Support" className="text-black">Student Support</option>
+                     <option value="Trainer" className="text-black">Academic Trainer</option>
+                   </select>
+                   <button type="submit" className="w-full py-5 bg-[#f15a24] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl hover:bg-black">AUTHORIZE STAFF NODE</button>
+                </form>
+             </div>
+          </div>
+
+          <div className="lg:col-span-8 bg-white rounded-[3rem] border border-slate-200 shadow-2xl overflow-hidden">
+             <table className="w-full text-left">
+                <thead className="bg-slate-900 text-[10px] font-black uppercase text-slate-400 tracking-widest">
+                   <tr><th className="px-10 py-6">Staff Identity</th><th className="px-10 py-6">Role Node</th><th className="px-10 py-6 text-right">Control</th></tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                   {data.users.filter(u => ['Finance', 'Operation Manager', 'Support', 'Trainer'].includes(u.role)).map(u => (
+                     <tr key={u.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="px-10 py-6">
+                           <div className="font-black text-xs text-slate-900 uppercase">{u.name}</div>
+                           <div className="text-[10px] font-mono text-slate-400">{u.email}</div>
+                        </td>
+                        <td className="px-10 py-6"><span className="px-3 py-1 bg-[#004a61] text-white rounded-full text-[8px] font-black uppercase tracking-widest">{u.role}</span></td>
+                        <td className="px-10 py-6 text-right">
+                           <button onClick={() => handleDeleteUser(u.id, u.name)} className="text-red-600 hover:text-black font-black text-[9px] uppercase tracking-widest">Revoke Authority</button>
+                        </td>
+                     </tr>
+                   ))}
+                </tbody>
+             </table>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'partners' && (
+        <div className="bg-white rounded-[3rem] border border-slate-200 shadow-2xl overflow-hidden animate-in fade-in duration-500">
+           <div className="p-8 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+              <h3 className="text-sm font-black uppercase tracking-widest text-[#004a61]">Authorized Partner Hub</h3>
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{data.users.filter(u => u.role === 'Agent' || u.role === 'Institute').length} Nodes Operational</span>
+           </div>
+           <table className="w-full text-left">
+              <thead>
+                <tr className="bg-slate-50 text-[10px] font-black uppercase text-slate-500 tracking-widest">
+                   <th className="px-10 py-5">Corporate Identity</th><th className="px-10 py-5">Email Node</th><th className="px-10 py-5">Status</th><th className="px-10 py-5 text-right">Revocation</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                 {data.users.filter(u => u.role === 'Agent' || u.role === 'Institute').map(p => (
+                   <tr key={p.id}>
+                      <td className="px-10 py-6 font-black uppercase text-xs text-[#004a61]">{p.name}</td>
+                      <td className="px-10 py-6 font-mono text-slate-400 text-xs">{p.email}</td>
+                      <td className="px-10 py-6"><span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase ${p.isAuthorized ? 'bg-emerald-50 text-emerald-600' : 'bg-orange-50 text-orange-600'}`}>{p.isAuthorized ? 'AUTHORIZED' : 'PENDING'}</span></td>
+                      <td className="px-10 py-6 text-right">
+                         <button onClick={() => handleDeleteUser(p.id, p.name)} className="px-5 py-2 bg-slate-100 text-red-600 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all">De-Authorize Node</button>
+                      </td>
+                   </tr>
+                 ))}
+              </tbody>
+           </table>
+        </div>
+      )}
+
+      {activeTab === 'security' && (
+        <div className="max-w-3xl mx-auto py-20 text-center animate-in zoom-in-95 duration-500">
+           <div className={`p-16 rounded-[4rem] border-2 shadow-3xl transition-all ${security.isGlobalOrderStop ? 'bg-red-50 border-red-200' : 'bg-white border-slate-100'}`}>
+              <h2 className="text-4xl font-display font-black text-slate-950 uppercase mb-4 tracking-tighter">Control & <span className="text-red-600">Recovery</span></h2>
+              <p className="text-slate-500 font-bold italic mb-12">"Authorized overrides for system re-initialization and emergency lock."</p>
+              
+              <div className="space-y-6">
+                <button onClick={() => { api.setGlobalStop(!security.isGlobalOrderStop); fetchData(); }} className={`w-full py-8 rounded-[2.5rem] font-black text-sm uppercase tracking-[0.3em] shadow-2xl transition-all ${security.isGlobalOrderStop ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-white hover:bg-black'}`}>
+                  {security.isGlobalOrderStop ? 'RESUME PORTAL SETTLEMENTS' : 'TRIGGER GLOBAL LOCK'}
+                </button>
+
+                <div className="pt-12 border-t border-slate-100">
+                  <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-6">Danger Zone</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <button onClick={handleWipeOrders} className="py-6 bg-red-50 border border-red-200 text-red-600 rounded-[2rem] font-black text-[10px] uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all">PURGE ORDERS</button>
+                    <button onClick={handleFactoryReset} className="py-6 bg-slate-900 text-white rounded-[2rem] font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all">FACTORY RESET</button>
+                  </div>
+                </div>
+              </div>
+           </div>
+        </div>
+      )}
+
+      {activeTab === 'settings' && (
+        <div className="max-w-4xl mx-auto py-12 animate-in fade-in duration-500">
+           <div className="bg-white rounded-[3.5rem] border border-slate-200 p-12 shadow-3xl">
+              <h2 className="text-3xl font-display font-black text-slate-900 uppercase tracking-tighter mb-8">Infrastructure Configuration</h2>
+              
+              <div className="space-y-10">
+                 <div className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-200">
+                    <div className="flex items-center justify-between mb-6">
+                       <div>
+                          <h4 className="text-lg font-black text-slate-900 uppercase">Global Email Redirect</h4>
+                          <p className="text-[11px] text-slate-500 font-bold italic">Requirement: All digital assets will route to this primary recipient if Test Mode is active.</p>
+                       </div>
+                       <label className="relative inline-flex items-center cursor-pointer">
+                          <input type="checkbox" className="sr-only peer" checked={settings.isTestMode} onChange={e => setSettings({...settings, isTestMode: e.target.checked})} />
+                          <div className="w-14 h-8 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-[#f15a24]"></div>
+                       </label>
+                    </div>
+                    <input 
+                       type="email" 
+                       className="w-full bg-white border border-slate-200 p-6 rounded-2xl text-lg font-bold outline-none focus:border-[#004a61] shadow-inner"
+                       placeholder="Enter Testing Email (e.g. testing@gmail.com)"
+                       value={settings.globalEmailRedirect}
+                       onChange={e => setSettings({...settings, globalEmailRedirect: e.target.value})}
+                    />
+                 </div>
+
+                 <div className="flex justify-end">
+                    <button onClick={saveSettings} className="px-12 py-5 bg-[#004a61] text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:bg-slate-900 transition-all">SYNCHRONIZE GLOBAL CONFIG</button>
+                 </div>
+              </div>
            </div>
         </div>
       )}
