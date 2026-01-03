@@ -1,46 +1,42 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { api } from '../services/apiService';
-import { Product, VoucherCode, Order, User, Lead, UserRole, LMSCourse, OrderStatus } from '../types';
+import { Product, VoucherCode, Order, User, Lead, OrderStatus, LMSCourse, LMSModule, LMSLesson } from '../types';
 
-type AdminTab = 'ledger' | 'inventory' | 'partners' | 'staff' | 'security' | 'qa-tools' | 'settings';
+type AdminTab = 'ledger' | 'inventory' | 'lms-manager' | 'partners' | 'staff' | 'qa-tools';
 
 const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
   const [activeTab, setActiveTab] = useState<AdminTab>('ledger');
   const [loading, setLoading] = useState(true);
-  const [security, setSecurity] = useState(api.getSecurityState());
-  const [settings, setSettings] = useState(api.getSystemSettings());
   const [data, setData] = useState<{
     products: Product[],
     codes: VoucherCode[],
     orders: Order[],
     users: User[],
-    leads: Lead[]
-  }>({ products: [], codes: [], orders: [], users: [], leads: [] });
+    leads: Lead[],
+    lmsCourses: LMSCourse[]
+  }>({ products: [], codes: [], orders: [], users: [], leads: [], lmsCourses: [] });
 
-  const [qaEmailSearch, setQaEmailSearch] = useState('');
-  const [qaOrderId, setQaOrderId] = useState('');
-  const [bulkCodes, setBulkCodes] = useState('');
-  const [targetProductId, setTargetProductId] = useState('');
-  const [newStaff, setNewStaff] = useState<Partial<User>>({ role: 'Finance' });
+  // LMS Editor State
+  const [editingCourse, setEditingCourse] = useState<Partial<LMSCourse> | null>(null);
+  const [editingModule, setEditingModule] = useState<{ courseId: string, module: Partial<LMSModule> } | null>(null);
+  const [editingLesson, setEditingLesson] = useState<{ courseId: string, moduleId: string, lesson: Partial<LMSLesson> } | null>(null);
 
   const fetchData = async () => {
-    const [p, c, o, u, le] = await Promise.all([
-      api.getProducts(), api.getCodes(), api.getOrders(), api.getUsers(), api.getLeads()
+    const [p, c, o, u, le, lms] = await Promise.all([
+      api.getProducts(), api.getCodes(), api.getOrders(), api.getUsers(), api.getLeads(), api.getAllLMSCourses()
     ]);
-    setData({ products: p, codes: c, orders: o, users: u, leads: le });
-    setSecurity(api.getSecurityState());
-    setSettings(api.getSystemSettings());
+    setData({ products: p, codes: c, orders: o, users: u, leads: le, lmsCourses: lms });
     setLoading(false);
   };
 
   useEffect(() => { fetchData(); }, []);
 
   const handleUpdateStatus = async (orderId: string, status: OrderStatus) => {
-    if (confirm(`QA ACTION: Transition order ${orderId} to ${status}? This will trigger automated email protocols.`)) {
+    if (confirm(`ADMIN ACTION: Move order ${orderId} to ${status}? This triggers automated email dispatch.`)) {
       try {
         await api.updateOrderStatus(orderId, status);
-        alert(`Order state synchronized to ${status}. Notification dispatched.`);
+        alert(`Status synchronized to ${status}. Notification dispatched.`);
         fetchData();
       } catch (err: any) {
         alert(err.message);
@@ -48,138 +44,179 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
     }
   };
 
-  const handleWipeOrders = async () => {
-    if (confirm("QA ACTION: This will permanently DELETE ALL PREVIOUS ORDERS and reset your daily procurement quotas. Proceed?")) {
-      await api.clearAllOrders();
-      alert("Order Ledger Purged. All limits have been reset.");
-      fetchData();
-    }
-  };
-
-  const handleTargetDeleteOrder = async (id?: string) => {
-    const targetId = id || qaOrderId.trim();
-    if (!targetId) return alert("Enter a valid Order ID.");
-    if (confirm(`QA ACTION: Permanently delete order ${targetId}?`)) {
-      await api.deleteOrder(targetId);
-      alert(`Record ${targetId} removed from global ledger.`);
-      setQaOrderId('');
-      fetchData();
-    }
-  };
-
-  const handleFactoryReset = async () => {
-    if (confirm("NUCLEAR RESET: This will wipe ALL Custom Products, Orders, Leads, and LMS Enrollments. Return to factory default?")) {
-      await api.resetSystemData();
-      alert("System Reset Complete. Portal re-initialized.");
-      window.location.reload();
-    }
-  };
-
-  const handleBypassUser = async (email: string) => {
-    await api.bypassUserQuota(email);
-    alert(`Node Authority Updated: ${email} now has infinite procurement quota.`);
-    fetchData();
-  };
-
-  const handleDeleteProduct = async (id: string, name: string) => {
-    if (confirm(`Remove custom product node: ${name}?`)) {
-       await api.deleteProduct(id);
-       fetchData();
-    }
-  };
-
-  const handleStaffAction = async (e: React.FormEvent) => {
+  const handleSaveCourse = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newStaff.email || !newStaff.name) return;
-    await api.upsertUser({ ...newStaff });
-    alert("Staff Registry Updated.");
-    setNewStaff({ role: 'Finance' });
+    if (!editingCourse?.title) return;
+    const courseToSave = {
+      ...editingCourse,
+      id: editingCourse.id || `lms-${Date.now()}`,
+      category: editingCourse.category || 'PTE',
+      thumbnail: editingCourse.thumbnail || 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800',
+      description: editingCourse.description || '',
+      duration: editingCourse.duration || '20 Hours',
+      instructor: editingCourse.instructor || 'Staff',
+      price: editingCourse.price || 0
+    } as LMSCourse;
+    
+    await api.saveLMSCourse(courseToSave);
+    setEditingCourse(null);
     fetchData();
   };
 
-  const handleDeleteUser = async (id: string, name: string) => {
-    if (confirm(`REVOKE ACCESS: Permanently remove node for ${name}?`)) {
-      await api.deleteUser(id);
-      fetchData();
-    }
-  };
-
-  const handleInjectCodes = async (e: React.FormEvent) => {
+  const handleSaveModule = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!targetProductId || !bulkCodes.trim()) return alert("Select product and paste codes.");
-    const codesArray = bulkCodes.split('\n').map(c => c.trim()).filter(c => c.length > 0);
-    await api.addVoucherCodes(targetProductId, codesArray);
-    alert(`Vault Synced: ${codesArray.length} codes injected.`);
-    setBulkCodes('');
+    if (!editingModule?.module.title) return;
+    const moduleToSave = {
+      ...editingModule.module,
+      id: editingModule.module.id || `mod-${Date.now()}`,
+      lessons: editingModule.module.lessons || []
+    } as LMSModule;
+    
+    await api.saveLMSModule(editingModule.courseId, moduleToSave);
+    setEditingModule(null);
     fetchData();
   };
 
-  const saveSettings = () => {
-    api.updateSystemSettings(settings);
-    alert("System settings synchronized.");
+  const handleSaveLesson = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingLesson?.lesson.title) return;
+    const lessonToSave = {
+      ...editingLesson.lesson,
+      id: editingLesson.lesson.id || `les-${Date.now()}`,
+      type: editingLesson.lesson.type || 'Video',
+      content: editingLesson.lesson.content || ''
+    } as LMSLesson;
+    
+    await api.saveLMSLesson(editingLesson.courseId, editingLesson.moduleId, lessonToSave);
+    setEditingLesson(null);
+    fetchData();
   };
 
-  if (loading) return <div className="p-40 text-center animate-pulse text-[#004a61] font-black uppercase text-[11px] tracking-[0.4em]">Initializing Global Control Hub...</div>;
+  if (loading) return <div className="p-40 text-center animate-pulse text-unicou-navy font-black uppercase text-[11px] tracking-[0.4em]">Establishing Global Control Hub...</div>;
 
   return (
     <div className="max-w-[1600px] mx-auto px-6 py-12 bg-white min-h-screen">
       <div className="flex flex-col xl:flex-row justify-between items-center gap-10 mb-16 border-b border-slate-100 pb-12">
         <div className="text-center xl:text-left">
            <h1 className="text-5xl font-display font-black text-slate-900 uppercase tracking-tighter leading-none mb-2">
-             SYSTEM <span className="text-[#f15a24]">HUB</span>
+             SYSTEM <span className="text-unicou-orange">HUB</span>
            </h1>
-           <p className="text-[10px] font-black text-[#004a61] uppercase tracking-[0.4em]">UniCou Institutional Control Node</p>
+           <p className="text-[10px] font-black text-unicou-navy uppercase tracking-[0.4em]">UNICOU Institutional Control Node</p>
         </div>
         
         <div className="flex flex-wrap justify-center bg-slate-50 p-2 rounded-[2rem] border border-slate-200 shadow-inner">
-           {(['ledger', 'inventory', 'partners', 'staff', 'security', 'qa-tools', 'settings'] as AdminTab[]).map((tab) => (
-             <button key={tab} onClick={() => setActiveTab(tab)} className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-white text-[#004a61] shadow-lg border border-slate-200' : 'text-slate-400 hover:text-slate-900'} ${tab === 'qa-tools' ? 'text-cyan-600' : ''}`}>
-               {tab === 'qa-tools' ? 'QA & DEV HUB' : tab}
+           {(['ledger', 'inventory', 'lms-manager', 'partners', 'staff', 'qa-tools'] as AdminTab[]).map((tab) => (
+             <button key={tab} onClick={() => setActiveTab(tab)} className={`px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-white text-unicou-navy shadow-lg border border-slate-200' : 'text-slate-400 hover:text-slate-900'}`}>
+               {tab}
              </button>
            ))}
         </div>
       </div>
 
-      {activeTab === 'qa-tools' && (
-        <div className="animate-in slide-in-from-bottom-6 duration-700">
-           <div className="bg-slate-950 p-16 rounded-[4rem] text-white shadow-3xl relative overflow-hidden border-2 border-cyan-500/20">
-              <div className="absolute top-0 right-0 p-16 opacity-10 font-display font-black text-[12rem] text-cyan-400 pointer-events-none">QA</div>
-              
-              <div className="relative z-10">
-                 <h2 className="text-4xl font-display font-black uppercase mb-4 tracking-tighter text-cyan-400">Testing & <span className="text-white">Fulfillment Terminal</span></h2>
-                 <p className="text-slate-400 font-bold italic text-lg mb-12 max-w-2xl">"Tools to reset procurement limits and bypass security protocols for development testing."</p>
+      {activeTab === 'lms-manager' && (
+        <div className="animate-in fade-in duration-500 space-y-12">
+          <div className="flex justify-between items-center">
+            <h3 className="text-2xl font-display font-black uppercase tracking-tighter text-unicou-navy">Learning Hub Content Architect</h3>
+            <button 
+              onClick={() => setEditingCourse({})}
+              className="px-8 py-4 bg-unicou-orange text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl active:scale-95"
+            >Create New Course Node</button>
+          </div>
 
-                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                    <div className="bg-white/5 border border-white/10 p-10 rounded-[3rem] space-y-6">
-                       <h3 className="text-xl font-black uppercase text-cyan-400 tracking-widest">Global Reset</h3>
-                       <button onClick={handleWipeOrders} className="w-full py-6 bg-cyan-600 hover:bg-cyan-500 text-white rounded-[1.5rem] font-black uppercase text-xs tracking-widest transition-all shadow-xl shadow-cyan-600/20 active:scale-95">PURGE ALL LOGS</button>
+          <div className="grid grid-cols-1 gap-8">
+            {data.lmsCourses.map(course => (
+              <div key={course.id} className="bg-slate-50 rounded-[3rem] border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl transition-all p-10">
+                <div className="flex flex-col lg:flex-row justify-between gap-8 mb-10">
+                  <div className="flex items-center gap-8">
+                    <img src={course.thumbnail} className="w-32 h-20 object-cover rounded-2xl shadow-lg border border-slate-200" alt="" />
+                    <div>
+                      <span className="text-[10px] font-black text-unicou-orange uppercase tracking-[0.3em] mb-1 block">{course.category} Node</span>
+                      <h4 className="text-3xl font-display font-black text-unicou-navy uppercase leading-none">{course.title}</h4>
+                      <p className="text-slate-500 font-bold italic text-sm mt-2">Price: ${course.price} • {course.duration}</p>
                     </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button onClick={() => setEditingCourse(course)} className="px-6 py-2 bg-white border border-slate-200 rounded-xl text-[9px] font-black uppercase hover:bg-unicou-navy hover:text-white transition-all">Edit Metadata</button>
+                    <button onClick={() => setEditingModule({ courseId: course.id, module: {} })} className="px-6 py-2 bg-unicou-navy text-white rounded-xl text-[9px] font-black uppercase shadow-lg">Add Module</button>
+                  </div>
+                </div>
 
-                    <div className="bg-white/5 border border-white/10 p-10 rounded-[3rem] space-y-6">
-                       <h3 className="text-xl font-black uppercase text-cyan-400 tracking-widest">Remove Order</h3>
-                       <div className="space-y-4">
-                          <input className="w-full bg-white/10 border border-white/10 rounded-2xl p-4 text-sm font-bold text-white outline-none focus:border-cyan-400" placeholder="Paste Order ID (e.g. UNICOU-...)" value={qaOrderId} onChange={(e) => setQaOrderId(e.target.value)} />
-                          <button onClick={() => handleTargetDeleteOrder()} className="w-full py-4 bg-red-600 hover:bg-red-500 text-white rounded-xl font-black uppercase text-[10px] tracking-widest">Purge Targeted Record</button>
-                       </div>
-                    </div>
-
-                    <div className="bg-white/5 border border-white/10 p-10 rounded-[3rem] space-y-6">
-                       <h3 className="text-xl font-black uppercase text-cyan-400 tracking-widest">Bypass Node</h3>
-                       <div className="space-y-4">
-                          <input className="w-full bg-white/10 border border-white/10 rounded-2xl p-4 text-sm font-bold text-white outline-none focus:border-cyan-400" placeholder="Search tester email..." value={qaEmailSearch} onChange={(e) => setQaEmailSearch(e.target.value)} />
-                          <div className="max-h-24 overflow-y-auto no-scrollbar space-y-2">
-                             {data.users.filter(u => u.email.includes(qaEmailSearch)).slice(0, 3).map(u => (
-                               <div key={u.id} className="flex justify-between items-center p-3 bg-white/5 rounded-xl">
-                                  <span className="text-[10px] font-bold">{u.email}</span>
-                                  <button onClick={() => handleBypassUser(u.email)} className="px-3 py-1.5 bg-white text-slate-900 rounded text-[8px] font-black uppercase">Grant</button>
-                               </div>
-                             ))}
-                          </div>
-                       </div>
-                    </div>
-                 </div>
+                <div className="bg-white rounded-[2rem] border border-slate-100 p-8 space-y-4 shadow-inner">
+                  <CourseModulesList 
+                    courseId={course.id} 
+                    onEditModule={(m) => setEditingModule({ courseId: course.id, module: m })}
+                    onAddLesson={(moduleId) => setEditingLesson({ courseId: course.id, moduleId, lesson: {} })}
+                    onEditLesson={(moduleId, lesson) => setEditingLesson({ courseId: course.id, moduleId, lesson })}
+                  />
+                </div>
               </div>
-           </div>
+            ))}
+          </div>
+
+          {/* Course Modal */}
+          {editingCourse && (
+            <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-6">
+              <div className="bg-white w-full max-w-2xl rounded-[3.5rem] p-12 shadow-3xl animate-in zoom-in-95 duration-300">
+                <h2 className="text-3xl font-display font-black text-unicou-navy uppercase mb-8">Course Metadata Editor</h2>
+                <form onSubmit={handleSaveCourse} className="space-y-6">
+                  <div className="grid grid-cols-2 gap-6">
+                    <AdminInput label="Course Title" value={editingCourse.title || ''} onChange={v => setEditingCourse({...editingCourse, title: v})} />
+                    <AdminSelect label="Category" value={editingCourse.category || 'PTE'} options={['PTE', 'IELTS', 'TOEFL', 'DUOLINGO', 'LANGUAGECERT', 'OTHM']} onChange={v => setEditingCourse({...editingCourse, category: v})} />
+                    <AdminInput label="Price (USD)" type="number" value={editingCourse.price || 0} onChange={v => setEditingCourse({...editingCourse, price: Number(v)})} />
+                    <AdminInput label="Duration" value={editingCourse.duration || ''} onChange={v => setEditingCourse({...editingCourse, duration: v})} />
+                    <AdminInput label="Instructor" value={editingCourse.instructor || ''} onChange={v => setEditingCourse({...editingCourse, instructor: v})} />
+                    <AdminInput label="Thumbnail URL" value={editingCourse.thumbnail || ''} onChange={v => setEditingCourse({...editingCourse, thumbnail: v})} />
+                  </div>
+                  <AdminTextarea label="Description" value={editingCourse.description || ''} onChange={v => setEditingCourse({...editingCourse, description: v})} />
+                  <div className="flex gap-4 pt-4">
+                    <button type="button" onClick={() => setEditingCourse(null)} className="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-black text-[10px] uppercase">Cancel</button>
+                    <button type="submit" className="flex-[2] py-4 bg-unicou-navy text-white rounded-2xl font-black text-[10px] uppercase shadow-xl">Commit Node Changes</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Module Modal */}
+          {editingModule && (
+            <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-6">
+              <div className="bg-white w-full max-w-lg rounded-[3.5rem] p-12 shadow-3xl">
+                <h2 className="text-3xl font-display font-black text-unicou-navy uppercase mb-8">Module Node Editor</h2>
+                <form onSubmit={handleSaveModule} className="space-y-6">
+                  <AdminInput label="Module Title" value={editingModule.module.title || ''} onChange={v => setEditingModule({...editingModule, module: {...editingModule.module, title: v}})} />
+                  <div className="flex gap-4 pt-4">
+                    <button type="button" onClick={() => setEditingModule(null)} className="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-black text-[10px] uppercase">Cancel</button>
+                    <button type="submit" className="flex-[2] py-4 bg-unicou-navy text-white rounded-2xl font-black text-[10px] uppercase shadow-xl">Save Module</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Lesson Modal */}
+          {editingLesson && (
+            <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-6">
+              <div className="bg-white w-full max-w-2xl rounded-[3.5rem] p-12 shadow-3xl">
+                <h2 className="text-3xl font-display font-black text-unicou-navy uppercase mb-8">Lesson Unit Editor</h2>
+                <form onSubmit={handleSaveLesson} className="space-y-6">
+                  <div className="grid grid-cols-2 gap-6">
+                    <AdminInput label="Lesson Title" value={editingLesson.lesson.title || ''} onChange={v => setEditingLesson({...editingLesson, lesson: {...editingLesson.lesson, title: v}})} />
+                    <AdminSelect label="Content Type" value={editingLesson.lesson.type || 'Video'} options={['Video', 'Text', 'Quiz']} onChange={v => setEditingLesson({...editingLesson, lesson: {...editingLesson.lesson, type: v as any}})} />
+                  </div>
+                  <AdminTextarea 
+                    label={editingLesson.lesson.type === 'Video' ? "Embed/Source URL" : editingLesson.lesson.type === 'Quiz' ? "JSON Quiz Data" : "Markdown/Text Content"} 
+                    value={editingLesson.lesson.content || ''} 
+                    onChange={v => setEditingLesson({...editingLesson, lesson: {...editingLesson.lesson, content: v}})} 
+                    rows={10}
+                  />
+                  <div className="flex gap-4 pt-4">
+                    <button type="button" onClick={() => setEditingLesson(null)} className="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-black text-[10px] uppercase">Cancel</button>
+                    <button type="submit" className="flex-[2] py-4 bg-unicou-navy text-white rounded-2xl font-black text-[10px] uppercase shadow-xl">Deploy Lesson</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -187,23 +224,21 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
         <div className="animate-in fade-in duration-500">
            <div className="bg-white rounded-[3rem] border border-slate-200 shadow-2xl overflow-hidden">
               <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                 <h3 className="text-sm font-black uppercase tracking-widest text-[#004a61]">Global Audit Ledger</h3>
-                 <div className="flex gap-4">
-                    <span className="text-[10px] font-black text-slate-400 uppercase">Records: {data.orders.length}</span>
-                 </div>
+                 <h3 className="text-sm font-black uppercase tracking-widest text-unicou-navy">Global Audit Ledger</h3>
+                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Records: {data.orders.length}</span>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
                   <thead className="bg-slate-900 text-[9px] font-black uppercase text-slate-400 tracking-[0.1em]">
                       <tr>
                         <th className="px-6 py-6">I. Order ID</th>
-                        <th className="px-6 py-6">II. Date/Time</th>
+                        <th className="px-6 py-6">II. Date</th>
+                        <th className="px-6 py-6">III. Time</th>
                         <th className="px-6 py-6">IV. Buyer Name</th>
                         <th className="px-6 py-6">V. Product Name</th>
                         <th className="px-6 py-6">VI. Amount</th>
-                        <th className="px-6 py-6">VII. Payment Ref</th>
-                        <th className="px-6 py-6">VIII. Proof</th>
-                        <th className="px-6 py-6 text-center">Status Control</th>
+                        <th className="px-6 py-6">VII. Reference</th>
+                        <th className="px-6 py-6 text-center">VIII. Status / Control</th>
                         <th className="px-6 py-6 text-right">Actions</th>
                       </tr>
                   </thead>
@@ -212,22 +247,13 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
                         const dateObj = new Date(o.timestamp);
                         return (
                           <tr key={o.id} className="hover:bg-slate-50 transition-colors">
-                            <td className="px-6 py-5 font-mono font-black text-[11px] text-[#004a61]">{o.id}</td>
-                            <td className="px-6 py-5 whitespace-nowrap">
-                              <div className="font-mono text-[11px] text-slate-500">{dateObj.toLocaleDateString()}</div>
-                              <div className="font-mono text-[9px] text-slate-400">{dateObj.toLocaleTimeString()}</div>
-                            </td>
+                            <td className="px-6 py-5 font-mono font-black text-[11px] text-unicou-navy">{o.id}</td>
+                            <td className="px-6 py-5 font-mono text-[11px] text-slate-500">{dateObj.toLocaleDateString()}</td>
+                            <td className="px-6 py-5 font-mono text-[11px] text-slate-500">{dateObj.toLocaleTimeString()}</td>
                             <td className="px-6 py-5 font-black text-[11px] text-slate-900 uppercase truncate max-w-[120px]">{o.buyerName}</td>
                             <td className="px-6 py-5 font-black text-[11px] text-slate-700 uppercase">{o.productName}</td>
                             <td className="px-6 py-5 font-display font-black text-slate-950 text-base">${o.totalAmount}</td>
                             <td className="px-6 py-5 font-mono font-bold text-[10px] text-slate-400 uppercase truncate max-w-[100px]" title={o.bankRef}>{o.bankRef || 'N/A'}</td>
-                            <td className="px-6 py-5">
-                                {o.proofAttached ? (
-                                  <button className="px-3 py-1 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-lg text-[8px] font-black uppercase hover:bg-emerald-600 hover:text-white transition-all">VIEW PROOF</button>
-                                ) : (
-                                  <span className="text-[8px] font-black text-slate-300 uppercase italic">NONE</span>
-                                )}
-                            </td>
                             <td className="px-6 py-5">
                                <div className="flex flex-col items-center gap-2">
                                   <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase border ${
@@ -238,41 +264,91 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
                                   }`}>{o.status}</span>
                                   
                                   <div className="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200">
-                                     <button 
-                                      onClick={() => handleUpdateStatus(o.id, 'Approved')}
-                                      className={`px-2 py-1 rounded text-[7px] font-black uppercase transition-all ${o.status === 'Approved' ? 'bg-emerald-500 text-white' : 'text-slate-400 hover:text-emerald-600'}`}
-                                      title="Approve & Send Vouchers"
-                                     >✔</button>
-                                     <button 
-                                      onClick={() => handleUpdateStatus(o.id, 'Hold')}
-                                      className={`px-2 py-1 rounded text-[7px] font-black uppercase transition-all ${o.status === 'Hold' ? 'bg-amber-500 text-white' : 'text-slate-400 hover:text-amber-600'}`}
-                                      title="Set On Hold"
-                                     >⏳</button>
-                                     <button 
-                                      onClick={() => handleUpdateStatus(o.id, 'Rejected')}
-                                      className={`px-2 py-1 rounded text-[7px] font-black uppercase transition-all ${o.status === 'Rejected' ? 'bg-red-500 text-white' : 'text-slate-400 hover:text-red-600'}`}
-                                      title="Reject Order"
-                                     >✖</button>
+                                     <button onClick={() => handleUpdateStatus(o.id, 'Approved')} className={`px-2 py-1 rounded text-[7px] font-black transition-all ${o.status === 'Approved' ? 'bg-emerald-500 text-white shadow-sm' : 'text-slate-400 hover:text-emerald-600'}`}>APPROVE</button>
+                                     <button onClick={() => handleUpdateStatus(o.id, 'Hold')} className={`px-2 py-1 rounded text-[7px] font-black transition-all ${o.status === 'Hold' ? 'bg-amber-500 text-white shadow-sm' : 'text-slate-400 hover:text-amber-600'}`}>HOLD</button>
+                                     <button onClick={() => handleUpdateStatus(o.id, 'Rejected')} className={`px-2 py-1 rounded text-[7px] font-black transition-all ${o.status === 'Rejected' ? 'bg-red-500 text-white shadow-sm' : 'text-slate-400 hover:text-red-600'}`}>REJECT</button>
                                   </div>
                                </div>
                             </td>
                             <td className="px-6 py-5 text-right">
-                              <button onClick={() => handleTargetDeleteOrder(o.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Purge Record">
-                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                              <button onClick={() => api.deleteOrder(o.id).then(fetchData)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                               </button>
                             </td>
                           </tr>
                         );
                       })}
-                      {data.orders.length === 0 && (
-                        <tr><td colSpan={9} className="p-20 text-center text-slate-300 font-bold uppercase italic">Audit Ledger is currently empty. All quotas reset.</td></tr>
-                      )}
                   </tbody>
                 </table>
               </div>
            </div>
         </div>
       )}
+    </div>
+  );
+};
+
+// UI Components for Admin
+const AdminInput = ({ label, onChange, value, ...props }: any) => (
+  <div className="space-y-2">
+    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block ml-1">{label}</label>
+    <input className="w-full bg-slate-50 border border-slate-100 rounded-xl p-4 text-sm font-bold outline-none focus:border-unicou-navy shadow-inner" value={value} onChange={e => onChange(e.target.value)} {...props} />
+  </div>
+);
+
+const AdminSelect = ({ label, options, onChange, value }: any) => (
+  <div className="space-y-2">
+    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block ml-1">{label}</label>
+    <select className="w-full bg-slate-50 border border-slate-100 rounded-xl p-4 text-sm font-bold outline-none focus:border-unicou-navy shadow-inner appearance-none" value={value} onChange={e => onChange(e.target.value)}>
+      {options.map((o: string) => <option key={o} value={o}>{o}</option>)}
+    </select>
+  </div>
+);
+
+const AdminTextarea = ({ label, onChange, value, ...props }: any) => (
+  <div className="space-y-2">
+    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block ml-1">{label}</label>
+    <textarea className="w-full bg-slate-50 border border-slate-100 rounded-xl p-4 text-sm font-bold outline-none focus:border-unicou-navy shadow-inner resize-none" value={value} onChange={e => onChange(e.target.value)} {...props} />
+  </div>
+);
+
+const CourseModulesList: React.FC<{ 
+  courseId: string, 
+  onEditModule: (m: LMSModule) => void,
+  onAddLesson: (mid: string) => void,
+  onEditLesson: (mid: string, l: LMSLesson) => void
+}> = ({ courseId, onEditModule, onAddLesson, onEditLesson }) => {
+  const [modules, setModules] = useState<LMSModule[]>([]);
+
+  useEffect(() => {
+    api.getCourseModules(courseId).then(setModules);
+  }, [courseId]);
+
+  return (
+    <div className="space-y-6">
+      {modules.map(mod => (
+        <div key={mod.id} className="border-l-4 border-unicou-navy pl-6 py-2">
+          <div className="flex justify-between items-center mb-4">
+            <h5 className="font-black text-unicou-navy uppercase tracking-tight text-lg">{mod.title}</h5>
+            <div className="flex gap-2">
+              <button onClick={() => onEditModule(mod)} className="text-[8px] font-black uppercase text-slate-400 hover:text-unicou-navy transition-colors">Rename</button>
+              <button onClick={() => onAddLesson(mod.id)} className="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-[8px] font-black uppercase hover:bg-unicou-navy hover:text-white transition-all">Add Lesson</button>
+            </div>
+          </div>
+          <div className="space-y-2">
+            {mod.lessons.map(les => (
+              <div key={les.id} className="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-100 group">
+                <div className="flex items-center gap-3">
+                  <span className="text-[10px]">{les.type === 'Video' ? '🎬' : les.type === 'Quiz' ? '❓' : '📄'}</span>
+                  <span className="text-xs font-bold text-slate-700">{les.title}</span>
+                </div>
+                <button onClick={() => onEditLesson(mod.id, les)} className="opacity-0 group-hover:opacity-100 text-[8px] font-black uppercase text-unicou-orange transition-all">Edit Unit</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+      {modules.length === 0 && <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest text-center py-4">No content modules established.</p>}
     </div>
   );
 };

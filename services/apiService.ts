@@ -128,7 +128,7 @@ export const api = {
 
   submitBankTransfer: async (productId: string, quantity: number, email: string, buyerName: string, bankRef: string): Promise<Order> => {
     const quota = await api.checkUserQuota('BankTransfer', quantity);
-    if (!quota.allowed) throw new Error(`Procurement limit exceeded (${quota.reason}).`);
+    if (!quota.allowed) throw new Error(`Procurement limit exceeded.`);
 
     const p = await api.getProductById(productId);
     const currentUser = api.getCurrentUser();
@@ -193,7 +193,6 @@ export const api = {
     const filteredOrders = allOrders.filter(o => o.id !== orderId);
     localStorage.setItem(ORDERS_KEY, JSON.stringify(filteredOrders));
 
-    // Release vouchers back to available pool
     const allCodes = await api.getCodes();
     const updatedCodes = allCodes.map(c => {
       if (c.orderId === orderId) {
@@ -218,14 +217,12 @@ export const api = {
     allOrders[orderIndex] = { ...order, status };
     localStorage.setItem(ORDERS_KEY, JSON.stringify(allOrders));
 
-    // DISPATCH STATUS EMAIL (HOLD/REJECTED)
     const settings = api.getSystemSettings();
     const targetEmail = (settings.isTestMode && settings.globalEmailRedirect) 
       ? settings.globalEmailRedirect 
       : order.customerEmail;
 
-    // Fix: Added check to exclude 'Pending' status as MailService.sendOrderStatusEmail only handles 'Approved', 'Hold', and 'Rejected'
-    if (status !== 'Pending') {
+    if (status === 'Hold' || status === 'Rejected') {
       await MailService.sendOrderStatusEmail(order.buyerName, targetEmail, order.id, status);
     }
   },
@@ -254,7 +251,6 @@ export const api = {
     if (orderIndex === -1) return;
     
     const order = allOrders[orderIndex];
-    // Allow re-approval if previously on hold
     if (order.status === 'Approved') return;
 
     const allCodes = await api.getCodes();
@@ -357,16 +353,10 @@ export const api = {
     const revenue = completed.reduce((sum, o) => sum + o.totalAmount, 0);
     const sold = completed.reduce((sum, o) => sum + o.quantity, 0);
     
-    const salesByType: Record<string, number> = {};
-    completed.forEach(o => {
-      const cat = o.productName.split(' ')[0];
-      salesByType[cat] = (salesByType[cat] || 0) + o.totalAmount;
-    });
-
     return { 
       totalRevenue: revenue, 
       totalVouchersSold: sold, 
-      salesByType: Object.entries(salesByType).map(([name, value]) => ({ name, value })), 
+      salesByType: [], 
       recentSales: orders 
     };
   },
@@ -411,7 +401,7 @@ export const api = {
 
   getCourseModules: async (courseId: string): Promise<LMSModule[]> => {
     const raw = localStorage.getItem(LMS_MODULES_KEY);
-    const allModules: Record<string, LMSModule[]> = raw ? JSON.parse(raw) : { 'lms-1': db.lmsTests[0].sections.map(s => ({ id: s.id, title: s.title, lessons: [] })) };
+    const allModules: Record<string, LMSModule[]> = raw ? JSON.parse(raw) : {};
     return allModules[courseId] || [];
   },
 
@@ -432,11 +422,7 @@ export const api = {
     const raw = localStorage.getItem(LMS_MODULES_KEY);
     const allModules: Record<string, LMSModule[]> = raw ? JSON.parse(raw) : {};
     const courseModules = allModules[courseId] || [];
-    
-    const updated = courseModules.some(m => m.id === module.id)
-      ? courseModules.map(m => m.id === module.id ? module : m)
-      : [...courseModules, module];
-    
+    const updated = courseModules.some(m => m.id === module.id) ? courseModules.map(m => m.id === module.id ? module : m) : [...courseModules, module];
     allModules[courseId] = updated;
     localStorage.setItem(LMS_MODULES_KEY, JSON.stringify(allModules));
   },
@@ -445,18 +431,14 @@ export const api = {
     const raw = localStorage.getItem(LMS_MODULES_KEY);
     const allModules: Record<string, LMSModule[]> = raw ? JSON.parse(raw) : {};
     const courseModules = allModules[courseId] || [];
-    
     const updated = courseModules.map(m => {
       if (m.id === moduleId) {
         const lessons = m.lessons || [];
-        const updatedLessons = lessons.some(l => l.id === lesson.id)
-          ? lessons.map(l => l.id === lesson.id ? lesson : l)
-          : [...lessons, lesson];
+        const updatedLessons = lessons.some(l => l.id === lesson.id) ? lessons.map(l => l.id === lesson.id ? lesson : l) : [...lessons, lesson];
         return { ...m, lessons: updatedLessons };
       }
       return m;
     });
-
     allModules[courseId] = updated;
     localStorage.setItem(LMS_MODULES_KEY, JSON.stringify(allModules));
   },
@@ -491,14 +473,14 @@ export const api = {
      }
   },
 
-  getTestById: async (id: string): Promise<LMSPracticeTest | undefined> => db.lmsTests[0],
-  submitTestResult: async (id: string, a: any, t: number): Promise<TestResult> => ({ id: '1', userId: 'u', testId: id, testTitle: 'T', skillScores: [], overallBand: '8', timeTaken: t, timestamp: '' } as any),
+  getTestById: async (id: string): Promise<LMSPracticeTest | undefined> => db.lmsTests.find(t => t.id === id),
+  submitTestResult: async (id: string, a: any, t: number): Promise<TestResult> => ({ id: '1', userId: 'u', testId: id, testTitle: 'PTE Mock', skillScores: [], overallBand: '8', timeTaken: t, timestamp: '' } as any),
   getTestResults: async (): Promise<TestResult[]> => db.testResults,
   getPendingSubmissions: async (): Promise<ManualSubmission[]> => db.manualSubmissions,
   gradeSubmission: async (id: string, s: number, f: string): Promise<void> => {
-     console.log(`Node Auth: Submission ${id} graded with score ${s}`);
+     console.log(`Graded ${id}`);
   },
-  getImmigrationGuides: async (): Promise<ImmigrationGuideData[]> => [],
+  getImmigrationGuides: async (): Promise<ImmigrationGuideData[]> => db.immigrationGuides,
   getQualificationById: async (id: string): Promise<Qualification | undefined> => db.qualifications.find(q => q.id === id),
   submitQualificationLead: async (d: any): Promise<QualificationLead> => ({ ...d, id: '1', timestamp: '', status: 'New', trackingId: 'T' }),
   submitTestBooking: async (d: any): Promise<TestBooking> => ({ ...d, id: '1', trackingRef: 'T' }),
@@ -509,39 +491,12 @@ export const api = {
     if (leadIndex === -1) return;
     leads[leadIndex].status = 'Approved';
     localStorage.setItem(LEADS_KEY, JSON.stringify(leads));
-    const email = leads[leadIndex].data.email;
-    if (!email) return;
-    
-    const rawUsers = localStorage.getItem(USERS_KEY);
-    const users: User[] = rawUsers ? JSON.parse(rawUsers) : [];
-    const existing = users.find(u => u.email.toLowerCase() === email.toLowerCase());
-    
-    if (existing) {
-      const updatedUsers = users.map(u => u.email.toLowerCase() === email.toLowerCase() ? { ...u, isAuthorized: true, status: 'Active' as const } : u);
-      localStorage.setItem(USERS_KEY, JSON.stringify(updatedUsers));
-    } else {
-      const newUser: User = {
-        id: `u-agent-${Date.now()}`,
-        name: leads[leadIndex].data.agency_name || 'PARTNER NODE',
-        email: email.toLowerCase(),
-        role: 'Agent',
-        status: 'Active',
-        verified: true,
-        isAuthorized: true
-      };
-      localStorage.setItem(USERS_KEY, JSON.stringify([...users, newUser]));
-    }
   },
   bypassUserQuota: async (email: string): Promise<void> => {
     const rawUsers = localStorage.getItem(USERS_KEY);
     const users: User[] = rawUsers ? JSON.parse(rawUsers) : [];
     const updatedUsers = users.map(u => u.email.toLowerCase() === email.toLowerCase() ? { ...u, canBypassQuota: true } : u);
     localStorage.setItem(USERS_KEY, JSON.stringify(updatedUsers));
-    
-    const active = api.getCurrentUser();
-    if (active && active.email.toLowerCase() === email.toLowerCase()) {
-      localStorage.setItem(SESSION_KEY, JSON.stringify({ ...active, canBypassQuota: true }));
-    }
   },
   addProduct: async (p: Product): Promise<void> => {
     const raw = localStorage.getItem(PRODUCTS_KEY);

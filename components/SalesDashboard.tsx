@@ -26,11 +26,11 @@ const SalesDashboard: React.FC<{ user: User }> = ({ user }) => {
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 mb-16">
         <div>
           <h1 className="text-5xl font-display font-black tracking-tight text-slate-900 leading-none uppercase">Sales <span className="text-unicou-orange">Management</span></h1>
-          <p className="text-slate-500 mt-4 font-bold uppercase text-xs tracking-widest">Operator: {user.name} • Registry: <span className="text-unicou-navy">Global Sales Node</span></p>
+          <p className="text-slate-500 mt-4 font-bold uppercase text-xs tracking-widest">Operator: {user.name} • Node: <span className="text-unicou-navy">Global Sales Registry</span></p>
         </div>
         <div className="flex bg-slate-50 p-2 rounded-[2rem] border border-slate-200 shadow-inner">
-          <button onClick={() => setActiveTab('leads')} className={`px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'leads' ? 'bg-white text-unicou-navy shadow-lg border border-slate-200' : 'text-slate-400 hover:text-slate-900'}`}>Lead Registry</button>
-          <button onClick={() => setActiveTab('orders')} className={`px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'orders' ? 'bg-white text-unicou-navy shadow-lg border border-slate-200' : 'text-slate-400 hover:text-slate-900'}`}>Order Feed</button>
+          <button onClick={() => setActiveTab('leads')} className={`px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'leads' ? 'bg-white text-unicou-navy shadow-lg' : 'text-slate-400'}`}>Lead Registry</button>
+          <button onClick={() => setActiveTab('orders')} className={`px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'orders' ? 'bg-white text-unicou-navy shadow-lg' : 'text-slate-400'}`}>Order Feed</button>
         </div>
       </div>
 
@@ -74,28 +74,37 @@ const SalesDashboard: React.FC<{ user: User }> = ({ user }) => {
              <table className="w-full text-left">
               <thead>
                 <tr className="bg-slate-50 text-[10px] font-black uppercase text-slate-500 tracking-widest border-y border-slate-100">
-                  <th className="px-8 py-6">Order ID</th>
-                  <th className="px-8 py-6">Product</th>
-                  <th className="px-8 py-6">Value</th>
-                  <th className="px-8 py-6">Status</th>
+                  <th className="px-6 py-6">I. Order ID</th>
+                  <th className="px-6 py-6">II. Date</th>
+                  <th className="px-6 py-6">III. Time</th>
+                  <th className="px-6 py-6">IV. Buyer Name</th>
+                  <th className="px-6 py-6">V. Product Name</th>
+                  <th className="px-6 py-6">VI. Amount</th>
+                  <th className="px-6 py-6 text-right">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {orders.map(o => (
-                  <tr key={o.id} className="hover:bg-slate-50">
-                    <td className="px-8 py-6 font-mono font-bold text-unicou-navy text-xs">{o.id}</td>
-                    <td className="px-8 py-6 font-black text-slate-900 uppercase text-xs">{o.productName} (x{o.quantity})</td>
-                    <td className="px-8 py-6 font-display font-black text-slate-950">${o.totalAmount}</td>
-                    <td className="px-8 py-6">
-                      <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase ${
-                        o.status === 'Approved' ? 'bg-emerald-50 text-emerald-600' : 
-                        o.status === 'Hold' ? 'bg-amber-50 text-amber-600' :
-                        o.status === 'Rejected' ? 'bg-red-50 text-red-600' :
-                        'bg-orange-50 text-orange-600'
-                      }`}>{o.status}</span>
-                    </td>
-                  </tr>
-                ))}
+                {orders.map(o => {
+                  const d = new Date(o.timestamp);
+                  return (
+                    <tr key={o.id} className="hover:bg-slate-50">
+                      <td className="px-6 py-6 font-mono font-bold text-unicou-navy text-xs">{o.id}</td>
+                      <td className="px-6 py-6 font-mono text-slate-400 text-xs">{d.toLocaleDateString()}</td>
+                      <td className="px-6 py-6 font-mono text-slate-400 text-xs">{d.toLocaleTimeString()}</td>
+                      <td className="px-6 py-6 font-black text-slate-900 uppercase text-xs">{o.buyerName}</td>
+                      <td className="px-6 py-6 font-black text-slate-700 uppercase text-xs">{o.productName}</td>
+                      <td className="px-6 py-6 font-display font-black text-slate-950">${o.totalAmount}</td>
+                      <td className="px-6 py-6 text-right">
+                        <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase ${
+                          o.status === 'Approved' ? 'bg-emerald-50 text-emerald-600' : 
+                          o.status === 'Hold' ? 'bg-amber-50 text-amber-600' :
+                          o.status === 'Rejected' ? 'bg-red-50 text-red-600' :
+                          'bg-orange-50 text-orange-600'
+                        }`}>{o.status}</span>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

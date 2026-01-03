@@ -9,7 +9,6 @@ const CustomerDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => vo
   const [courses, setCourses] = useState<LMSCourse[]>([]);
   const [loading, setLoading] = useState(true);
   
-  // Normalized tab state with fallback
   const [activeTab, setActiveTab] = useState<'vouchers' | 'academy' | 'results'>(
     (initialTab === 'results' || initialTab === 'academy' || initialTab === 'vouchers') 
       ? initialTab as any 
@@ -27,7 +26,6 @@ const CustomerDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => vo
     fetch();
   }, []);
 
-  // Update tab if initialTab changes externally
   useEffect(() => {
     if (initialTab && ['vouchers', 'academy', 'results'].includes(initialTab)) {
       setActiveTab(initialTab as any);
@@ -40,12 +38,12 @@ const CustomerDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => vo
     <div className="max-w-7xl mx-auto px-6 py-8 bg-white min-h-screen">
       <div className="text-center mb-12 animate-in slide-in-from-top-4 duration-700">
         <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#f8fafc] border border-slate-100 rounded-full mb-6 shadow-inner">
-           <svg className="w-3.5 h-3.5 text-[#004a61]" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" /></svg>
-           <span className="text-[10px] font-black text-[#004a61] uppercase tracking-[0.2em]">LOCKED DELIVERY NODE: {user.email}</span>
+           <svg className="w-3.5 h-3.5 text-unicou-navy" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" /></svg>
+           <span className="text-[10px] font-black text-unicou-navy uppercase tracking-[0.2em]">LOCKED DELIVERY NODE: {user.email}</span>
         </div>
 
         <h1 className="text-5xl md:text-7xl font-display font-black mb-4 tracking-tighter text-slate-950 uppercase leading-none">
-          {user.role === 'Student' ? 'STUDENT' : 'PARTNER'} <span className="text-[#f15a24]">PORTAL</span>
+          {user.role === 'Student' ? 'STUDENT' : 'PARTNER'} <span className="text-unicou-orange">PORTAL</span>
         </h1>
         
         <div className="flex justify-center mt-10">
@@ -70,8 +68,8 @@ const CustomerDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => vo
                 <div key={o.id} className="bg-white border border-slate-100 py-2 px-6 rounded-2xl transition-all hover:border-unicou-navy/20 flex flex-wrap items-center justify-between gap-4 shadow-sm">
                     <div className="flex items-center gap-8">
                       <div className="flex items-center gap-3">
-                        <div className={`w-2 h-2 rounded-full ${o.status === 'Approved' ? 'bg-emerald-500' : o.status === 'Rejected' ? 'bg-red-500' : 'bg-orange-500'}`} />
-                        <span className="text-[10px] font-black text-[#004a61] uppercase tracking-[0.1em] whitespace-nowrap">{o.id}</span>
+                        <div className={`w-2 h-2 rounded-full ${o.status === 'Approved' ? 'bg-emerald-500' : o.status === 'Rejected' ? 'bg-red-500' : o.status === 'Hold' ? 'bg-amber-500' : 'bg-unicou-navy'}`} />
+                        <span className="text-[10px] font-black text-unicou-navy uppercase tracking-[0.1em] whitespace-nowrap">{o.id}</span>
                       </div>
                       <span className="text-[10px] text-slate-400 font-mono font-bold uppercase">{new Date(o.timestamp).toLocaleDateString()}</span>
                       <span className="text-[11px] font-black text-slate-700 uppercase truncate max-w-[200px]">{o.productName}</span>
@@ -79,16 +77,16 @@ const CustomerDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => vo
                     
                     <div className="flex flex-wrap gap-2">
                       {o.voucherCodes.length > 0 ? o.voucherCodes.map((code, idx) => (
-                        <div key={idx} className="bg-[#f8fafc] px-4 py-1.5 rounded-xl border border-slate-200 flex items-center gap-3 shadow-inner">
-                          <span className="font-mono text-xs font-black text-[#004a61] tracking-widest">{code}</span>
+                        <div key={idx} className="bg-slate-50 px-4 py-1.5 rounded-xl border border-slate-200 flex items-center gap-3 shadow-inner">
+                          <span className="font-mono text-xs font-black text-unicou-navy tracking-widest">{code}</span>
                         </div>
                       )) : (
                         <span className={`text-[9px] font-black px-4 py-1.5 rounded-full uppercase border ${
                           o.status === 'Hold' ? 'bg-amber-50 text-amber-600 border-amber-100' : 
                           o.status === 'Rejected' ? 'bg-red-50 text-red-600 border-red-100' : 
-                          'bg-orange-50 text-orange-600 border-orange-100'
+                          'bg-slate-50 text-slate-500 border-slate-100'
                         }`}>
-                          {o.status === 'Hold' ? 'Audit Hold' : o.status === 'Rejected' ? 'Order Declined' : 'Audit in Progress'}
+                          {o.status === 'Hold' ? 'Verification Hold' : o.status === 'Rejected' ? 'Declined' : 'Pending Audit'}
                         </span>
                       )}
                     </div>
@@ -104,10 +102,7 @@ const CustomerDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => vo
               <div key={c.id} className="bg-slate-50 p-8 rounded-[3rem] border border-slate-100 flex flex-col group hover:bg-white hover:border-unicou-orange/20 transition-all shadow-sm hover:shadow-xl">
                  <h3 className="text-xl font-black text-slate-900 uppercase mb-4">{c.title}</h3>
                  <p className="text-sm text-slate-500 mb-8 flex-grow italic font-bold">"{c.description}"</p>
-                 <button 
-                   onClick={() => onNavigate({ type: 'lms-course-player', courseId: c.id })}
-                   className="w-full py-4 bg-unicou-navy text-white rounded-2xl font-black text-[10px] uppercase tracking-widest"
-                 >Resume Course</button>
+                 <button onClick={() => onNavigate({ type: 'lms-course-player', courseId: c.id })} className="w-full py-4 bg-unicou-navy text-white rounded-2xl font-black text-[10px] uppercase tracking-widest">Resume Course</button>
               </div>
             ))}
           </div>
@@ -118,10 +113,6 @@ const CustomerDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => vo
              <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm border border-slate-100">📊</div>
              <h3 className="text-xl font-black text-unicou-navy uppercase">Analytics Node</h3>
              <p className="text-slate-500 mt-2 font-bold italic">Attempt mock exams to populate your performance metrics.</p>
-             <button 
-               onClick={() => onNavigate({ type: 'lms-practice-test', testId: 'full-mock-1' })}
-               className="mt-8 px-10 py-4 bg-unicou-orange text-white rounded-2xl font-black text-[10px] uppercase tracking-widest"
-             >Take Free Mock</button>
           </div>
         )}
       </div>
