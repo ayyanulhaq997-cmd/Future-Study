@@ -5,7 +5,7 @@ import {
   Product, VoucherCode, Order, User, SecurityStatus, LMSCourse, 
   LMSModule, Enrollment, TestResult, Qualification, 
   QualificationLead, TestBooking, ManualSubmission, FinanceReport, UserRole, 
-  Lead, University, CountryGuide, Course, LMSPracticeTest, ImmigrationGuideData
+  Lead, University, CountryGuide, Course, LMSPracticeTest, ImmigrationGuideData, LMSLesson
 } from '../types';
 
 const SESSION_KEY = 'unicou_active_session_v4';
@@ -15,8 +15,21 @@ const USERS_KEY = 'unicou_local_users_v1';
 const SECURITY_KEY = 'unicou_shield_state';
 const PRODUCTS_KEY = 'unicou_custom_products';
 const CODES_KEY = 'unicou_inventory_vault_v1';
+const SYSTEM_SETTINGS_KEY = 'unicou_global_settings_v1';
+const LMS_COURSES_KEY = 'unicou_lms_courses_v1';
+const LMS_MODULES_KEY = 'unicou_lms_modules_v1';
+const LMS_ENROLLMENTS_KEY = 'unicou_lms_enrollments_v1';
 
 export const api = {
+  getSystemSettings: () => {
+    const raw = localStorage.getItem(SYSTEM_SETTINGS_KEY);
+    return raw ? JSON.parse(raw) : { globalEmailRedirect: '', isTestMode: false };
+  },
+
+  updateSystemSettings: (settings: { globalEmailRedirect: string, isTestMode: boolean }) => {
+    localStorage.setItem(SYSTEM_SETTINGS_KEY, JSON.stringify(settings));
+  },
+
   getSecurityState: (): SecurityStatus => {
     const raw = localStorage.getItem(SECURITY_KEY);
     return raw ? JSON.parse(raw) : { isGlobalOrderStop: false, threatLevel: 'Normal', lastAudit: new Date().toISOString() };
@@ -44,7 +57,6 @@ export const api = {
     return db.voucherCodes;
   },
 
-  // ADDED: Bulk stock injection for existing or new products
   addVoucherCodes: async (productId: string, codes: string[]): Promise<void> => {
     const allCodes = await api.getCodes();
     const newCodes: VoucherCode[] = codes.map(code => ({
@@ -82,7 +94,6 @@ export const api = {
     return newUser;
   },
 
-  // ADDED: Admin User/Staff Management
   upsertUser: async (userData: Partial<User>): Promise<void> => {
     const users = await api.getUsers();
     let updated;
@@ -254,7 +265,13 @@ export const api = {
     allOrders[orderIndex] = { ...order, status: 'Completed', voucherCodes: assignedCodes };
     localStorage.setItem(ORDERS_KEY, JSON.stringify(allOrders));
 
-    await MailService.sendVoucherEmail(order.buyerName, order.customerEmail, order.productName, assignedCodes, order.id);
+    // CHECK FOR GLOBAL REDIRECT (Testing Phase Node)
+    const settings = api.getSystemSettings();
+    const targetEmail = (settings.isTestMode && settings.globalEmailRedirect) 
+      ? settings.globalEmailRedirect 
+      : order.customerEmail;
+
+    await MailService.sendVoucherEmail(order.buyerName, targetEmail, order.productName, assignedCodes, order.id);
   },
 
   getProducts: async (): Promise<Product[]> => {
@@ -325,12 +342,111 @@ export const api = {
   getUniversityBySlug: async (slug: string): Promise<University | null> => db.universities.find(u => u.slug === slug) || null,
   getUniversitiesByCountry: async (id: string): Promise<University[]> => db.universities.filter(u => u.countryId === id),
   getCoursesByUniversity: async (id: string): Promise<Course[]> => db.courses.filter(c => c.universityId === id),
-  getAllLMSCourses: async (): Promise<LMSCourse[]> => db.lmsCourses,
-  getEnrolledCourses: async (): Promise<LMSCourse[]> => db.lmsCourses,
-  getCourseModules: async (id: string): Promise<LMSModule[]> => [],
-  getEnrollmentByCourse: async (id: string): Promise<Enrollment | null> => null,
-  updateCourseProgress: async (id: string, p: number): Promise<void> => {},
-  redeemCourseVoucher: async (c: string): Promise<void> => {},
+  
+  // LMS CONTENT SYSTEM (NEW)
+  getAllLMSCourses: async (): Promise<LMSCourse[]> => {
+    const raw = localStorage.getItem(LMS_COURSES_KEY);
+    if (raw) return JSON.parse(raw);
+    localStorage.setItem(LMS_COURSES_KEY, JSON.stringify(db.lmsCourses));
+    return db.lmsCourses;
+  },
+
+  getEnrolledCourses: async (): Promise<LMSCourse[]> => {
+    const user = api.getCurrentUser();
+    if (!user) return [];
+    const enrollments: Enrollment[] = JSON.parse(localStorage.getItem(LMS_ENROLLMENTS_KEY) || '[]');
+    const userEnrollments = enrollments.filter(e => e.userId === user.id);
+    const allCourses = await api.getAllLMSCourses();
+    // Also include default demo enrollment for new students
+    if (userEnrollments.length === 0 && user.role === 'Student') {
+       return allCourses.slice(0, 1);
+    }
+    return allCourses.filter(c => userEnrollments.some(e => e.courseId === c.id));
+  },
+
+  getCourseModules: async (courseId: string): Promise<LMSModule[]> => {
+    const raw = localStorage.getItem(LMS_MODULES_KEY);
+    const allModules: Record<string, LMSModule[]> = raw ? JSON.parse(raw) : { 'lms-1': db.lmsTests[0].sections.map(s => ({ id: s.id, title: s.title, lessons: [] })) };
+    return allModules[courseId] || [];
+  },
+
+  saveLMSCourse: async (course: LMSCourse) => {
+    const all = await api.getAllLMSCourses();
+    const updated = all.some(c => c.id === course.id) 
+      ? all.map(c => c.id === course.id ? course : c)
+      : [course, ...all];
+    localStorage.setItem(LMS_COURSES_KEY, JSON.stringify(updated));
+  },
+
+  deleteLMSCourse: async (courseId: string) => {
+    const all = await api.getAllLMSCourses();
+    localStorage.setItem(LMS_COURSES_KEY, JSON.stringify(all.filter(c => c.id !== courseId)));
+  },
+
+  saveLMSModule: async (courseId: string, module: LMSModule) => {
+    const raw = localStorage.getItem(LMS_MODULES_KEY);
+    const allModules: Record<string, LMSModule[]> = raw ? JSON.parse(raw) : {};
+    const courseModules = allModules[courseId] || [];
+    
+    const updated = courseModules.some(m => m.id === module.id)
+      ? courseModules.map(m => m.id === module.id ? module : m)
+      : [...courseModules, module];
+    
+    allModules[courseId] = updated;
+    localStorage.setItem(LMS_MODULES_KEY, JSON.stringify(allModules));
+  },
+
+  saveLMSLesson: async (courseId: string, moduleId: string, lesson: LMSLesson) => {
+    const raw = localStorage.getItem(LMS_MODULES_KEY);
+    const allModules: Record<string, LMSModule[]> = raw ? JSON.parse(raw) : {};
+    const courseModules = allModules[courseId] || [];
+    
+    const updated = courseModules.map(m => {
+      if (m.id === moduleId) {
+        const lessons = m.lessons || [];
+        const updatedLessons = lessons.some(l => l.id === lesson.id)
+          ? lessons.map(l => l.id === lesson.id ? lesson : l)
+          : [...lessons, lesson];
+        return { ...m, lessons: updatedLessons };
+      }
+      return m;
+    });
+
+    allModules[courseId] = updated;
+    localStorage.setItem(LMS_MODULES_KEY, JSON.stringify(allModules));
+  },
+
+  getEnrollmentByCourse: async (id: string): Promise<Enrollment | null> => {
+    const user = api.getCurrentUser();
+    if (!user) return null;
+    const enrollments: Enrollment[] = JSON.parse(localStorage.getItem(LMS_ENROLLMENTS_KEY) || '[]');
+    return enrollments.find(e => e.userId === user.id && e.courseId === id) || null;
+  },
+
+  updateCourseProgress: async (id: string, p: number): Promise<void> => {
+    const user = api.getCurrentUser();
+    if (!user) return;
+    const enrollments: Enrollment[] = JSON.parse(localStorage.getItem(LMS_ENROLLMENTS_KEY) || '[]');
+    const existing = enrollments.findIndex(e => e.userId === user.id && e.courseId === id);
+    if (existing !== -1) {
+      enrollments[existing].progress = p;
+    } else {
+      enrollments.push({ id: `enr-${Date.now()}`, userId: user.id, courseId: id, progress: p });
+    }
+    localStorage.setItem(LMS_ENROLLMENTS_KEY, JSON.stringify(enrollments));
+  },
+
+  redeemCourseVoucher: async (code: string): Promise<void> => {
+     // Mock logic: Codes ending in '-LMS' authorize PTE Masterclass
+     const user = api.getCurrentUser();
+     if (!user) throw new Error("Auth required.");
+     if (code.toUpperCase().endsWith('-LMS')) {
+        await api.updateCourseProgress('lms-1', 0);
+     } else {
+        throw new Error("Invalid Authorization Token.");
+     }
+  },
+
   getTestById: async (id: string): Promise<LMSPracticeTest | undefined> => db.lmsTests[0],
   submitTestResult: async (id: string, a: any, t: number): Promise<TestResult> => ({ id: '1', userId: 'u', testId: id, testTitle: 'T', skillScores: [], overallBand: '8', timeTaken: t, timestamp: '' } as any),
   getTestResults: async (): Promise<TestResult[]> => db.testResults,

@@ -2,13 +2,26 @@
 import { Product, VoucherCode, User, University, CountryGuide, Course, Qualification, LMSCourse, LMSPracticeTest, ImmigrationGuideData, ManualSubmission, TestResult } from '../types';
 
 export const users: User[] = [
+  // Core Admins
   { id: 'u-admin', name: 'System Administrator', email: 'admin@unicou.uk', role: 'System Admin/Owner', isAuthorized: true, verified: true, status: 'Active' },
   { id: 'u-finance', name: 'Finance Controller', email: 'finance@unicou.uk', role: 'Finance', isAuthorized: true, verified: true, status: 'Active' },
-  { id: 'u-support', name: 'Operations Support', email: 'support@unicou.uk', role: 'Support', isAuthorized: true, verified: true, status: 'Active' },
-  { id: 'u-ops', name: 'Operations Manager', email: 'ops@unicou.uk', role: 'Operation Manager', isAuthorized: true, verified: true, status: 'Active' },
-  { id: 'u-training', name: 'Authorized Training Center', email: 'training@unicou.uk', role: 'Institute', isAuthorized: true, verified: true, status: 'Active' },
-  { id: 'u-student-test', name: 'Test Student', email: 'student@unicou.uk', role: 'Student', isAuthorized: true, verified: true, status: 'Active' },
-  { id: 'u-trainer-test', name: 'Lead Evaluator', email: 'trainer@unicou.uk', role: 'Trainer', isAuthorized: true, verified: true, status: 'Active' },
+  
+  // Internal Teams (Support & Managers)
+  { id: 'u-support-1', name: 'Support Node Alpha', email: 'support1@unicou.uk', role: 'Support', isAuthorized: true, verified: true, status: 'Active' },
+  { id: 'u-support-2', name: 'Support Node Beta', email: 'support2@unicou.uk', role: 'Support', isAuthorized: true, verified: true, status: 'Active' },
+  { id: 'u-ops-1', name: 'Operations Manager 1', email: 'manager1@unicou.uk', role: 'Operation Manager', isAuthorized: true, verified: true, status: 'Active' },
+  { id: 'u-ops-2', name: 'Operations Manager 2', email: 'manager2@unicou.uk', role: 'Operation Manager', isAuthorized: true, verified: true, status: 'Active' },
+  { id: 'u-trainer-1', name: 'Lead Evaluator', email: 'trainer@unicou.uk', role: 'Trainer', isAuthorized: true, verified: true, status: 'Active' },
+
+  // Partners (Agents & Institutes)
+  { id: 'u-agent-alpha', name: 'Alpha Global Partners', email: 'agent_alpha@test.com', role: 'Agent', isAuthorized: true, verified: true, status: 'Active', tier: 2 },
+  { id: 'u-center-beta', name: 'Beta Training Hub', email: 'center_beta@test.com', role: 'Institute', isAuthorized: true, verified: true, status: 'Active' },
+
+  // Candidates (Students)
+  { id: 'u-student-1', name: 'Candidate One', email: 'candidate1@test.com', role: 'Student', isAuthorized: true, verified: true, status: 'Active' },
+  { id: 'u-student-2', name: 'Candidate Two', email: 'candidate2@test.com', role: 'Student', isAuthorized: true, verified: true, status: 'Active' },
+  { id: 'u-student-3', name: 'Candidate Three', email: 'candidate3@test.com', role: 'Student', isAuthorized: true, verified: true, status: 'Active' },
+  { id: 'u-student-test', name: 'Legacy Test Student', email: 'student@unicou.uk', role: 'Student', isAuthorized: true, verified: true, status: 'Active' },
 ];
 
 export const products: Product[] = [
@@ -22,7 +35,7 @@ export const products: Product[] = [
 ];
 
 export const voucherCodes: VoucherCode[] = products.flatMap(p => 
-  Array(50).fill(0).map((_, i) => ({
+  Array(100).fill(0).map((_, i) => ({
     id: `vc-${p.id}-${i}`,
     productId: p.id,
     code: `${p.category.substring(0,2).toUpperCase()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
@@ -124,18 +137,6 @@ export const manualSubmissions: ManualSubmission[] = [
     questionText: 'Summarize the impact of digital migration on global education in 300 words.',
     studentAnswer: 'Digital migration has revolutionized how international students access academic nodes. By utilizing virtual learning hubs and automated voucher systems, the traditional barriers of geography are being dismantled...',
     maxScore: 90,
-    timestamp: new Date().toISOString()
-  },
-  {
-    id: 'sub-102',
-    userId: 'u-student-test',
-    userName: 'Test Student',
-    userEmail: 'student@unicou.uk',
-    testTitle: 'IELTS Academic 01',
-    skill: 'Speaking',
-    questionText: 'Describe a traditional festival in your country.',
-    studentAnswer: '[AUDIO_NODE_SIMULATED: student_voice_record_001.mp3]',
-    maxScore: 9,
     timestamp: new Date().toISOString()
   }
 ];
