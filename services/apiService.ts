@@ -120,13 +120,9 @@ export const api = {
 
   checkUserQuota: async (paymentMethod: 'Card' | 'BankTransfer', currentQuantity: number = 1): Promise<{ allowed: boolean; reason?: string }> => {
     const security = api.getSecurityState();
-    // Keep global stop for administrative control
     if (security.isGlobalOrderStop) return { allowed: false, reason: 'SYSTEM_LOCKED' };
-    
     const sessionUser = api.getCurrentUser();
     if (!sessionUser) return { allowed: false, reason: 'AUTH_REQUIRED' };
-
-    // TEMPORARY BYPASS: Allowing all roles unlimited orders for testing
     return { allowed: true };
   },
 
@@ -192,6 +188,22 @@ export const api = {
     return order;
   },
 
+  deleteOrder: async (orderId: string): Promise<void> => {
+    const allOrders: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
+    const filteredOrders = allOrders.filter(o => o.id !== orderId);
+    localStorage.setItem(ORDERS_KEY, JSON.stringify(filteredOrders));
+
+    // Release vouchers back to available pool
+    const allCodes = await api.getCodes();
+    const updatedCodes = allCodes.map(c => {
+      if (c.orderId === orderId) {
+        return { ...c, status: 'Available' as const, orderId: undefined, buyerName: undefined, assignmentDate: undefined };
+      }
+      return c;
+    });
+    localStorage.setItem(CODES_KEY, JSON.stringify(updatedCodes));
+  },
+
   verifyLogin: async (userId: string, code: string): Promise<User> => {
     const cleanId = userId.trim().toLowerCase();
     const dbUser = db.users.find(u => u.email.toLowerCase() === cleanId);
@@ -244,7 +256,6 @@ export const api = {
     allOrders[orderIndex] = { ...order, status: 'Completed', voucherCodes: assignedCodes };
     localStorage.setItem(ORDERS_KEY, JSON.stringify(allOrders));
 
-    // CHECK FOR GLOBAL REDIRECT (Testing Phase Node)
     const settings = api.getSystemSettings();
     const targetEmail = (settings.isTestMode && settings.globalEmailRedirect) 
       ? settings.globalEmailRedirect 
@@ -286,10 +297,7 @@ export const api = {
   },
 
   clearAllOrders: async (): Promise<void> => {
-    // 1. Delete all order history
     localStorage.removeItem(ORDERS_KEY);
-    
-    // 2. Reset all vouchers back to Available state
     const allCodes = await api.getCodes();
     const resetCodes = allCodes.map(c => ({
       ...c,
@@ -355,7 +363,6 @@ export const api = {
   getUniversitiesByCountry: async (id: string): Promise<University[]> => db.universities.filter(u => u.countryId === id),
   getCoursesByUniversity: async (id: string): Promise<Course[]> => db.courses.filter(c => c.universityId === id),
   
-  // LMS CONTENT SYSTEM (NEW)
   getAllLMSCourses: async (): Promise<LMSCourse[]> => {
     const raw = localStorage.getItem(LMS_COURSES_KEY);
     if (raw) return JSON.parse(raw);

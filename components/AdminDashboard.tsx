@@ -19,6 +19,7 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
   }>({ products: [], codes: [], orders: [], users: [], leads: [] });
 
   const [qaEmailSearch, setQaEmailSearch] = useState('');
+  const [qaOrderId, setQaOrderId] = useState('');
   const [bulkCodes, setBulkCodes] = useState('');
   const [targetProductId, setTargetProductId] = useState('');
   const [newStaff, setNewStaff] = useState<Partial<User>>({ role: 'Finance' });
@@ -39,6 +40,17 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
     if (confirm("QA ACTION: This will permanently DELETE ALL PREVIOUS ORDERS and reset your daily procurement quotas. Proceed?")) {
       await api.clearAllOrders();
       alert("Order Ledger Purged. All limits have been reset.");
+      fetchData();
+    }
+  };
+
+  const handleTargetDeleteOrder = async (id?: string) => {
+    const targetId = id || qaOrderId.trim();
+    if (!targetId) return alert("Enter a valid Order ID.");
+    if (confirm(`QA ACTION: Permanently delete order ${targetId}?`)) {
+      await api.deleteOrder(targetId);
+      alert(`Record ${targetId} removed from global ledger.`);
+      setQaOrderId('');
       fetchData();
     }
   };
@@ -125,214 +137,34 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
                  <h2 className="text-4xl font-display font-black uppercase mb-4 tracking-tighter text-cyan-400">Testing & <span className="text-white">Fulfillment Terminal</span></h2>
                  <p className="text-slate-400 font-bold italic text-lg mb-12 max-w-2xl">"Tools to reset procurement limits and bypass security protocols for development testing."</p>
 
-                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                     <div className="bg-white/5 border border-white/10 p-10 rounded-[3rem] space-y-6">
-                       <h3 className="text-xl font-black uppercase text-cyan-400 tracking-widest">Global Limit Reset</h3>
-                       <p className="text-sm text-slate-400 leading-relaxed italic">"If you have hit the Agent or Center order limits, use this to wipe order history and start fresh."</p>
-                       <button 
-                         onClick={handleWipeOrders}
-                         className="w-full py-6 bg-cyan-600 hover:bg-cyan-500 text-white rounded-[1.5rem] font-black uppercase text-xs tracking-widest transition-all shadow-xl shadow-cyan-600/20 active:scale-95"
-                       >
-                         PURGE ALL LOGS (RESET QUOTAS)
-                       </button>
+                       <h3 className="text-xl font-black uppercase text-cyan-400 tracking-widest">Global Reset</h3>
+                       <button onClick={handleWipeOrders} className="w-full py-6 bg-cyan-600 hover:bg-cyan-500 text-white rounded-[1.5rem] font-black uppercase text-xs tracking-widest transition-all shadow-xl shadow-cyan-600/20 active:scale-95">PURGE ALL LOGS</button>
                     </div>
 
                     <div className="bg-white/5 border border-white/10 p-10 rounded-[3rem] space-y-6">
-                       <h3 className="text-xl font-black uppercase text-cyan-400 tracking-widest">Authorize Infinite Quota</h3>
+                       <h3 className="text-xl font-black uppercase text-cyan-400 tracking-widest">Remove Order</h3>
                        <div className="space-y-4">
-                          <input 
-                            className="w-full bg-white/10 border border-white/10 rounded-2xl p-4 text-sm font-bold text-white outline-none focus:border-cyan-400"
-                            placeholder="Search tester email..."
-                            value={qaEmailSearch}
-                            onChange={(e) => setQaEmailSearch(e.target.value)}
-                          />
-                          <div className="max-h-40 overflow-y-auto no-scrollbar space-y-2">
+                          <input className="w-full bg-white/10 border border-white/10 rounded-2xl p-4 text-sm font-bold text-white outline-none focus:border-cyan-400" placeholder="Paste Order ID (e.g. UNICOU-...)" value={qaOrderId} onChange={(e) => setQaOrderId(e.target.value)} />
+                          <button onClick={() => handleTargetDeleteOrder()} className="w-full py-4 bg-red-600 hover:bg-red-500 text-white rounded-xl font-black uppercase text-[10px] tracking-widest">Purge Targeted Record</button>
+                       </div>
+                    </div>
+
+                    <div className="bg-white/5 border border-white/10 p-10 rounded-[3rem] space-y-6">
+                       <h3 className="text-xl font-black uppercase text-cyan-400 tracking-widest">Bypass Node</h3>
+                       <div className="space-y-4">
+                          <input className="w-full bg-white/10 border border-white/10 rounded-2xl p-4 text-sm font-bold text-white outline-none focus:border-cyan-400" placeholder="Search tester email..." value={qaEmailSearch} onChange={(e) => setQaEmailSearch(e.target.value)} />
+                          <div className="max-h-24 overflow-y-auto no-scrollbar space-y-2">
                              {data.users.filter(u => u.email.includes(qaEmailSearch)).slice(0, 3).map(u => (
-                               <div key={u.id} className="flex justify-between items-center p-4 bg-white/5 rounded-xl border border-white/5">
-                                  <div>
-                                     <p className="text-xs font-black uppercase">{u.name}</p>
-                                     <p className="text-[10px] text-slate-500">{u.email}</p>
-                                  </div>
-                                  <button 
-                                    onClick={() => handleBypassUser(u.email)}
-                                    className="px-4 py-2 bg-white text-slate-900 rounded-lg text-[9px] font-black uppercase hover:bg-cyan-400 transition-colors"
-                                  >
-                                    Grant Bypass
-                                  </button>
+                               <div key={u.id} className="flex justify-between items-center p-3 bg-white/5 rounded-xl">
+                                  <span className="text-[10px] font-bold">{u.email}</span>
+                                  <button onClick={() => handleBypassUser(u.email)} className="px-3 py-1.5 bg-white text-slate-900 rounded text-[8px] font-black uppercase">Grant</button>
                                </div>
                              ))}
                           </div>
                        </div>
                     </div>
-                 </div>
-              </div>
-           </div>
-        </div>
-      )}
-
-      {activeTab === 'inventory' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 animate-in fade-in duration-500">
-           <div className="lg:col-span-4 space-y-8">
-              <div className="bg-slate-50 p-10 rounded-[3rem] border border-slate-200 shadow-inner">
-                 <h3 className="text-xl font-black text-[#004a61] uppercase mb-8 tracking-tighter">Vault stock injection</h3>
-                 <form onSubmit={handleInjectCodes} className="space-y-6">
-                    <select required className="w-full bg-white border border-slate-200 p-4 rounded-2xl text-xs font-bold" value={targetProductId} onChange={e => setTargetProductId(e.target.value)}>
-                      <option value="">Select Target Voucher...</option>
-                      {data.products.filter(p => p.type === 'Voucher').map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                    </select>
-                    <textarea required rows={8} className="w-full bg-white border border-slate-200 p-4 rounded-2xl text-[12px] font-mono shadow-inner" value={bulkCodes} onChange={e => setBulkCodes(e.target.value)} placeholder="PASTE CODES (ONE PER LINE)" />
-                    <button type="submit" className="w-full py-5 bg-[#004a61] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl hover:bg-black">SYNC VAULT STOCK</button>
-                 </form>
-              </div>
-           </div>
-           
-           <div className="lg:col-span-8 bg-white rounded-[3rem] border border-slate-200 shadow-2xl overflow-hidden">
-              <table className="w-full text-left">
-                 <thead className="bg-slate-50 text-[10px] font-black uppercase text-slate-400 tracking-widest">
-                    <tr><th className="px-10 py-6">Voucher SKU</th><th className="px-10 py-6 text-center">In Stock</th><th className="px-10 py-6 text-right">Actions</th></tr>
-                 </thead>
-                 <tbody className="divide-y divide-slate-100">
-                    {data.products.map(p => {
-                      const count = data.codes.filter(c => c.productId === p.id && c.status === 'Available').length;
-                      const isCustom = !['v-1', 'v-6', 'v-19', 'v-20', 'v-21', 'v-24', 'v-26'].includes(p.id);
-                      return (
-                        <tr key={p.id}>
-                          <td className="px-10 py-6 font-black text-xs text-[#004a61] uppercase">{p.name} {isCustom && <span className="ml-2 text-[8px] bg-orange-100 text-orange-600 px-2 py-0.5 rounded">CUSTOM</span>}</td>
-                          <td className="px-10 py-6 text-center font-mono font-black">{count}</td>
-                          <td className="px-10 py-6 text-right">
-                             {isCustom && <button onClick={() => handleDeleteProduct(p.id, p.name)} className="text-red-500 hover:text-red-700 text-[10px] font-black uppercase">Revoke Node</button>}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                 </tbody>
-              </table>
-           </div>
-        </div>
-      )}
-
-      {activeTab === 'staff' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 animate-in fade-in duration-500">
-          <div className="lg:col-span-4">
-             <div className="bg-[#004a61] p-10 rounded-[3rem] text-white shadow-2xl relative overflow-hidden">
-                <h3 className="text-xl font-black uppercase mb-8 tracking-tighter">Provision staff node</h3>
-                <form onSubmit={handleStaffAction} className="space-y-6">
-                   <input required className="w-full bg-white/10 border border-white/20 p-4 rounded-2xl text-xs font-bold outline-none focus:bg-white focus:text-[#004a61]" value={newStaff.name || ''} onChange={e => setNewStaff({...newStaff, name: e.target.value})} placeholder="Legal Full Name" />
-                   <input required type="email" className="w-full bg-white/10 border border-white/20 p-4 rounded-2xl text-xs font-bold outline-none focus:bg-white focus:text-[#004a61]" value={newStaff.email || ''} onChange={e => setNewStaff({...newStaff, email: e.target.value})} placeholder="Official Email (user@unicou.uk)" />
-                   <select required className="w-full bg-white/10 border border-white/20 p-4 rounded-2xl text-xs font-black outline-none text-white appearance-none" value={newStaff.role} onChange={e => setNewStaff({...newStaff, role: e.target.value as UserRole})}>
-                     <option value="Finance" className="text-black">Finance Team</option>
-                     <option value="Operation Manager" className="text-black">Ops Manager</option>
-                     <option value="Support" className="text-black">Student Support</option>
-                     <option value="Trainer" className="text-black">Academic Trainer</option>
-                   </select>
-                   <button type="submit" className="w-full py-5 bg-[#f15a24] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl hover:bg-black">AUTHORIZE STAFF NODE</button>
-                </form>
-             </div>
-          </div>
-
-          <div className="lg:col-span-8 bg-white rounded-[3rem] border border-slate-200 shadow-2xl overflow-hidden">
-             <table className="w-full text-left">
-                <thead className="bg-slate-900 text-[10px] font-black uppercase text-slate-400 tracking-widest">
-                   <tr><th className="px-10 py-6">Staff Identity</th><th className="px-10 py-6">Role Node</th><th className="px-10 py-6 text-right">Control</th></tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                   {data.users.filter(u => ['Finance', 'Operation Manager', 'Support', 'Trainer'].includes(u.role)).map(u => (
-                     <tr key={u.id} className="hover:bg-slate-50 transition-colors">
-                        <td className="px-10 py-6">
-                           <div className="font-black text-xs text-slate-900 uppercase">{u.name}</div>
-                           <div className="text-[10px] font-mono text-slate-400">{u.email}</div>
-                        </td>
-                        <td className="px-10 py-6"><span className="px-3 py-1 bg-[#004a61] text-white rounded-full text-[8px] font-black uppercase tracking-widest">{u.role}</span></td>
-                        <td className="px-10 py-6 text-right">
-                           <button onClick={() => handleDeleteUser(u.id, u.name)} className="text-red-600 hover:text-black font-black text-[9px] uppercase tracking-widest">Revoke Authority</button>
-                        </td>
-                     </tr>
-                   ))}
-                </tbody>
-             </table>
-          </div>
-        </div>
-      )}
-
-      {activeTab === 'partners' && (
-        <div className="bg-white rounded-[3rem] border border-slate-200 shadow-2xl overflow-hidden animate-in fade-in duration-500">
-           <div className="p-8 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-              <h3 className="text-sm font-black uppercase tracking-widest text-[#004a61]">Authorized Partner Hub</h3>
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{data.users.filter(u => u.role === 'Agent' || u.role === 'Institute').length} Nodes Operational</span>
-           </div>
-           <table className="w-full text-left">
-              <thead>
-                <tr className="bg-slate-50 text-[10px] font-black uppercase text-slate-500 tracking-widest">
-                   <th className="px-10 py-5">Corporate Identity</th><th className="px-10 py-5">Email Node</th><th className="px-10 py-5">Status</th><th className="px-10 py-5 text-right">Revocation</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                 {data.users.filter(u => u.role === 'Agent' || u.role === 'Institute').map(p => (
-                   <tr key={p.id}>
-                      <td className="px-10 py-6 font-black uppercase text-xs text-[#004a61]">{p.name}</td>
-                      <td className="px-10 py-6 font-mono text-slate-400 text-xs">{p.email}</td>
-                      <td className="px-10 py-6"><span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase ${p.isAuthorized ? 'bg-emerald-50 text-emerald-600' : 'bg-orange-50 text-orange-600'}`}>{p.isAuthorized ? 'AUTHORIZED' : 'PENDING'}</span></td>
-                      <td className="px-10 py-6 text-right">
-                         <button onClick={() => handleDeleteUser(p.id, p.name)} className="px-5 py-2 bg-slate-100 text-red-600 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all">De-Authorize Node</button>
-                      </td>
-                   </tr>
-                 ))}
-              </tbody>
-           </table>
-        </div>
-      )}
-
-      {activeTab === 'security' && (
-        <div className="max-w-3xl mx-auto py-20 text-center animate-in zoom-in-95 duration-500">
-           <div className={`p-16 rounded-[4rem] border-2 shadow-3xl transition-all ${security.isGlobalOrderStop ? 'bg-red-50 border-red-200' : 'bg-white border-slate-100'}`}>
-              <h2 className="text-4xl font-display font-black text-slate-950 uppercase mb-4 tracking-tighter">Control & <span className="text-red-600">Recovery</span></h2>
-              <p className="text-slate-500 font-bold italic mb-12">"Authorized overrides for system re-initialization and emergency lock."</p>
-              
-              <div className="space-y-6">
-                <button onClick={() => { api.setGlobalStop(!security.isGlobalOrderStop); fetchData(); }} className={`w-full py-8 rounded-[2.5rem] font-black text-sm uppercase tracking-[0.3em] shadow-2xl transition-all ${security.isGlobalOrderStop ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-white hover:bg-black'}`}>
-                  {security.isGlobalOrderStop ? 'RESUME PORTAL SETTLEMENTS' : 'TRIGGER GLOBAL LOCK'}
-                </button>
-
-                <div className="pt-12 border-t border-slate-100">
-                  <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-6">Danger Zone</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <button onClick={handleWipeOrders} className="py-6 bg-red-50 border border-red-200 text-red-600 rounded-[2rem] font-black text-[10px] uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all">PURGE ORDERS</button>
-                    <button onClick={handleFactoryReset} className="py-6 bg-slate-900 text-white rounded-[2rem] font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all">FACTORY RESET</button>
-                  </div>
-                </div>
-              </div>
-           </div>
-        </div>
-      )}
-
-      {activeTab === 'settings' && (
-        <div className="max-w-4xl mx-auto py-12 animate-in fade-in duration-500">
-           <div className="bg-white rounded-[3.5rem] border border-slate-200 p-12 shadow-3xl">
-              <h2 className="text-3xl font-display font-black text-slate-900 uppercase tracking-tighter mb-8">Infrastructure Configuration</h2>
-              
-              <div className="space-y-10">
-                 <div className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-200">
-                    <div className="flex items-center justify-between mb-6">
-                       <div>
-                          <h4 className="text-lg font-black text-slate-900 uppercase">Global Email Redirect</h4>
-                          <p className="text-[11px] text-slate-500 font-bold italic">Requirement: All digital assets will route to this primary recipient if Test Mode is active.</p>
-                       </div>
-                       <label className="relative inline-flex items-center cursor-pointer">
-                          <input type="checkbox" className="sr-only peer" checked={settings.isTestMode} onChange={e => setSettings({...settings, isTestMode: e.target.checked})} />
-                          <div className="w-14 h-8 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-[#f15a24]"></div>
-                       </label>
-                    </div>
-                    <input 
-                       type="email" 
-                       className="w-full bg-white border border-slate-200 p-6 rounded-2xl text-lg font-bold outline-none focus:border-[#004a61] shadow-inner"
-                       placeholder="Enter Testing Email (e.g. testing@gmail.com)"
-                       value={settings.globalEmailRedirect}
-                       onChange={e => setSettings({...settings, globalEmailRedirect: e.target.value})}
-                    />
-                 </div>
-
-                 <div className="flex justify-end">
-                    <button onClick={saveSettings} className="px-12 py-5 bg-[#004a61] text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:bg-slate-900 transition-all">SYNCHRONIZE GLOBAL CONFIG</button>
                  </div>
               </div>
            </div>
@@ -346,35 +178,57 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
                  <h3 className="text-sm font-black uppercase tracking-widest text-[#004a61]">Global Audit Ledger</h3>
                  <div className="flex gap-4">
                     <span className="text-[10px] font-black text-slate-400 uppercase">Records: {data.orders.length}</span>
-                    <button onClick={handleWipeOrders} className="text-red-600 hover:text-black font-black text-[9px] uppercase tracking-widest">Purge Logs</button>
+                    <button onClick={handleWipeOrders} className="text-red-600 hover:text-black font-black text-[9px] uppercase tracking-widest">Purge All Logs</button>
                  </div>
               </div>
-              <table className="w-full text-left">
-                 <thead className="bg-slate-900 text-[10px] font-black uppercase text-slate-400 tracking-widest">
-                    <tr>
-                      <th className="px-10 py-6">Order ID</th>
-                      <th className="px-10 py-6">Buyer Identity</th>
-                      <th className="px-10 py-6">Product</th>
-                      <th className="px-10 py-6 text-right">Value</th>
-                    </tr>
-                 </thead>
-                 <tbody className="divide-y divide-slate-100">
-                    {data.orders.map((o) => (
-                      <tr key={o.id} className="hover:bg-slate-50 transition-colors">
-                        <td className="px-10 py-6 font-mono font-black text-xs text-[#004a61]">{o.id}</td>
-                        <td className="px-10 py-6">
-                           <div className="font-black text-xs text-slate-900 uppercase">{o.buyerName}</div>
-                           <div className="text-[9px] font-bold text-slate-400 uppercase">{o.customerEmail}</div>
-                        </td>
-                        <td className="px-10 py-6 font-black text-xs text-slate-950 uppercase">{o.productName}</td>
-                        <td className="px-10 py-6 text-right font-display font-black text-slate-950 text-xl">${o.totalAmount}</td>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead className="bg-slate-900 text-[9px] font-black uppercase text-slate-400 tracking-[0.1em]">
+                      <tr>
+                        <th className="px-6 py-6">I. Number (ID)</th>
+                        <th className="px-6 py-6">II. Date</th>
+                        <th className="px-6 py-6">III. Time</th>
+                        <th className="px-6 py-6">IV. Buyer Name</th>
+                        <th className="px-6 py-6">V. Product Name</th>
+                        <th className="px-6 py-6">VI. Amount</th>
+                        <th className="px-6 py-6">VII. Payment Ref</th>
+                        <th className="px-6 py-6">VIII. Proof</th>
+                        <th className="px-6 py-6 text-right">Control</th>
                       </tr>
-                    ))}
-                    {data.orders.length === 0 && (
-                      <tr><td colSpan={4} className="p-20 text-center text-slate-300 font-bold uppercase italic">Audit Ledger is currently empty. All quotas reset.</td></tr>
-                    )}
-                 </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                      {data.orders.map((o) => {
+                        const dateObj = new Date(o.timestamp);
+                        return (
+                          <tr key={o.id} className="hover:bg-slate-50 transition-colors">
+                            <td className="px-6 py-5 font-mono font-black text-[11px] text-[#004a61]">{o.id}</td>
+                            <td className="px-6 py-5 font-mono text-[11px] text-slate-500 whitespace-nowrap">{dateObj.toLocaleDateString()}</td>
+                            <td className="px-6 py-5 font-mono text-[11px] text-slate-500 whitespace-nowrap">{dateObj.toLocaleTimeString()}</td>
+                            <td className="px-6 py-5 font-black text-[11px] text-slate-900 uppercase">{o.buyerName}</td>
+                            <td className="px-6 py-5 font-black text-[11px] text-slate-700 uppercase">{o.productName}</td>
+                            <td className="px-6 py-5 font-display font-black text-slate-950 text-base">${o.totalAmount}</td>
+                            <td className="px-6 py-5 font-mono font-bold text-[10px] text-slate-400 uppercase truncate max-w-[120px]" title={o.bankRef}>{o.bankRef || 'N/A'}</td>
+                            <td className="px-6 py-5">
+                                {o.proofAttached ? (
+                                  <button className="px-3 py-1 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-lg text-[8px] font-black uppercase hover:bg-emerald-600 hover:text-white transition-all">VIEW PROOF</button>
+                                ) : (
+                                  <span className="text-[8px] font-black text-slate-300 uppercase italic">NONE ATTACHED</span>
+                                )}
+                            </td>
+                            <td className="px-6 py-5 text-right">
+                              <button onClick={() => handleTargetDeleteOrder(o.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete Order">
+                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                      {data.orders.length === 0 && (
+                        <tr><td colSpan={9} className="p-20 text-center text-slate-300 font-bold uppercase italic">Audit Ledger is currently empty. All quotas reset.</td></tr>
+                      )}
+                  </tbody>
+                </table>
+              </div>
            </div>
         </div>
       )}

@@ -38,9 +38,19 @@ const FinanceDashboard: React.FC<{ user: User }> = ({ user }) => {
     document.body.removeChild(link);
   };
 
-  const getSalesData = () => (report?.recentSales || []).map(o => ({
-    OrderID: o.id, Date: new Date(o.timestamp).toLocaleDateString(), Buyer: o.buyerName, Product: o.productName, Qty: o.quantity, Amount: o.totalAmount, Status: o.status
-  }));
+  const getSalesData = () => (report?.recentSales || []).map(o => {
+    const d = new Date(o.timestamp);
+    return {
+      Number: o.id, 
+      Date: d.toLocaleDateString(), 
+      Time: d.toLocaleTimeString(),
+      Buyer: o.buyerName, 
+      Product: o.productName, 
+      Amount: o.totalAmount, 
+      Reference: o.bankRef,
+      Proof: o.proofAttached ? 'Attached' : 'Missing'
+    };
+  });
 
   const getInventoryData = () => codes.map(c => ({
     Code: c.code, Product: products.find(p => p.id === c.productId)?.name || 'Voucher', Status: c.status, OrderID: c.orderId || 'Unassigned'
@@ -86,23 +96,43 @@ const FinanceDashboard: React.FC<{ user: User }> = ({ user }) => {
 
         <div className="p-10">
            {activeTab === 'sales' && (
-             <table className="w-full text-left report-table">
-               <thead className="bg-slate-900 text-white print:bg-black">
-                 <tr className="text-[10px] font-black uppercase tracking-widest">
-                   <th className="px-8 py-5">Order ID</th><th className="px-8 py-5">Buyer</th><th className="px-8 py-5">Value</th><th className="px-8 py-5 text-right">Status</th>
-                 </tr>
-               </thead>
-               <tbody className="divide-y divide-slate-100 print:divide-black">
-                 {report?.recentSales.filter(o => o.id.includes(search.toUpperCase())).map(o => (
-                   <tr key={o.id}>
-                     <td className="px-8 py-5 font-mono font-black text-[#004a61] print:text-black">{o.id}</td>
-                     <td className="px-8 py-5 font-black text-xs uppercase">{o.buyerName}</td>
-                     <td className="px-8 py-5 font-display font-black text-xl">${o.totalAmount}</td>
-                     <td className="px-8 py-5 text-right font-black uppercase text-[10px]">{o.status}</td>
+             <div className="overflow-x-auto">
+               <table className="w-full text-left report-table">
+                 <thead className="bg-slate-900 text-white print:bg-black">
+                   <tr className="text-[9px] font-black uppercase tracking-widest">
+                     <th className="px-4 py-5">I. Number</th>
+                     <th className="px-4 py-5">II. Date</th>
+                     <th className="px-4 py-5">III. Time</th>
+                     <th className="px-4 py-5">IV. Buyer</th>
+                     <th className="px-4 py-5">V. Product</th>
+                     <th className="px-4 py-5">VI. Amount</th>
+                     <th className="px-4 py-5">VII. Reference</th>
+                     <th className="px-4 py-5 text-right">VIII. Proof</th>
                    </tr>
-                 ))}
-               </tbody>
-             </table>
+                 </thead>
+                 <tbody className="divide-y divide-slate-100 print:divide-black">
+                   {report?.recentSales.filter(o => o.id.includes(search.toUpperCase())).map(o => {
+                     const d = new Date(o.timestamp);
+                     return (
+                      <tr key={o.id}>
+                        <td className="px-4 py-5 font-mono font-black text-[#004a61] text-[10px] print:text-black">{o.id}</td>
+                        <td className="px-4 py-5 font-mono text-[10px] text-slate-500">{d.toLocaleDateString()}</td>
+                        <td className="px-4 py-5 font-mono text-[10px] text-slate-500">{d.toLocaleTimeString()}</td>
+                        <td className="px-4 py-5 font-black text-[10px] uppercase truncate max-w-[120px]">{o.buyerName}</td>
+                        <td className="px-4 py-5 font-black text-[10px] uppercase">{o.productName}</td>
+                        <td className="px-4 py-5 font-display font-black text-base">${o.totalAmount}</td>
+                        <td className="px-4 py-5 font-mono text-slate-400 text-[9px] truncate max-w-[100px]">{o.bankRef}</td>
+                        <td className="px-4 py-5 text-right">
+                          <span className={`px-2 py-1 rounded text-[8px] font-black uppercase ${o.proofAttached ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
+                            {o.proofAttached ? 'VERIFIED' : 'MISSING'}
+                          </span>
+                        </td>
+                      </tr>
+                     );
+                   })}
+                 </tbody>
+               </table>
+             </div>
            )}
         </div>
       </div>

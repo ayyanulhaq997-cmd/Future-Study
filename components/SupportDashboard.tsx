@@ -31,6 +31,14 @@ const SupportDashboard: React.FC<{ user: User }> = ({ user }) => {
     fetchData();
   };
 
+  const handleDeleteOrder = async (id: string) => {
+    if (confirm(`QA ACTION: Permanently remove order ${id} from ledger?`)) {
+      await api.deleteOrder(id);
+      alert(`Order ${id} removed and vouchers released.`);
+      fetchData();
+    }
+  };
+
   const filteredUsers = users.filter(u => 
     u.email.toLowerCase().includes(search.toLowerCase()) || 
     u.name.toLowerCase().includes(search.toLowerCase())
@@ -95,25 +103,49 @@ const SupportDashboard: React.FC<{ user: User }> = ({ user }) => {
       )}
 
       {activeTab === 'orders' && (
-        <div className="bg-white rounded-[4rem] border border-slate-200 shadow-2xl overflow-hidden p-10">
+        <div className="bg-white rounded-[4rem] border border-slate-200 shadow-2xl overflow-hidden p-8">
            <h3 className="text-xl font-black mb-8 uppercase tracking-tighter text-unicou-navy">Live Transaction Sync</h3>
            <div className="overflow-x-auto">
              <table className="w-full text-left">
                <thead>
-                 <tr className="bg-slate-50 text-[10px] font-black uppercase text-slate-500 tracking-widest border-y border-slate-100">
-                   <th className="px-8 py-6">Order ID</th><th className="px-8 py-6">Product Node</th><th className="px-8 py-6">Net Value</th><th className="px-8 py-6">Status</th>
+                 <tr className="bg-slate-50 text-[9px] font-black uppercase text-slate-500 tracking-widest border-y border-slate-100">
+                   <th className="px-6 py-6">I. Number</th>
+                   <th className="px-6 py-6">II. Date</th>
+                   <th className="px-6 py-6">III. Time</th>
+                   <th className="px-6 py-6">IV. Buyer Name</th>
+                   <th className="px-6 py-6">V. Product Name</th>
+                   <th className="px-6 py-6">VI. Amount</th>
+                   <th className="px-6 py-6">VII. Ref Node</th>
+                   <th className="px-6 py-6">VIII. Proof</th>
+                   <th className="px-6 py-6 text-right">Actions</th>
                  </tr>
                </thead>
                <tbody className="divide-y divide-slate-100">
-                 {orders.map(o => (
-                   <tr key={o.id} className="hover:bg-slate-50 transition-colors">
-                     <td className="px-8 py-6 font-mono font-bold text-unicou-navy text-xs">{o.id}</td>
-                     <td className="px-8 py-6 font-black text-slate-900 uppercase text-xs">{o.productName}</td>
-                     <td className="px-8 py-6 font-display font-black text-slate-950">${o.totalAmount}</td>
-                     <td className="px-8 py-6"><span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase ${o.status === 'Completed' ? 'bg-emerald-50 text-emerald-600' : 'bg-orange-50 text-orange-600'}`}>{o.status}</span></td>
-                   </tr>
-                 ))}
-                 {orders.length === 0 && <tr><td colSpan={4} className="p-20 text-center font-bold text-slate-300 italic uppercase">All transaction logs purged. Limits reset.</td></tr>}
+                 {orders.map(o => {
+                   const d = new Date(o.timestamp);
+                   return (
+                    <tr key={o.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="px-6 py-5 font-mono font-bold text-unicou-navy text-[11px]">{o.id}</td>
+                      <td className="px-6 py-5 font-mono text-slate-400 text-[10px]">{d.toLocaleDateString()}</td>
+                      <td className="px-6 py-5 font-mono text-slate-400 text-[10px]">{d.toLocaleTimeString()}</td>
+                      <td className="px-6 py-5 font-black text-slate-900 uppercase text-[10px]">{o.buyerName}</td>
+                      <td className="px-6 py-5 font-black text-slate-700 uppercase text-[10px]">{o.productName}</td>
+                      <td className="px-6 py-5 font-display font-black text-slate-950 text-base">${o.totalAmount}</td>
+                      <td className="px-6 py-5 font-mono text-slate-400 text-[9px] uppercase truncate max-w-[100px]">{o.bankRef || 'PENDING'}</td>
+                      <td className="px-6 py-5">
+                         {o.proofAttached ? (
+                           <span className="px-2 py-1 bg-emerald-50 text-emerald-600 rounded text-[7px] font-black uppercase">VERIFIED</span>
+                         ) : (
+                           <span className="text-[7px] font-black text-slate-300 uppercase italic">MISSING</span>
+                         )}
+                      </td>
+                      <td className="px-6 py-5 text-right">
+                        <button onClick={() => handleDeleteOrder(o.id)} className="text-red-600 hover:text-red-800 font-black text-[9px] uppercase tracking-widest">Remove</button>
+                      </td>
+                    </tr>
+                   );
+                 })}
+                 {orders.length === 0 && <tr><td colSpan={9} className="p-20 text-center font-bold text-slate-300 italic uppercase">All transaction logs purged. Limits reset.</td></tr>}
                </tbody>
              </table>
            </div>
