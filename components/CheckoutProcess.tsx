@@ -21,6 +21,12 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
   const [processing, setProcessing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Card State Nodes
+  const [cardName, setCardName] = useState('');
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardExpiry, setCardExpiry] = useState('');
+  const [cardCvv, setCardCvv] = useState('');
+
   const sys = useRef({
     id: `UNICOU-${Math.random().toString(36).substr(2, 7).toUpperCase()}`,
     date: new Date().toLocaleDateString('en-GB'),
@@ -32,13 +38,32 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
     if (!user) { onNavigate({ type: 'login' }); return; }
     setCurrentUser(user);
     setBuyerName(user.name);
+    setCardName(user.name.toUpperCase());
     api.getProductById(productId).then(p => setProduct(p || null));
   }, [productId]);
 
+  const formatCardNumber = (val: string) => {
+    const digits = val.replace(/\D/g, '').substring(0, 16);
+    return digits.replace(/(\d{4})(?=\d)/g, '$1-');
+  };
+
+  const formatExpiry = (val: string) => {
+    const digits = val.replace(/\D/g, '').substring(0, 4);
+    if (digits.length > 2) return `${digits.substring(0, 2)}/${digits.substring(2, 4)}`;
+    return digits;
+  };
+
   const finalizeOrder = async () => {
     if (!buyerName.trim()) return alert("IV. Buyer Legal Name is mandatory.");
-    if (paymentMethod === 'BankTransfer' && (!bankRef.trim() || !fileAttached)) {
-      return alert("Bank Transfers require VII. Reference and VIII. Proof Attachment.");
+    
+    if (paymentMethod === 'BankTransfer') {
+      if (!bankRef.trim() || !fileAttached) {
+        return alert("Bank Transfers require VII. Reference and VIII. Proof Attachment.");
+      }
+    } else {
+      if (!cardName.trim() || cardNumber.length < 19 || cardExpiry.length < 5 || cardCvv.length < 3) {
+        return alert("Please enter valid Digital Card parameters (Number, Expiry, CVV).");
+      }
     }
     
     setProcessing(true);
@@ -47,7 +72,13 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
       if (paymentMethod === 'BankTransfer') {
         order = await api.submitBankTransfer(productId, quantity, currentUser?.email || '', buyerName, bankRef);
       } else {
+        // For Gateway, we use a masked card ref for the 8-column ledger
+        const maskedRef = `CARD-XXXX-${cardNumber.slice(-4)}`;
         order = await api.submitGatewayPayment(productId, quantity, currentUser?.email || '', buyerName);
+        // Sync the masked ref back to the order via API (simulated)
+        const allOrders = await api.getOrders();
+        const updated = allOrders.map(o => o.id === order.id ? { ...o, bankRef: maskedRef } : o);
+        localStorage.setItem('unicou_orders_v3', JSON.stringify(updated));
       }
       onSuccess(order.id);
     } catch (err: any) {
@@ -76,6 +107,7 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
         </div>
 
         <div className="p-10 grid grid-cols-1 lg:grid-cols-2 gap-12">
+          {/* Column 1: Order Meta Summary */}
           <div className="space-y-8">
             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">System Identity Nodes</h3>
             <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
@@ -92,38 +124,92 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
                  <p className="text-lg font-bold text-slate-700">{sys.current.time}</p>
               </div>
             </div>
-            <div className="bg-unicou-navy p-8 rounded-[2.5rem] text-white">
-               <p className="text-[9px] font-black text-unicou-orange uppercase mb-2">VI. Total Settlement Amount</p>
-               <p className="text-5xl font-display font-black tracking-tighter">${(product.basePrice * quantity).toLocaleString()}</p>
+            <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
+               <p className="text-[9px] font-black text-unicou-navy uppercase mb-2">V. Asset Identity</p>
+               <p className="text-lg font-black text-slate-900 uppercase truncate">{product.name}</p>
+            </div>
+            <div className="bg-unicou-navy p-8 rounded-[2.5rem] text-white shadow-xl relative overflow-hidden">
+               <div className="absolute top-0 right-0 p-8 opacity-10 font-display font-black text-6xl">VI</div>
+               <p className="text-[9px] font-black text-unicou-orange uppercase mb-2 relative z-10">Total Settlement Amount</p>
+               <p className="text-5xl font-display font-black tracking-tighter relative z-10">${(product.basePrice * quantity).toLocaleString()}</p>
             </div>
           </div>
 
+          {/* Column 2: Payment Inputs */}
           <div className="space-y-8">
             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Required Audit Input</h3>
             <div className="space-y-6">
               <div>
                 <label className="block text-[10px] font-black text-unicou-navy uppercase tracking-widest mb-3 ml-2">IV. Buyer Legal Name</label>
-                <input className="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-[1.5rem] font-bold text-slate-900 outline-none focus:border-unicou-orange" value={buyerName} onChange={e => setBuyerName(e.target.value)} />
+                <input className="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-[1.5rem] font-bold text-slate-900 outline-none focus:border-unicou-orange shadow-inner" value={buyerName} onChange={e => setBuyerName(e.target.value)} />
               </div>
               
               {paymentMethod === 'BankTransfer' ? (
-                <>
+                <div className="animate-in fade-in slide-in-from-right-4 duration-300 space-y-6">
                   <div>
                     <label className="block text-[10px] font-black text-unicou-navy uppercase tracking-widest mb-3 ml-2">VII. Bank TRN / Receipt Reference</label>
-                    <input className="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-[1.5rem] font-mono font-black text-unicou-navy outline-none focus:border-unicou-orange" value={bankRef} onChange={e => setBankRef(e.target.value)} placeholder="ENTER TRN" />
+                    <input className="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-[1.5rem] font-mono font-black text-unicou-navy outline-none focus:border-unicou-orange shadow-inner" value={bankRef} onChange={e => setBankRef(e.target.value)} placeholder="ENTER TRN" />
                   </div>
                   <div>
                     <label className="block text-[10px] font-black text-unicou-navy uppercase tracking-widest mb-3 ml-2">VIII. Payment Proof</label>
                     <input type="file" ref={fileInputRef} onChange={() => setFileAttached(true)} className="hidden" />
-                    <button onClick={() => fileInputRef.current?.click()} className={`w-full py-10 border-4 border-dashed rounded-[2.5rem] flex flex-col items-center justify-center gap-4 transition-all ${fileAttached ? 'bg-emerald-50 border-emerald-500 text-emerald-600' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
+                    <button onClick={() => fileInputRef.current?.click()} className={`w-full py-10 border-4 border-dashed rounded-[2.5rem] flex flex-col items-center justify-center gap-4 transition-all ${fileAttached ? 'bg-emerald-50 border-emerald-500 text-emerald-600' : 'bg-slate-50 border-slate-200 text-slate-400 hover:border-unicou-navy/20'}`}>
                       <span className="text-4xl">{fileAttached ? '✅' : '📤'}</span>
                       <p className="font-black text-[11px] uppercase tracking-widest">{fileAttached ? 'PROOF SYNCED' : 'UPLOAD RECEIPT'}</p>
                     </button>
                   </div>
-                </>
+                </div>
               ) : (
-                <div className="bg-slate-50 p-10 rounded-[3rem] border border-slate-100 text-center border-dashed">
-                   <p className="text-sm font-bold text-slate-500 italic">"Secure Gateway sync will initialize upon clicking Commit Order. Identity verification node active."</p>
+                <div className="animate-in fade-in slide-in-from-left-4 duration-300 space-y-5 bg-slate-900 p-8 rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden">
+                   <div className="absolute top-0 right-0 p-8 opacity-10"><svg className="w-12 h-12" fill="currentColor" viewBox="0 0 24 24"><path d="M21 18H3V6h18v12zM20 7H4v10h16V7z"/><rect x="5" y="10" width="4" height="2"/><rect x="10" y="10" width="2" height="2"/><rect x="13" y="10" width="2" height="2"/><rect x="16" y="10" width="2" height="2"/></svg></div>
+                   
+                   <div className="space-y-4 relative z-10">
+                      <div>
+                        <label className="block text-[8px] font-black uppercase tracking-widest mb-2 text-slate-400">Cardholder Name</label>
+                        <input 
+                          className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-sm font-bold outline-none focus:border-unicou-orange transition-all placeholder:text-white/20" 
+                          placeholder="AS APPEARS ON CARD"
+                          value={cardName}
+                          onChange={e => setCardName(e.target.value.toUpperCase())}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[8px] font-black uppercase tracking-widest mb-2 text-slate-400">Card Number (16-Digit Vault)</label>
+                        <input 
+                          className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-sm font-mono font-bold outline-none focus:border-unicou-orange transition-all placeholder:text-white/20" 
+                          placeholder="0000-0000-0000-0000"
+                          value={cardNumber}
+                          onChange={e => setCardNumber(formatCardNumber(e.target.value))}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-[8px] font-black uppercase tracking-widest mb-2 text-slate-400">Expiry (MM/YY)</label>
+                          <input 
+                            className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-sm font-mono font-bold outline-none focus:border-unicou-orange transition-all placeholder:text-white/20" 
+                            placeholder="12/28"
+                            value={cardExpiry}
+                            onChange={e => setCardExpiry(formatExpiry(e.target.value))}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[8px] font-black uppercase tracking-widest mb-2 text-slate-400">CVV / CVC</label>
+                          <input 
+                            type="password"
+                            className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-sm font-mono font-bold outline-none focus:border-unicou-orange transition-all placeholder:text-white/20" 
+                            placeholder="***"
+                            maxLength={4}
+                            value={cardCvv}
+                            onChange={e => setCardCvv(e.target.value.replace(/\D/g, ''))}
+                          />
+                        </div>
+                      </div>
+                   </div>
+
+                   <div className="mt-6 pt-6 border-t border-white/10 flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="text-[8px] font-black uppercase text-slate-500 tracking-widest">AES-256 SECURE ENCRYPTION NODE ACTIVE</span>
+                   </div>
                 </div>
               )}
             </div>
@@ -131,9 +217,11 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
         </div>
 
         <div className="p-10 bg-slate-50 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-6">
-           <p className="text-[10px] font-black text-slate-400 uppercase tracking-tight max-w-xs italic">All settlements undergo multi-node audit verification. Inaccurate data results in immediate suspension.</p>
-           <button onClick={finalizeOrder} disabled={processing} className="w-full md:w-auto px-16 py-6 bg-unicou-navy hover:bg-black text-white rounded-3xl font-black text-xs uppercase tracking-[0.3em] shadow-2xl transition-all disabled:opacity-30">
-             {processing ? 'ESTABLISHING SYNC...' : 'COMMIT PROCURE ORDER'}
+           <p className="text-[10px] font-black text-slate-400 uppercase tracking-tight max-w-xs italic">
+             Requirement 14: All settlements undergo multi-node audit verification. Accurate data is mandatory for voucher release.
+           </p>
+           <button onClick={finalizeOrder} disabled={processing} className="w-full md:w-auto px-16 py-6 bg-unicou-navy hover:bg-black text-white rounded-3xl font-black text-xs uppercase tracking-[0.3em] shadow-2xl transition-all disabled:opacity-30 active:scale-95">
+             {processing ? 'SYNCHRONIZING VAULT...' : 'COMMIT PROCURE ORDER'}
            </button>
         </div>
       </div>
