@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { api } from '../services/apiService';
-import { Product, VoucherCode, Order, User, Lead, UserRole, LMSCourse, LMSModule, LMSLesson } from '../types';
+import { Product, VoucherCode, Order, User, Lead, UserRole, LMSCourse } from '../types';
 
-type AdminTab = 'ledger' | 'inventory' | 'lms-content' | 'partners' | 'staff' | 'security' | 'settings';
+type AdminTab = 'ledger' | 'inventory' | 'partners' | 'staff' | 'security' | 'qa-tools' | 'settings';
 
 const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
   const [activeTab, setActiveTab] = useState<AdminTab>('ledger');
@@ -15,19 +15,19 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
     codes: VoucherCode[],
     orders: Order[],
     users: User[],
-    leads: Lead[],
-    lmsCourses: LMSCourse[]
-  }>({ products: [], codes: [], orders: [], users: [], leads: [], lmsCourses: [] });
+    leads: Lead[]
+  }>({ products: [], codes: [], orders: [], users: [], leads: [] });
 
+  const [qaEmailSearch, setQaEmailSearch] = useState('');
   const [bulkCodes, setBulkCodes] = useState('');
   const [targetProductId, setTargetProductId] = useState('');
   const [newStaff, setNewStaff] = useState<Partial<User>>({ role: 'Finance' });
 
   const fetchData = async () => {
-    const [p, c, o, u, le, lc] = await Promise.all([
-      api.getProducts(), api.getCodes(), api.getOrders(), api.getUsers(), api.getLeads(), api.getAllLMSCourses()
+    const [p, c, o, u, le] = await Promise.all([
+      api.getProducts(), api.getCodes(), api.getOrders(), api.getUsers(), api.getLeads()
     ]);
-    setData({ products: p, codes: c, orders: o, users: u, leads: le, lmsCourses: lc });
+    setData({ products: p, codes: c, orders: o, users: u, leads: le });
     setSecurity(api.getSecurityState());
     setSettings(api.getSystemSettings());
     setLoading(false);
@@ -36,19 +36,17 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
   useEffect(() => { fetchData(); }, []);
 
   const handleWipeOrders = async () => {
-    if (confirm("CRITICAL: This will permanently DELETE ALL PREVIOUS ORDERS and reset voucher availability. Proceed?")) {
+    if (confirm("QA ACTION: This will permanently DELETE ALL PREVIOUS ORDERS and reset your daily procurement quotas. Proceed?")) {
       await api.clearAllOrders();
-      alert("Order Ledger Purged Successfully.");
+      alert("Order Ledger Purged. All limits have been reset.");
       fetchData();
     }
   };
 
-  const handleFactoryReset = async () => {
-    if (confirm("NUCLEAR RESET: This will wipe ALL Custom Products, Orders, Leads, and LMS Enrollments. Return to factory default?")) {
-      await api.resetSystemData();
-      alert("System Reset Complete. Portal re-initialized.");
-      window.location.reload();
-    }
+  const handleBypassUser = async (email: string) => {
+    await api.bypassUserQuota(email);
+    alert(`Node Authority Updated: ${email} now has infinite procurement quota.`);
+    fetchData();
   };
 
   const handleDeleteProduct = async (id: string, name: string) => {
@@ -81,13 +79,73 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
         </div>
         
         <div className="flex flex-wrap justify-center bg-slate-50 p-2 rounded-[2rem] border border-slate-200 shadow-inner">
-           {(['ledger', 'inventory', 'partners', 'staff', 'security', 'settings'] as AdminTab[]).map((tab) => (
-             <button key={tab} onClick={() => setActiveTab(tab)} className={`px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-white text-[#004a61] shadow-lg border border-slate-200' : 'text-slate-400 hover:text-slate-900'}`}>
-               {tab}
+           {(['ledger', 'inventory', 'partners', 'staff', 'security', 'qa-tools', 'settings'] as AdminTab[]).map((tab) => (
+             <button key={tab} onClick={() => setActiveTab(tab)} className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-white text-[#004a61] shadow-lg border border-slate-200' : 'text-slate-400 hover:text-slate-900'} ${tab === 'qa-tools' ? 'text-cyan-600' : ''}`}>
+               {tab === 'qa-tools' ? 'QA & DEV HUB' : tab}
              </button>
            ))}
         </div>
       </div>
+
+      {activeTab === 'qa-tools' && (
+        <div className="animate-in slide-in-from-bottom-6 duration-700">
+           <div className="bg-slate-950 p-16 rounded-[4rem] text-white shadow-3xl relative overflow-hidden border-2 border-cyan-500/20">
+              <div className="absolute top-0 right-0 p-16 opacity-10 font-display font-black text-[12rem] text-cyan-400 pointer-events-none">QA</div>
+              
+              <div className="relative z-10">
+                 <h2 className="text-4xl font-display font-black uppercase mb-4 tracking-tighter text-cyan-400">Testing & <span className="text-white">Fulfillment Terminal</span></h2>
+                 <p className="text-slate-400 font-bold italic text-lg mb-12 max-w-2xl">"Tools to reset procurement limits and bypass security protocols for development testing."</p>
+
+                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                    {/* Quota Reset Box */}
+                    <div className="bg-white/5 border border-white/10 p-10 rounded-[3rem] space-y-6">
+                       <h3 className="text-xl font-black uppercase text-cyan-400 tracking-widest">Global Limit Reset</h3>
+                       <p className="text-sm text-slate-400 leading-relaxed italic">"If you have hit the Agent or Center order limits, use this to wipe order history and start fresh."</p>
+                       <button 
+                         onClick={handleWipeOrders}
+                         className="w-full py-6 bg-cyan-600 hover:bg-cyan-500 text-white rounded-[1.5rem] font-black uppercase text-xs tracking-widest transition-all shadow-xl shadow-cyan-600/20 active:scale-95"
+                       >
+                         PURGE ALL LOGS (RESET QUOTAS)
+                       </button>
+                    </div>
+
+                    {/* Infinite Quota Box */}
+                    <div className="bg-white/5 border border-white/10 p-10 rounded-[3rem] space-y-6">
+                       <h3 className="text-xl font-black uppercase text-cyan-400 tracking-widest">Authorize Infinite Quota</h3>
+                       <div className="space-y-4">
+                          <input 
+                            className="w-full bg-white/10 border border-white/10 rounded-2xl p-4 text-sm font-bold text-white outline-none focus:border-cyan-400"
+                            placeholder="Search tester email..."
+                            value={qaEmailSearch}
+                            onChange={(e) => setQaEmailSearch(e.target.value)}
+                          />
+                          <div className="max-h-40 overflow-y-auto no-scrollbar space-y-2">
+                             {data.users.filter(u => u.email.includes(qaEmailSearch)).slice(0, 3).map(u => (
+                               <div key={u.id} className="flex justify-between items-center p-4 bg-white/5 rounded-xl border border-white/5">
+                                  <div>
+                                     <p className="text-xs font-black uppercase">{u.name}</p>
+                                     <p className="text-[10px] text-slate-500">{u.email}</p>
+                                  </div>
+                                  <button 
+                                    onClick={() => handleBypassUser(u.email)}
+                                    className="px-4 py-2 bg-white text-slate-900 rounded-lg text-[9px] font-black uppercase hover:bg-cyan-400 transition-colors"
+                                  >
+                                    Grant Bypass
+                                  </button>
+                               </div>
+                             ))}
+                          </div>
+                       </div>
+                    </div>
+                 </div>
+
+                 <div className="mt-16 pt-12 border-t border-white/10 text-center">
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Requirement 14.IV-QA • Deployment Node Environment</p>
+                 </div>
+              </div>
+           </div>
+        </div>
+      )}
 
       {activeTab === 'inventory' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 animate-in fade-in duration-500">
@@ -130,15 +188,42 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
         </div>
       )}
 
-      {activeTab === 'security' && (
-        <div className="max-w-3xl mx-auto py-20 text-center">
-           <div className="p-16 rounded-[4rem] border-2 border-slate-100 bg-white shadow-3xl">
-              <h2 className="text-4xl font-display font-black uppercase mb-12 tracking-tighter">System <span className="text-red-600">Recovery</span></h2>
-              <div className="space-y-6">
-                <button onClick={handleWipeOrders} className="w-full py-8 bg-red-50 border border-red-200 text-red-600 rounded-[2.5rem] font-black text-sm uppercase tracking-[0.3em] hover:bg-red-600 hover:text-white transition-all shadow-2xl">PURGE ALL PREVIOUS ORDERS</button>
-                <button onClick={handleFactoryReset} className="w-full py-8 bg-slate-900 text-white rounded-[2.5rem] font-black text-sm uppercase tracking-[0.3em] hover:bg-black transition-all shadow-2xl">FULL FACTORY RESET</button>
+      {activeTab === 'ledger' && (
+        <div className="animate-in fade-in duration-500">
+           <div className="bg-white rounded-[3rem] border border-slate-200 shadow-2xl overflow-hidden">
+              <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                 <h3 className="text-sm font-black uppercase tracking-widest text-[#004a61]">Global Audit Ledger</h3>
+                 <div className="flex gap-4">
+                    <span className="text-[10px] font-black text-slate-400 uppercase">Records: {data.orders.length}</span>
+                    <button onClick={handleWipeOrders} className="text-red-600 hover:text-black font-black text-[9px] uppercase tracking-widest">Purge Logs</button>
+                 </div>
               </div>
-              <p className="mt-12 text-slate-400 font-bold italic text-sm">"Use these controls to clear test data before proceeding to live production nodes."</p>
+              <table className="w-full text-left">
+                 <thead className="bg-slate-900 text-[10px] font-black uppercase text-slate-400 tracking-widest">
+                    <tr>
+                      <th className="px-10 py-6">Order ID</th>
+                      <th className="px-10 py-6">Buyer Identity</th>
+                      <th className="px-10 py-6">Product</th>
+                      <th className="px-10 py-6 text-right">Value</th>
+                    </tr>
+                 </thead>
+                 <tbody className="divide-y divide-slate-100">
+                    {data.orders.map((o) => (
+                      <tr key={o.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="px-10 py-6 font-mono font-black text-xs text-[#004a61]">{o.id}</td>
+                        <td className="px-10 py-6">
+                           <div className="font-black text-xs text-slate-900 uppercase">{o.buyerName}</div>
+                           <div className="text-[9px] font-bold text-slate-400 uppercase">{o.customerEmail}</div>
+                        </td>
+                        <td className="px-10 py-6 font-black text-xs text-slate-950 uppercase">{o.productName}</td>
+                        <td className="px-10 py-6 text-right font-display font-black text-slate-950 text-xl">${o.totalAmount}</td>
+                      </tr>
+                    ))}
+                    {data.orders.length === 0 && (
+                      <tr><td colSpan={4} className="p-20 text-center text-slate-300 font-bold uppercase italic">Audit Ledger is currently empty. All quotas reset.</td></tr>
+                    )}
+                 </tbody>
+              </table>
            </div>
         </div>
       )}
