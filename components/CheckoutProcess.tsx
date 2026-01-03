@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../services/apiService';
-import { Product, User, ViewState } from '../types';
+import { Product, User, ViewState, Order } from '../types';
 
 interface CheckoutProcessProps {
   productId: string;
@@ -68,7 +68,7 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
     
     setProcessing(true);
     try {
-      let order;
+      let order: Order;
       if (paymentMethod === 'BankTransfer') {
         order = await api.submitBankTransfer(productId, quantity, currentUser?.email || '', buyerName, bankRef);
       } else {
@@ -152,81 +152,75 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
                   </div>
                   <div>
                     <label className="block text-[10px] font-black text-unicou-navy uppercase tracking-widest mb-3 ml-2">VIII. Payment Proof</label>
-                    <input type="file" ref={fileInputRef} onChange={() => setFileAttached(true)} className="hidden" />
-                    <button onClick={() => fileInputRef.current?.click()} className={`w-full py-10 border-4 border-dashed rounded-[2.5rem] flex flex-col items-center justify-center gap-4 transition-all ${fileAttached ? 'bg-emerald-50 border-emerald-500 text-emerald-600' : 'bg-slate-50 border-slate-200 text-slate-400 hover:border-unicou-navy/20'}`}>
-                      <span className="text-4xl">{fileAttached ? '✅' : '📤'}</span>
-                      <p className="font-black text-[11px] uppercase tracking-widest">{fileAttached ? 'PROOF SYNCED' : 'UPLOAD RECEIPT'}</p>
-                    </button>
+                    <div 
+                      onClick={() => fileInputRef.current?.click()}
+                      className={`w-full p-8 border-2 border-dashed rounded-[2rem] text-center cursor-pointer transition-all ${fileAttached ? 'bg-emerald-50 border-emerald-500/50 text-emerald-600' : 'bg-slate-50 border-slate-200 text-slate-400 hover:border-unicou-orange'}`}
+                    >
+                      <input type="file" ref={fileInputRef} className="hidden" onChange={() => setFileAttached(true)} />
+                      <div className="text-2xl mb-2">{fileAttached ? '✅' : '📎'}</div>
+                      <p className="text-[10px] font-black uppercase tracking-widest">{fileAttached ? 'Proof Attached' : 'Attach Transfer Receipt'}</p>
+                    </div>
                   </div>
                 </div>
               ) : (
-                <div className="animate-in fade-in slide-in-from-left-4 duration-300 space-y-5 bg-slate-900 p-8 rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden">
-                   <div className="absolute top-0 right-0 p-8 opacity-10"><svg className="w-12 h-12" fill="currentColor" viewBox="0 0 24 24"><path d="M21 18H3V6h18v12zM20 7H4v10h16V7z"/><rect x="5" y="10" width="4" height="2"/><rect x="10" y="10" width="2" height="2"/><rect x="13" y="10" width="2" height="2"/><rect x="16" y="10" width="2" height="2"/></svg></div>
-                   
-                   <div className="space-y-4 relative z-10">
-                      <div>
-                        <label className="block text-[8px] font-black uppercase tracking-widest mb-2 text-slate-400">Cardholder Name</label>
-                        <input 
-                          className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-sm font-bold outline-none focus:border-unicou-orange transition-all placeholder:text-white/20" 
-                          placeholder="AS APPEARS ON CARD"
-                          value={cardName}
-                          onChange={e => setCardName(e.target.value.toUpperCase())}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[8px] font-black uppercase tracking-widest mb-2 text-slate-400">Card Number (16-Digit Vault)</label>
-                        <input 
-                          className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-sm font-mono font-bold outline-none focus:border-unicou-orange transition-all placeholder:text-white/20" 
-                          placeholder="0000-0000-0000-0000"
-                          value={cardNumber}
-                          onChange={e => setCardNumber(formatCardNumber(e.target.value))}
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-[8px] font-black uppercase tracking-widest mb-2 text-slate-400">Expiry (MM/YY)</label>
-                          <input 
-                            className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-sm font-mono font-bold outline-none focus:border-unicou-orange transition-all placeholder:text-white/20" 
-                            placeholder="12/28"
-                            value={cardExpiry}
-                            onChange={e => setCardExpiry(formatExpiry(e.target.value))}
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[8px] font-black uppercase tracking-widest mb-2 text-slate-400">CVV / CVC</label>
-                          <input 
-                            type="password"
-                            className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-sm font-mono font-bold outline-none focus:border-unicou-orange transition-all placeholder:text-white/20" 
-                            placeholder="***"
-                            maxLength={4}
-                            value={cardCvv}
-                            onChange={e => setCardCvv(e.target.value.replace(/\D/g, ''))}
-                          />
-                        </div>
-                      </div>
-                   </div>
-
-                   <div className="mt-6 pt-6 border-t border-white/10 flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      <span className="text-[8px] font-black uppercase text-slate-500 tracking-widest">AES-256 SECURE ENCRYPTION NODE ACTIVE</span>
-                   </div>
+                <div className="animate-in fade-in slide-in-from-right-4 duration-300 space-y-6">
+                  <div className="space-y-4">
+                    <label className="block text-[10px] font-black text-unicou-navy uppercase tracking-widest mb-3 ml-2">Digital Card Parameters</label>
+                    <input 
+                      className="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-[1.5rem] font-mono text-lg outline-none focus:border-unicou-navy shadow-inner" 
+                      placeholder="CARD NUMBER (16 DIGITS)" 
+                      value={cardNumber} 
+                      onChange={e => setCardNumber(formatCardNumber(e.target.value))} 
+                    />
+                    <div className="grid grid-cols-2 gap-4">
+                      <input 
+                        className="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-[1.5rem] font-mono outline-none focus:border-unicou-navy shadow-inner text-center" 
+                        placeholder="MM/YY" 
+                        value={cardExpiry} 
+                        onChange={e => setCardExpiry(formatExpiry(e.target.value))} 
+                      />
+                      <input 
+                        type="password"
+                        className="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-[1.5rem] font-mono outline-none focus:border-unicou-navy shadow-inner text-center" 
+                        placeholder="CVV" 
+                        value={cardCvv} 
+                        onChange={e => setCardCvv(e.target.value.replace(/\D/g, '').substring(0, 4))} 
+                      />
+                    </div>
+                    <input 
+                      className="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-[1.5rem] font-black text-unicou-navy uppercase outline-none focus:border-unicou-navy shadow-inner" 
+                      placeholder="NAME ON CARD" 
+                      value={cardName} 
+                      onChange={e => setCardName(e.target.value.toUpperCase())} 
+                    />
+                  </div>
                 </div>
               )}
+
+              <button 
+                onClick={finalizeOrder}
+                disabled={processing}
+                className="w-full py-6 bg-unicou-orange hover:bg-orange-600 text-white rounded-[2rem] font-black text-xs uppercase tracking-[0.3em] shadow-action transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-4"
+              >
+                {processing ? (
+                  <>
+                    <div className="w-5 h-5 border-4 border-white/20 border-t-white rounded-full animate-spin" />
+                    PROCESSING SETTLEMENT...
+                  </>
+                ) : (
+                  <>
+                    COMMIT PROCUREMENT
+                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                  </>
+                )}
+              </button>
             </div>
           </div>
-        </div>
-
-        <div className="p-10 bg-slate-50 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-6">
-           <p className="text-[10px] font-black text-slate-400 uppercase tracking-tight max-w-xs italic">
-             Requirement 14: All settlements undergo multi-node audit verification. Accurate data is mandatory for voucher release.
-           </p>
-           <button onClick={finalizeOrder} disabled={processing} className="w-full md:w-auto px-16 py-6 bg-unicou-navy hover:bg-black text-white rounded-3xl font-black text-xs uppercase tracking-[0.3em] shadow-2xl transition-all disabled:opacity-30 active:scale-95">
-             {processing ? 'SYNCHRONIZING VAULT...' : 'COMMIT PROCURE ORDER'}
-           </button>
         </div>
       </div>
     </div>
   );
 };
 
+// Added missing default export to satisfy App.tsx import
 export default CheckoutProcess;
