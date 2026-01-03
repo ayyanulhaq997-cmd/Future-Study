@@ -60,6 +60,9 @@ export interface VoucherCode {
   salesExecutiveName?: string;
 }
 
+// Updated Status Registry to support 3-stage processing
+export type OrderStatus = 'Pending' | 'Approved' | 'Hold' | 'Rejected';
+
 export interface Order {
   id: string;
   userId: string;
@@ -70,7 +73,7 @@ export interface Order {
   currency: string;
   customerEmail: string;
   buyerName: string;
-  status: 'Pending' | 'Completed' | 'Cancelled' | 'Security-Stop';
+  status: OrderStatus;
   paymentMethod: 'Gateway' | 'BankTransfer';
   timestamp: string;
   voucherCodes: string[];

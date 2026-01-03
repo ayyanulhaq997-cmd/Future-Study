@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/apiService';
-import { User, Lead, Order } from '../types';
+import { User, Lead, Order, OrderStatus } from '../types';
 
 const SupportDashboard: React.FC<{ user: User }> = ({ user }) => {
   const [users, setUsers] = useState<User[]>([]);
@@ -24,6 +24,18 @@ const SupportDashboard: React.FC<{ user: User }> = ({ user }) => {
   };
 
   useEffect(() => { fetchData(); }, []);
+
+  const handleUpdateStatus = async (orderId: string, status: OrderStatus) => {
+    if (confirm(`SUPPORT ACTION: Move order ${orderId} to ${status}? Client will be notified immediately.`)) {
+      try {
+        await api.updateOrderStatus(orderId, status);
+        alert(`Order ${orderId} state: ${status}. Dispatch verified.`);
+        fetchData();
+      } catch (err: any) {
+        alert(err.message);
+      }
+    }
+  };
 
   const handleBypass = async (email: string) => {
     await api.bypassUserQuota(email);
@@ -109,15 +121,14 @@ const SupportDashboard: React.FC<{ user: User }> = ({ user }) => {
              <table className="w-full text-left">
                <thead>
                  <tr className="bg-slate-50 text-[9px] font-black uppercase text-slate-500 tracking-widest border-y border-slate-100">
-                   <th className="px-6 py-6">I. Number</th>
-                   <th className="px-6 py-6">II. Date</th>
-                   <th className="px-6 py-6">III. Time</th>
+                   <th className="px-6 py-6">I. Order ID</th>
+                   <th className="px-6 py-6">II. Date/Time</th>
                    <th className="px-6 py-6">IV. Buyer Name</th>
                    <th className="px-6 py-6">V. Product Name</th>
                    <th className="px-6 py-6">VI. Amount</th>
-                   <th className="px-6 py-6">VII. Ref Node</th>
-                   <th className="px-6 py-6">VIII. Proof</th>
-                   <th className="px-6 py-6 text-right">Actions</th>
+                   <th className="px-6 py-6">VII. Payment Ref</th>
+                   <th className="px-6 py-6 text-center">Status Dispatch</th>
+                   <th className="px-6 py-6 text-right">Control</th>
                  </tr>
                </thead>
                <tbody className="divide-y divide-slate-100">
@@ -126,21 +137,32 @@ const SupportDashboard: React.FC<{ user: User }> = ({ user }) => {
                    return (
                     <tr key={o.id} className="hover:bg-slate-50 transition-colors">
                       <td className="px-6 py-5 font-mono font-bold text-unicou-navy text-[11px]">{o.id}</td>
-                      <td className="px-6 py-5 font-mono text-slate-400 text-[10px]">{d.toLocaleDateString()}</td>
-                      <td className="px-6 py-5 font-mono text-slate-400 text-[10px]">{d.toLocaleTimeString()}</td>
-                      <td className="px-6 py-5 font-black text-slate-900 uppercase text-[10px]">{o.buyerName}</td>
+                      <td className="px-6 py-5 whitespace-nowrap">
+                        <div className="font-mono text-slate-400 text-[10px]">{d.toLocaleDateString()}</div>
+                        <div className="font-mono text-slate-400 text-[8px]">{d.toLocaleTimeString()}</div>
+                      </td>
+                      <td className="px-6 py-5 font-black text-slate-900 uppercase text-[10px] truncate max-w-[100px]">{o.buyerName}</td>
                       <td className="px-6 py-5 font-black text-slate-700 uppercase text-[10px]">{o.productName}</td>
                       <td className="px-6 py-5 font-display font-black text-slate-950 text-base">${o.totalAmount}</td>
-                      <td className="px-6 py-5 font-mono text-slate-400 text-[9px] uppercase truncate max-w-[100px]">{o.bankRef || 'PENDING'}</td>
+                      <td className="px-6 py-5 font-mono text-slate-400 text-[9px] uppercase truncate max-w-[80px]">{o.bankRef || 'PENDING'}</td>
                       <td className="px-6 py-5">
-                         {o.proofAttached ? (
-                           <span className="px-2 py-1 bg-emerald-50 text-emerald-600 rounded text-[7px] font-black uppercase">VERIFIED</span>
-                         ) : (
-                           <span className="text-[7px] font-black text-slate-300 uppercase italic">MISSING</span>
-                         )}
+                         <div className="flex flex-col items-center gap-2">
+                           <span className={`px-2.5 py-0.5 rounded-full text-[8px] font-black uppercase border ${
+                              o.status === 'Approved' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                              o.status === 'Hold' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                              o.status === 'Rejected' ? 'bg-red-50 text-red-600 border-red-100' :
+                              'bg-slate-50 text-slate-600 border-slate-100'
+                           }`}>{o.status}</span>
+                           
+                           <div className="flex gap-1 bg-white p-1 rounded-lg border border-slate-100 shadow-sm">
+                              <button onClick={() => handleUpdateStatus(o.id, 'Approved')} className="w-6 h-6 flex items-center justify-center bg-emerald-500 text-white rounded hover:bg-emerald-600 transition-all text-[8px]">✔</button>
+                              <button onClick={() => handleUpdateStatus(o.id, 'Hold')} className="w-6 h-6 flex items-center justify-center bg-amber-500 text-white rounded hover:bg-amber-600 transition-all text-[8px]">⏳</button>
+                              <button onClick={() => handleUpdateStatus(o.id, 'Rejected')} className="w-6 h-6 flex items-center justify-center bg-red-500 text-white rounded hover:bg-red-600 transition-all text-[8px]">✖</button>
+                           </div>
+                         </div>
                       </td>
                       <td className="px-6 py-5 text-right">
-                        <button onClick={() => handleDeleteOrder(o.id)} className="text-red-600 hover:text-red-800 font-black text-[9px] uppercase tracking-widest">Remove</button>
+                        <button onClick={() => handleDeleteOrder(o.id)} className="text-red-600 hover:text-red-800 font-black text-[9px] uppercase tracking-widest">Purge</button>
                       </td>
                     </tr>
                    );

@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { api } from '../services/apiService';
-import { Product, VoucherCode, Order, User, Lead, UserRole, LMSCourse } from '../types';
+import { Product, VoucherCode, Order, User, Lead, UserRole, LMSCourse, OrderStatus } from '../types';
 
 type AdminTab = 'ledger' | 'inventory' | 'partners' | 'staff' | 'security' | 'qa-tools' | 'settings';
 
@@ -35,6 +35,18 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
   };
 
   useEffect(() => { fetchData(); }, []);
+
+  const handleUpdateStatus = async (orderId: string, status: OrderStatus) => {
+    if (confirm(`QA ACTION: Transition order ${orderId} to ${status}? This will trigger automated email protocols.`)) {
+      try {
+        await api.updateOrderStatus(orderId, status);
+        alert(`Order state synchronized to ${status}. Notification dispatched.`);
+        fetchData();
+      } catch (err: any) {
+        alert(err.message);
+      }
+    }
+  };
 
   const handleWipeOrders = async () => {
     if (confirm("QA ACTION: This will permanently DELETE ALL PREVIOUS ORDERS and reset your daily procurement quotas. Proceed?")) {
@@ -178,22 +190,21 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
                  <h3 className="text-sm font-black uppercase tracking-widest text-[#004a61]">Global Audit Ledger</h3>
                  <div className="flex gap-4">
                     <span className="text-[10px] font-black text-slate-400 uppercase">Records: {data.orders.length}</span>
-                    <button onClick={handleWipeOrders} className="text-red-600 hover:text-black font-black text-[9px] uppercase tracking-widest">Purge All Logs</button>
                  </div>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
                   <thead className="bg-slate-900 text-[9px] font-black uppercase text-slate-400 tracking-[0.1em]">
                       <tr>
-                        <th className="px-6 py-6">I. Number (ID)</th>
-                        <th className="px-6 py-6">II. Date</th>
-                        <th className="px-6 py-6">III. Time</th>
+                        <th className="px-6 py-6">I. Order ID</th>
+                        <th className="px-6 py-6">II. Date/Time</th>
                         <th className="px-6 py-6">IV. Buyer Name</th>
                         <th className="px-6 py-6">V. Product Name</th>
                         <th className="px-6 py-6">VI. Amount</th>
                         <th className="px-6 py-6">VII. Payment Ref</th>
                         <th className="px-6 py-6">VIII. Proof</th>
-                        <th className="px-6 py-6 text-right">Control</th>
+                        <th className="px-6 py-6 text-center">Status Control</th>
+                        <th className="px-6 py-6 text-right">Actions</th>
                       </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -202,21 +213,51 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
                         return (
                           <tr key={o.id} className="hover:bg-slate-50 transition-colors">
                             <td className="px-6 py-5 font-mono font-black text-[11px] text-[#004a61]">{o.id}</td>
-                            <td className="px-6 py-5 font-mono text-[11px] text-slate-500 whitespace-nowrap">{dateObj.toLocaleDateString()}</td>
-                            <td className="px-6 py-5 font-mono text-[11px] text-slate-500 whitespace-nowrap">{dateObj.toLocaleTimeString()}</td>
-                            <td className="px-6 py-5 font-black text-[11px] text-slate-900 uppercase">{o.buyerName}</td>
+                            <td className="px-6 py-5 whitespace-nowrap">
+                              <div className="font-mono text-[11px] text-slate-500">{dateObj.toLocaleDateString()}</div>
+                              <div className="font-mono text-[9px] text-slate-400">{dateObj.toLocaleTimeString()}</div>
+                            </td>
+                            <td className="px-6 py-5 font-black text-[11px] text-slate-900 uppercase truncate max-w-[120px]">{o.buyerName}</td>
                             <td className="px-6 py-5 font-black text-[11px] text-slate-700 uppercase">{o.productName}</td>
                             <td className="px-6 py-5 font-display font-black text-slate-950 text-base">${o.totalAmount}</td>
-                            <td className="px-6 py-5 font-mono font-bold text-[10px] text-slate-400 uppercase truncate max-w-[120px]" title={o.bankRef}>{o.bankRef || 'N/A'}</td>
+                            <td className="px-6 py-5 font-mono font-bold text-[10px] text-slate-400 uppercase truncate max-w-[100px]" title={o.bankRef}>{o.bankRef || 'N/A'}</td>
                             <td className="px-6 py-5">
                                 {o.proofAttached ? (
                                   <button className="px-3 py-1 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-lg text-[8px] font-black uppercase hover:bg-emerald-600 hover:text-white transition-all">VIEW PROOF</button>
                                 ) : (
-                                  <span className="text-[8px] font-black text-slate-300 uppercase italic">NONE ATTACHED</span>
+                                  <span className="text-[8px] font-black text-slate-300 uppercase italic">NONE</span>
                                 )}
                             </td>
+                            <td className="px-6 py-5">
+                               <div className="flex flex-col items-center gap-2">
+                                  <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase border ${
+                                    o.status === 'Approved' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                                    o.status === 'Hold' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                                    o.status === 'Rejected' ? 'bg-red-50 text-red-600 border-red-100' :
+                                    'bg-slate-50 text-slate-600 border-slate-100'
+                                  }`}>{o.status}</span>
+                                  
+                                  <div className="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+                                     <button 
+                                      onClick={() => handleUpdateStatus(o.id, 'Approved')}
+                                      className={`px-2 py-1 rounded text-[7px] font-black uppercase transition-all ${o.status === 'Approved' ? 'bg-emerald-500 text-white' : 'text-slate-400 hover:text-emerald-600'}`}
+                                      title="Approve & Send Vouchers"
+                                     >✔</button>
+                                     <button 
+                                      onClick={() => handleUpdateStatus(o.id, 'Hold')}
+                                      className={`px-2 py-1 rounded text-[7px] font-black uppercase transition-all ${o.status === 'Hold' ? 'bg-amber-500 text-white' : 'text-slate-400 hover:text-amber-600'}`}
+                                      title="Set On Hold"
+                                     >⏳</button>
+                                     <button 
+                                      onClick={() => handleUpdateStatus(o.id, 'Rejected')}
+                                      className={`px-2 py-1 rounded text-[7px] font-black uppercase transition-all ${o.status === 'Rejected' ? 'bg-red-500 text-white' : 'text-slate-400 hover:text-red-600'}`}
+                                      title="Reject Order"
+                                     >✖</button>
+                                  </div>
+                               </div>
+                            </td>
                             <td className="px-6 py-5 text-right">
-                              <button onClick={() => handleTargetDeleteOrder(o.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete Order">
+                              <button onClick={() => handleTargetDeleteOrder(o.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Purge Record">
                                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                               </button>
                             </td>

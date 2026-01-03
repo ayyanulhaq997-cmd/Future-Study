@@ -10,6 +10,8 @@ export interface MailConfig {
   serviceId: string;
   templateId_verification: string;
   templateId_voucher: string;
+  templateId_hold: string;
+  templateId_rejected: string;
   publicKey: string;
 }
 
@@ -66,28 +68,38 @@ export class MailService {
   }
 
   /**
-   * Dispatches official voucher codes to the registered student email.
+   * Dispatches order status update emails.
    */
-  static async sendVoucherEmail(userName: string, userEmail: string, productName: string, codes: string[], orderId: string) {
+  static async sendOrderStatusEmail(userName: string, userEmail: string, orderId: string, status: 'Approved' | 'Hold' | 'Rejected', voucherCodes?: string[]) {
     const config = this.getConfigs();
+    const hasRealConfig = config && config.serviceId && config.serviceId !== '' && config.serviceId !== 'YOUR_SERVICE_ID';
 
-    if (!config || !config.serviceId || config.serviceId === '' || config.serviceId === 'YOUR_SERVICE_ID') {
-      console.warn("--- VOUCHER DISPATCH: LOCAL MODE ---");
-      console.info(`[INBOX SIMULATION] Vouchers for ${userEmail}: ${codes.join(', ')}`);
+    if (!hasRealConfig) {
+      console.warn(`--- ORDER ${status.toUpperCase()}: LOCAL NOTIFICATION ---`);
+      if (status === 'Approved') {
+        console.info(`[INBOX SIMULATION] Approved Order ${orderId} for ${userEmail}. Vouchers: ${voucherCodes?.join(', ')}`);
+      } else {
+        console.info(`[INBOX SIMULATION] Order ${orderId} for ${userEmail} is now ${status}.`);
+      }
       return { success: true, mode: 'local' };
     }
 
-    return this.dispatch(config.serviceId, config.templateId_voucher, config.publicKey, {
+    let templateId = config.templateId_voucher; // Default to voucher for Approved
+    if (status === 'Hold') templateId = config.templateId_hold || '';
+    if (status === 'Rejected') templateId = config.templateId_rejected || '';
+
+    return this.dispatch(config.serviceId, templateId, config.publicKey, {
       to_name: userName,
       to_email: userEmail,
-      product_name: productName,
-      voucher_codes: codes.join(', '),
       order_id: orderId,
-      subject: `Official Voucher Delivery: ${productName}`
+      status: status,
+      voucher_codes: voucherCodes ? voucherCodes.join(', ') : 'N/A',
+      subject: `Order Update: ${orderId} is now ${status}`
     });
   }
 
   private static async dispatch(serviceId: string, templateId: string, publicKey: string, params: any) {
+    if (!templateId) return;
     try {
       const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
         method: 'POST',

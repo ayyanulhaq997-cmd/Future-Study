@@ -5,7 +5,7 @@ import {
   Product, VoucherCode, Order, User, SecurityStatus, LMSCourse, 
   LMSModule, Enrollment, TestResult, Qualification, 
   QualificationLead, TestBooking, ManualSubmission, FinanceReport, UserRole, 
-  Lead, University, CountryGuide, Course, LMSPracticeTest, ImmigrationGuideData, LMSLesson
+  Lead, University, CountryGuide, Course, LMSPracticeTest, ImmigrationGuideData, LMSLesson, OrderStatus
 } from '../types';
 
 const SESSION_KEY = 'unicou_active_session_v4';
@@ -204,6 +204,32 @@ export const api = {
     localStorage.setItem(CODES_KEY, JSON.stringify(updatedCodes));
   },
 
+  updateOrderStatus: async (orderId: string, status: OrderStatus): Promise<void> => {
+    if (status === 'Approved') {
+      await api.fulfillOrder(orderId);
+      return;
+    }
+
+    const allOrders: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
+    const orderIndex = allOrders.findIndex(o => o.id === orderId);
+    if (orderIndex === -1) return;
+    
+    const order = allOrders[orderIndex];
+    allOrders[orderIndex] = { ...order, status };
+    localStorage.setItem(ORDERS_KEY, JSON.stringify(allOrders));
+
+    // DISPATCH STATUS EMAIL (HOLD/REJECTED)
+    const settings = api.getSystemSettings();
+    const targetEmail = (settings.isTestMode && settings.globalEmailRedirect) 
+      ? settings.globalEmailRedirect 
+      : order.customerEmail;
+
+    // Fix: Added check to exclude 'Pending' status as MailService.sendOrderStatusEmail only handles 'Approved', 'Hold', and 'Rejected'
+    if (status !== 'Pending') {
+      await MailService.sendOrderStatusEmail(order.buyerName, targetEmail, order.id, status);
+    }
+  },
+
   verifyLogin: async (userId: string, code: string): Promise<User> => {
     const cleanId = userId.trim().toLowerCase();
     const dbUser = db.users.find(u => u.email.toLowerCase() === cleanId);
@@ -228,7 +254,8 @@ export const api = {
     if (orderIndex === -1) return;
     
     const order = allOrders[orderIndex];
-    if (order.status !== 'Pending') return;
+    // Allow re-approval if previously on hold
+    if (order.status === 'Approved') return;
 
     const allCodes = await api.getCodes();
     const targetCodes = allCodes
@@ -253,7 +280,7 @@ export const api = {
     });
     localStorage.setItem(CODES_KEY, JSON.stringify(updatedCodes));
 
-    allOrders[orderIndex] = { ...order, status: 'Completed', voucherCodes: assignedCodes };
+    allOrders[orderIndex] = { ...order, status: 'Approved', voucherCodes: assignedCodes };
     localStorage.setItem(ORDERS_KEY, JSON.stringify(allOrders));
 
     const settings = api.getSystemSettings();
@@ -261,7 +288,7 @@ export const api = {
       ? settings.globalEmailRedirect 
       : order.customerEmail;
 
-    await MailService.sendVoucherEmail(order.buyerName, targetEmail, order.productName, assignedCodes, order.id);
+    await MailService.sendOrderStatusEmail(order.buyerName, targetEmail, order.id, 'Approved', assignedCodes);
   },
 
   getProducts: async (): Promise<Product[]> => {
@@ -326,7 +353,7 @@ export const api = {
   },
   getFinanceReport: async (): Promise<FinanceReport> => {
     const orders = await api.getOrders();
-    const completed = orders.filter(o => o.status === 'Completed');
+    const completed = orders.filter(o => o.status === 'Approved');
     const revenue = completed.reduce((sum, o) => sum + o.totalAmount, 0);
     const sold = completed.reduce((sum, o) => sum + o.quantity, 0);
     
