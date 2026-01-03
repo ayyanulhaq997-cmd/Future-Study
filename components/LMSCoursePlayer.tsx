@@ -187,11 +187,18 @@ const LMSCoursePlayer: React.FC<LMSCoursePlayerProps> = ({ courseId, initialLess
         const allCourses = await api.getAllLMSCourses();
         const c = allCourses.find(x => x.id === courseId);
         const mods = await api.getCourseModules(courseId);
-        const enrollment: Enrollment | null = await api.getEnrollmentByCourse(courseId);
+        const enrollment = await api.getEnrollmentByCourse(courseId);
         
         setCourse(c || null);
         setModules(mods);
-        setProgress(enrollment?.progress || 0);
+        
+        // Fixed Build Error (Property progress does not exist on type never):
+        // Ensure enrollment is checked correctly before accessing property.
+        if (enrollment) {
+          setProgress(enrollment.progress);
+        } else {
+          setProgress(0);
+        }
         
         // Auto-select first lesson or initialLessonId
         if (mods.length > 0) {
@@ -285,7 +292,7 @@ const LMSCoursePlayer: React.FC<LMSCoursePlayerProps> = ({ courseId, initialLess
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
             Exit Course
           </button>
-          <h2 className="text-lg font-bold">{course?.title}</h2>
+          <h2 className="text-lg font-bold text-white">{course?.title}</h2>
           <div className="w-full bg-slate-900 h-1.5 rounded-full mt-4 overflow-hidden relative">
              <div 
                className="bg-primary-500 h-full transition-all duration-700 ease-out shadow-[0_0_8px_rgba(14,165,233,0.5)]" 
@@ -355,7 +362,7 @@ const LMSCoursePlayer: React.FC<LMSCoursePlayerProps> = ({ courseId, initialLess
       {/* Main Content Area */}
       <div className="flex-grow p-4 md:p-12 lg:h-screen lg:overflow-y-auto">
         {activeLesson ? (
-          <div key={activeLesson.id} className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div key={activeLesson.id} className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 text-white">
             <div className="flex justify-between items-end">
               <div>
                 <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary-500 mb-2 block">Lesson Playback • {activeLessonIndex + 1} / {allLessons.length}</span>
