@@ -24,6 +24,58 @@ export const users: User[] = [
   { id: 'u-c1', name: 'Candidate 1', email: 'candidate1@test.com', role: 'Student', isAuthorized: true, verified: true, status: 'Active' },
 ];
 
+export const lmsCourses: LMSCourse[] = [
+  {
+    id: 'course-pte-1',
+    title: 'PTE Academic Masterclass',
+    category: 'PTE',
+    thumbnail: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=800',
+    description: 'Comprehensive strategies for all 20 item types in PTE Academic.',
+    duration: '20 Hours',
+    instructor: 'Dr. Sarah Smith',
+    price: 49
+  },
+  {
+    id: 'course-ielts-1',
+    title: 'IELTS Band 8+ Foundation',
+    category: 'IELTS',
+    thumbnail: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800',
+    description: 'Master the Writing and Speaking modules for IELTS Academic.',
+    duration: '15 Hours',
+    instructor: 'James Clear',
+    price: 39
+  }
+];
+
+export const lmsTests: LMSPracticeTest[] = [
+  {
+    id: 'test-pte-full-1',
+    title: 'PTE Academic Full Mock #01',
+    sections: [
+      {
+        id: 's1', title: 'PTE Reading & Writing Section', skill: 'Reading', timeLimit: 30,
+        passageText: "Global economic shifts are primarily driven by technological innovation and human capital development. In recent years, the rise of artificial intelligence has redefined the productivity frontier...",
+        questions: [
+          { id: 'q1', skill: 'Reading', type: 'MCQ', text: 'What is the primary driver of economic shifts according to the text?', options: ['Agriculture', 'Technological Innovation', 'Mineral Extraction', 'Tourism'] }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'test-lc-1',
+    title: 'LanguageCert ESOL B2 Mock',
+    sections: [
+      {
+        id: 's1', title: 'Listening & Responding', skill: 'Listening', timeLimit: 20,
+        audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+        questions: [
+          { id: 'q-lc-1', skill: 'Listening', type: 'MCQ', text: 'The speaker mentions a deadline for which day?', options: ['Monday', 'Friday', 'Next Week', 'Immediately'] }
+        ]
+      }
+    ]
+  }
+];
+
 export const products: Product[] = [
   { id: 'v-pte-ac', name: 'PTE Academic Voucher', category: 'PTE', type: 'Voucher', basePrice: 165, currency: 'USD', pricingModel: 'Country-Wise', description: 'Standard PTE Academic.', icon: '📊', stockCount: 12 },
   { id: 'v-ielts-ac', name: 'IELTS Academic Voucher', category: 'IELTS', type: 'Voucher', basePrice: 155, currency: 'USD', pricingModel: 'Country-Wise', description: 'Standard IELTS.', icon: '🌐', stockCount: 4 },
@@ -41,20 +93,6 @@ export const voucherCodes: VoucherCode[] = products.flatMap(p =>
   }))
 );
 
-export const lmsTests: LMSPracticeTest[] = [
-  {
-    id: 'lc-test-2',
-    title: 'LanguageCert Academic Mock',
-    sections: [
-      {
-        id: 's1', title: 'Reading: Chicken Domestication', skill: 'Reading', timeLimit: 15,
-        passageText: "Chicken domestication passage placeholder...",
-        questions: [{ id: 'q1', skill: 'Reading', type: 'Insert-Sentence', text: 'Select gap (12)', options: ['A', 'B', 'C', 'D'] }]
-      }
-    ]
-  }
-];
-
 export const countryGuides: CountryGuide[] = [
   { id: 'uk', countryId: 'uk', slug: 'uk', title: 'Study in UK', heroImage: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1200', costOfLiving: '£1,200', visaRequirements: 'Student Visa', content: 'UK Content' },
 ];
@@ -62,7 +100,6 @@ export const countryGuides: CountryGuide[] = [
 export const universities: University[] = [];
 export const courses: Course[] = [];
 export const qualifications: Qualification[] = [];
-export const lmsCourses: LMSCourse[] = [];
 export const manualSubmissions: ManualSubmission[] = [];
 export const testResults: TestResult[] = [];
 export const immigrationGuides: any[] = [];
