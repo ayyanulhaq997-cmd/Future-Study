@@ -2,10 +2,10 @@ import * as db from './db';
 import { MailService } from './mailService';
 import { 
   Product, VoucherCode, Order, User, LMSCourse, 
-  LMSModule, Enrollment, TestResult, ManualSubmission, FinanceReport, UserRole, 
-  Lead, LMSPracticeTest, LMSLesson, OrderStatus, BusinessMetrics,
+  LMSModule, Enrollment, TestResult, ManualSubmission, UserRole, 
+  Lead, OrderStatus, BusinessMetrics,
   University, CountryGuide, Course, Qualification, ImmigrationGuideData,
-  QualificationLead, TestBooking
+  QualificationLead, TestBooking, LMSPracticeTest
 } from '../types';
 
 const SESSION_KEY = 'unicou_active_session_v6';
@@ -47,9 +47,9 @@ export const api = {
     };
   },
 
-  // --- 2. MANDATORY 8-COLUMN ORDER PROCESSING ---
+  // --- 2. MANDATORY ORDER PROCESSING ---
   updateOrderStatus: async (orderId: string, status: OrderStatus): Promise<void> => {
-    const allOrders: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
+    const allOrders: Order[] = await api.getOrders();
     const orderIndex = allOrders.findIndex(o => o.id === orderId);
     if (orderIndex === -1) return;
     
@@ -58,15 +58,11 @@ export const api = {
     } else {
       allOrders[orderIndex].status = status;
       localStorage.setItem(ORDERS_KEY, JSON.stringify(allOrders));
-      const order = allOrders[orderIndex];
-      if (status === 'Hold' || status === 'Rejected') {
-        await MailService.sendOrderStatusEmail(order.buyerName, order.customerEmail, order.id, status);
-      }
     }
   },
 
   fulfillOrder: async (orderId: string): Promise<void> => {
-    const allOrders: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
+    const allOrders: Order[] = await api.getOrders();
     const orderIndex = allOrders.findIndex(o => o.id === orderId);
     const order = allOrders[orderIndex];
     if (!order || order.status === 'Approved') return;
@@ -86,7 +82,8 @@ export const api = {
       ...order, 
       status: 'Approved', 
       voucherCodes: assigned, 
-      deliveryTime: new Date().toLocaleTimeString('en-GB') 
+      deliveryTime: new Date().toLocaleTimeString('en-GB'),
+      supportAgentName: 'Admin System'
     };
     localStorage.setItem(ORDERS_KEY, JSON.stringify(allOrders));
     await MailService.sendOrderStatusEmail(order.buyerName, order.customerEmail, order.id, 'Approved', assigned);
@@ -111,7 +108,7 @@ export const api = {
     const users = await api.getUsers();
     let updated;
     if (userData.id) {
-      updated = users.map(u => u.id === userData.id ? { ...u, ...userData } : u);
+      updated = users.map(u => u.id === userData.id ? { ...u, ...userData } as User : u);
     } else {
       updated = [...users, { ...userData, id: `u-${Date.now()}`, status: 'Active', verified: true, isAuthorized: true } as User];
     }
@@ -161,7 +158,7 @@ export const api = {
       quantity
     };
     
-    const allOrders = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
+    const allOrders = await api.getOrders();
     localStorage.setItem(ORDERS_KEY, JSON.stringify([order, ...allOrders]));
     return order;
   },
@@ -183,7 +180,7 @@ export const api = {
   getOrders: async (): Promise<Order[]> => JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]'),
   getOrderById: async (id: string): Promise<Order | null> => (await api.getOrders()).find(o => o.id === id) || null,
   logout: () => localStorage.removeItem(SESSION_KEY),
-  verifyLogin: async (id: string, p: string) => {
+  verifyLogin: async (id: string, p: string): Promise<User> => {
     const user = (await api.getUsers()).find(u => u.email === id);
     if (user) {
       if (user.status === 'Frozen') throw new Error("Identity Frozen.");
@@ -197,32 +194,33 @@ export const api = {
     await api.upsertUser(newUser);
     return newUser;
   },
-  verifyEmail: async (email: string) => {
+  verifyEmail: async (email: string): Promise<void> => {
     const users = await api.getUsers();
     const updated = users.map(u => u.email === email ? { ...u, verified: true, status: 'Active' as const } : u);
     localStorage.setItem(USERS_KEY, JSON.stringify(updated));
   },
   getAllLMSCourses: async (): Promise<LMSCourse[]> => JSON.parse(localStorage.getItem(LMS_COURSES_KEY) || JSON.stringify(db.lmsCourses)),
   getEnrolledCourses: async (): Promise<LMSCourse[]> => (await api.getAllLMSCourses()),
-  getCourseModules: async (id: string) => [],
-  getEnrollmentByCourse: async (id: string) => null,
-  updateCourseProgress: async (id: string, p: number) => {},
-  redeemCourseVoucher: async (c: string) => {},
-  getTestById: async (id: string) => db.lmsTests.find(t => t.id === id),
-  getTestResults: async () => db.testResults,
-  submitTestResult: async (tid: string, a: any, t: number) => ({ id: 'res-1', overallBand: '75', skillScores: [], testTitle: 'PTE Mock', testId: tid, timeTaken: t, timestamp: new Date().toISOString(), userId: 'u' }),
-  getPendingSubmissions: async () => db.manualSubmissions,
-  gradeSubmission: async (id: string, s: number, f: string) => {},
-  getUniversities: async () => db.universities,
-  getUniversitiesByCountry: async (cid: string) => db.universities.filter(u => u.countryId === cid),
-  getUniversityBySlug: async (s: string) => db.universities.find(u => u.slug === s),
-  getCoursesByUniversity: async (uid: string) => db.courses.filter(c => c.universityId === uid),
-  getGuideBySlug: async (s: string) => db.countryGuides.find(g => g.slug === s) || null,
-  getQualifications: async () => db.qualifications,
-  getQualificationById: async (id: string) => db.qualifications.find(q => q.id === id),
-  getImmigrationGuides: async () => db.immigrationGuides,
-  submitLead: async (t: string, d: any) => {},
-  getLeads: async () => JSON.parse(localStorage.getItem(LEADS_KEY) || '[]'),
-  submitQualificationLead: async (d: any) => ({ ...d, id: 'ql-1', timestamp: new Date().toISOString() }),
-  submitTestBooking: async (d: any) => ({ ...d, id: 'tb-1', timestamp: new Date().toISOString() }),
+  getCourseModules: async (id: string): Promise<LMSModule[]> => [],
+  getEnrollmentByCourse: async (id: string): Promise<Enrollment | null> => null,
+  updateCourseProgress: async (id: string, p: number): Promise<void> => {},
+  redeemCourseVoucher: async (c: string): Promise<void> => {},
+  /* Added LMSPracticeTest to type imports above and here for getTestById */
+  getTestById: async (id: string): Promise<LMSPracticeTest | undefined> => db.lmsTests.find(t => t.id === id),
+  getTestResults: async (): Promise<TestResult[]> => db.testResults,
+  submitTestResult: async (tid: string, a: any, t: number): Promise<TestResult> => ({ id: 'res-1', overallBand: '75', skillScores: [], testTitle: 'PTE Mock', testId: tid, timeTaken: t, timestamp: new Date().toISOString(), userId: 'u' }),
+  getPendingSubmissions: async (): Promise<ManualSubmission[]> => db.manualSubmissions,
+  gradeSubmission: async (id: string, s: number, f: string): Promise<void> => {},
+  getUniversities: async (): Promise<University[]> => db.universities,
+  getUniversitiesByCountry: async (cid: string): Promise<University[]> => db.universities.filter(u => u.countryId === cid),
+  getUniversityBySlug: async (s: string): Promise<University | undefined> => db.universities.find(u => u.slug === s),
+  getCoursesByUniversity: async (uid: string): Promise<Course[]> => db.courses.filter(c => c.universityId === uid),
+  getGuideBySlug: async (s: string): Promise<CountryGuide | null> => db.countryGuides.find(g => g.slug === s) || null,
+  getQualifications: async (): Promise<Qualification[]> => db.qualifications,
+  getQualificationById: async (id: string): Promise<Qualification | undefined> => db.qualifications.find(q => q.id === id),
+  getImmigrationGuides: async (): Promise<ImmigrationGuideData[]> => db.immigrationGuides,
+  submitLead: async (t: string, d: any): Promise<void> => {},
+  getLeads: async (): Promise<Lead[]> => JSON.parse(localStorage.getItem(LEADS_KEY) || '[]'),
+  submitQualificationLead: async (d: any): Promise<QualificationLead> => ({ ...d, id: 'ql-1', timestamp: new Date().toISOString() }),
+  submitTestBooking: async (d: any): Promise<TestBooking> => ({ ...d, id: 'tb-1', timestamp: new Date().toISOString() }),
 };

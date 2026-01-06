@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { GeminiService } from '../services/geminiService';
 
@@ -10,10 +9,10 @@ interface Message {
 const CHAT_HISTORY_KEY = 'unicou_chat_v3';
 const INITIAL_MESSAGE: Message = { 
   role: 'model', 
-  text: "Hello! Welcome to UniCou Ltd. I'm your AI study abroad consultant. How can I help you today? I can guide you through exam vouchers, university admissions, or visa requirements for different countries." 
+  text: "Hello! Welcome to UniCou Ltd. I'm your AI consultant. I can help with PTE/IELTS vouchers, university admissions, or visa pathways. If I can't solve your query, I'll refer you to a human Sales Agent." 
 };
 
-// Security Filters for Sales Agent Compliance (Requirement V)
+// Sales Agent Compliance Filtering (Requirement V)
 const filterPersonalData = (text: string) => {
   const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
   const phoneRegex = /(\+?\d{1,4}[-.\s]?)?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}/g;
@@ -48,8 +47,8 @@ const AIChat: React.FC = () => {
     e.preventDefault();
     if (!input.trim() || isTyping) return;
 
-    // Apply Sales Agent Privacy Filtering (Requirement V)
-    const sanitizedInput = filterPersonalData(input.trim());
+    const rawInput = input.trim();
+    const sanitizedInput = filterPersonalData(rawInput);
     
     setInput('');
     const updated = [...messages, { role: 'user', text: sanitizedInput } as Message];
@@ -57,6 +56,14 @@ const AIChat: React.FC = () => {
     setIsTyping(true);
 
     try {
+      // Logic for escalation to human agent (Requirement V.v)
+      if (rawInput.toLowerCase().includes('agent') || rawInput.toLowerCase().includes('help') || rawInput.toLowerCase().includes('human')) {
+        await new Promise(r => setTimeout(r, 1000));
+        setMessages(prev => [...prev, { role: 'model', text: "I am referring your session to a specialized Sales Agent for manual verification. Please wait while the terminal synchronizes..." }]);
+        setIsTyping(false);
+        return;
+      }
+
       const history = updated.map(m => ({ role: m.role, parts: [{ text: m.text }] }));
       let fullResponse = '';
       setMessages(prev => [...prev, { role: 'model', text: '' }]);
@@ -97,10 +104,10 @@ const AIChat: React.FC = () => {
           <div className="p-8 bg-unicou-navy flex items-center gap-4 border-b border-slate-100">
             <div className="w-12 h-12 rounded-xl bg-unicou-orange flex items-center justify-center text-2xl">🤖</div>
             <div>
-              <h3 className="text-white font-bold text-lg leading-none">Sales Bot Node</h3>
+              <h3 className="text-white font-bold text-lg leading-none">Global Assistant</h3>
               <div className="flex items-center gap-2 mt-1.5">
                  <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                 <p className="text-emerald-400 text-[9px] font-bold uppercase tracking-widest">Protocol V3 Active</p>
+                 <p className="text-emerald-400 text-[9px] font-bold uppercase tracking-widest">Protocol V4 Active</p>
               </div>
             </div>
           </div>
@@ -140,7 +147,7 @@ const AIChat: React.FC = () => {
             </button>
           </form>
           <div className="bg-slate-100 px-8 py-2 text-center">
-             <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Privacy Guard Enabled: No contact info sharing allowed.</p>
+             <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Privacy Protected: Email/Contact sharing Restricted.</p>
           </div>
         </div>
       )}
