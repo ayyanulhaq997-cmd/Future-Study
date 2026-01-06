@@ -86,17 +86,6 @@ export interface Order {
   deliveryTime?: string; 
 }
 
-export interface BusinessMetrics {
-  todaySales: number;
-  monthRevenue: number;
-  vouchersInStock: number;
-  activeAgents: number;
-  riskAlerts: number;
-  refundRequests: number;
-  systemHealth: 'Optimal' | 'Degraded' | 'Critical';
-  systemHalt: boolean; 
-}
-
 export type ViewState = 
   | { type: 'home' }
   | { type: 'store' } 
@@ -133,26 +122,6 @@ export interface LMSCourse {
   price: number;
 }
 
-export interface LMSLesson {
-  id: string;
-  title: string;
-  type: 'Video' | 'Text' | 'Quiz';
-  content: string;
-}
-
-export interface LMSModule {
-  id: string;
-  title: string;
-  lessons: LMSLesson[];
-}
-
-export interface Enrollment {
-  id: string;
-  userId: string;
-  courseId: string;
-  progress: number;
-}
-
 export interface TestResult {
   id: string;
   userId: string;
@@ -160,8 +129,39 @@ export interface TestResult {
   testTitle: string;
   skillScores: any[];
   overallBand: string;
+  aiFeedback?: string;
   timeTaken: number;
   timestamp: string;
+}
+
+export interface LMSTestQuestion {
+  id: string;
+  skill: 'Listening' | 'Reading' | 'Writing' | 'Speaking';
+  type: 
+    | 'MCQ' | 'MCQ-Multiple' | 'Fill-Blanks' | 'Note-Completion' | 'Table-Completion' 
+    | 'Sentence-Completion' | 'Matching' | 'Highlight-Incorrect' | 'Select-Missing'
+    | 'Ordering' | 'Audio-Record' | 'Essay' | 'Integrated-Writing' | 'Insert-Sentence'
+    | 'Summary-Selection' | 'Describe-Image';
+  text: string;
+  options?: string[];
+  correctOptions?: number[]; 
+  correctText?: string;
+  correctOrder?: string[];
+  audioUrl?: string;
+  targetSentence?: string;
+  passageRef?: string;
+  maxChoices?: number;
+  wordLimit?: number;
+}
+
+export interface LMSTestSection {
+  id: string;
+  title: string;
+  skill: string;
+  timeLimit: number;
+  questions: LMSTestQuestion[];
+  passageText?: string;
+  audioUrl?: string;
 }
 
 export interface LMSPracticeTest {
@@ -179,16 +179,23 @@ export interface ManualSubmission {
   skill: string;
   questionText: string;
   studentAnswer: string;
+  audioBlob?: string; // base64
   maxScore: number;
   timestamp: string;
 }
 
-export interface FinanceReport {
-  totalRevenue: number;
-  totalVouchersSold: number;
-  salesByType: { name: string; value: number }[];
-  recentSales: Order[];
+export interface APIEndpoint {
+  method: string;
+  path: string;
+  description: string;
+  authRequired: boolean;
+  params?: string[];
+  response: string;
 }
+
+/** 
+ * Added missing definitions for exported members 
+ */
 
 export interface University {
   id: string;
@@ -220,7 +227,7 @@ export interface Course {
   degree: string;
   duration: string;
   tuitionFee: string;
-  description?: string;
+  description: string;
 }
 
 export interface Qualification {
@@ -228,14 +235,44 @@ export interface Qualification {
   title: string;
   qualificationBody: string;
   level: string;
-  duration: string;
   tuitionFees: string;
   description: string;
+  duration: string;
   image: string;
   requirements: string[];
 }
 
-export interface Pathway {
+export interface LMSLesson {
+  id: string;
+  title: string;
+  type: 'Video' | 'Text' | 'Quiz';
+  content: string;
+}
+
+export interface LMSModule {
+  id: string;
+  title: string;
+  lessons: LMSLesson[];
+}
+
+export interface Enrollment {
+  courseId: string;
+  userId: string;
+  progress: number;
+}
+
+export interface BusinessMetrics {
+  todaySales: number;
+  monthRevenue: number;
+  vouchersInStock: number;
+  activeAgents: number;
+  riskAlerts: number;
+  refundRequests: number;
+  systemHealth: 'Optimal' | 'Degraded' | 'Critical';
+  systemHalt: boolean;
+}
+
+export interface ImmigrationPathway {
   id: string;
   title: string;
   description: string;
@@ -248,39 +285,7 @@ export interface ImmigrationGuideData {
   title: string;
   content: string;
   heroImage: string;
-  pathways: Pathway[];
-}
-
-export interface SecurityStatus {
-  lastScan: string;
-  threatLevel: 'Low' | 'Medium' | 'High';
-  status: 'Secure' | 'Vulnerable';
-}
-
-export interface APIEndpoint {
-  method: string;
-  path: string;
-  description: string;
-  authRequired: boolean;
-  params?: string[];
-  response: string;
-}
-
-export interface LMSTestQuestion {
-  id: string;
-  skill: 'Listening' | 'Reading' | 'Writing' | 'Speaking';
-  type: 'MCQ' | 'Essay' | 'Audio-Record';
-  text: string;
-  options?: string[];
-  audioUrl?: string;
-}
-
-export interface LMSTestSection {
-  id: string;
-  title: string;
-  skill: string;
-  timeLimit: number;
-  questions: LMSTestQuestion[];
+  pathways: ImmigrationPathway[];
 }
 
 export interface QualificationLead {
