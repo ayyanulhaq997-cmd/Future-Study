@@ -11,38 +11,47 @@ export const users: User[] = [
 ];
 
 export const products: Product[] = [
-  { id: 'v-1', name: 'IELTS Academic Voucher', category: 'IELTS', type: 'Voucher', basePrice: 149, currency: 'USD', pricingModel: 'Country-Wise', description: 'Official British Council/IDP.', icon: '🌐' },
-  { id: 'v-6', name: 'PTE Academic Voucher', category: 'PTE', type: 'Voucher', basePrice: 165, currency: 'USD', pricingModel: 'Country-Wise', description: 'Official Pearson PTE.', icon: '📊' },
-  { id: 'v-lc', name: 'LanguageCert Academic Voucher', category: 'LanguageCert', type: 'Voucher', basePrice: 155, currency: 'USD', pricingModel: 'Global', description: 'Official LanguageCert Academic.', icon: '📜' },
+  // --- IELTS CLUSTER ---
+  { id: 'v-ielts-ac', name: 'IELTS Academic Voucher', category: 'IELTS', type: 'Voucher', basePrice: 149, currency: 'USD', pricingModel: 'Country-Wise', description: 'Standard Academic for university admissions.', icon: '🌐' },
+  { id: 'v-ielts-gt', name: 'IELTS General Training', category: 'IELTS', type: 'Voucher', basePrice: 149, currency: 'USD', pricingModel: 'Country-Wise', description: 'For immigration and work permits.', icon: '🌐' },
+  { id: 'v-ielts-ukvi-ac', name: 'IELTS UKVI Academic', category: 'IELTS', type: 'Voucher', basePrice: 175, currency: 'USD', pricingModel: 'Country-Wise', description: 'SELT approved for UK student visas.', icon: '🇬🇧' },
+  { id: 'v-ielts-ukvi-gt', name: 'IELTS UKVI General', category: 'IELTS', type: 'Voucher', basePrice: 175, currency: 'USD', pricingModel: 'Country-Wise', description: 'SELT approved for UK work/life visas.', icon: '🇬🇧' },
+
+  // --- PTE CLUSTER ---
+  { id: 'v-pte-ac', name: 'PTE Academic Voucher', category: 'PTE', type: 'Voucher', basePrice: 165, currency: 'USD', pricingModel: 'Country-Wise', description: 'Standard Pearson PTE Academic.', icon: '📊' },
+  { id: 'v-pte-ukvi', name: 'PTE Academic UKVI', category: 'PTE', type: 'Voucher', basePrice: 180, currency: 'USD', pricingModel: 'Country-Wise', description: 'SELT variant for UK Visas.', icon: '📊' },
+  { id: 'v-pte-home', name: 'PTE Home (A1/A2/B1)', category: 'PTE', type: 'Voucher', basePrice: 150, currency: 'USD', pricingModel: 'Country-Wise', description: 'For family and settlement visas.', icon: '🏠' },
+  { id: 'v-pte-core', name: 'PTE Core Voucher', category: 'PTE', type: 'Voucher', basePrice: 170, currency: 'USD', pricingModel: 'Country-Wise', description: 'Approved for Canada migration.', icon: '🇨🇦' },
+
+  // --- TOEFL CLUSTER ---
+  { id: 'v-toefl-ibt', name: 'TOEFL iBT Voucher', category: 'ETS', type: 'Voucher', basePrice: 195, currency: 'USD', pricingModel: 'Global', description: 'Official ETS TOEFL iBT.', icon: '🎓' },
+
+  // --- LANGUAGECERT CLUSTER ---
+  { id: 'v-lc-ac', name: 'LanguageCert Academic', category: 'LanguageCert', type: 'Voucher', basePrice: 155, currency: 'USD', pricingModel: 'Global', description: 'High-stakes academic English test.', icon: '📜' },
+  { id: 'v-lc-b1', name: 'LanguageCert ESOL B1', category: 'LanguageCert', type: 'Voucher', basePrice: 140, currency: 'USD', pricingModel: 'Global', description: 'SELT for UK Citizenship/Settle.', icon: '📜' },
+  { id: 'v-lc-b2', name: 'LanguageCert ESOL B2', category: 'LanguageCert', type: 'Voucher', basePrice: 150, currency: 'USD', pricingModel: 'Global', description: 'Communicator level for study/work.', icon: '📜' },
+
+  // --- SKILLS FOR ENGLISH ---
+  { id: 'v-sfe-ukvi', name: 'Skills for English UKVI', category: 'Skills for English', type: 'Voucher', basePrice: 160, currency: 'USD', pricingModel: 'Global', description: 'PSI Services official UKVI test.', icon: '🧠' },
+
+  // --- DUOLINGO ---
+  { id: 'v-det', name: 'Duolingo English Test', category: 'Duolingo', type: 'Voucher', basePrice: 59, currency: 'USD', pricingModel: 'Global', description: 'Official DET credit voucher.', icon: '🦉' },
+
+  // --- OXFORD ELLT ---
+  { id: 'v-ellt', name: 'Oxford ELLT Academic', category: 'Oxford ELLT', type: 'Voucher', basePrice: 120, currency: 'USD', pricingModel: 'Global', description: 'Digital test for university entry.', icon: '📖' }
 ];
 
-// Seed inventory to prevent "Vault Exhausted" errors - PREVIOUS THINGS PRESERVED
-export const voucherCodes: VoucherCode[] = [
-  ...Array(20).fill(0).map((_, i) => ({
-    id: `vc-v1-${i}`,
-    productId: 'v-1',
-    code: `IELTS-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
-    status: 'Available' as const,
-    expiryDate: '2026-12-31',
-    uploadDate: new Date().toISOString()
-  })),
-  ...Array(20).fill(0).map((_, i) => ({
-    id: `vc-v6-${i}`,
-    productId: 'v-6',
-    code: `PTE-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
-    status: 'Available' as const,
-    expiryDate: '2026-12-31',
-    uploadDate: new Date().toISOString()
-  })),
-  ...Array(20).fill(0).map((_, i) => ({
-    id: `vc-vlc-${i}`,
-    productId: 'v-lc',
-    code: `LC-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
+// Seed inventory for EVERY product to prevent fulfillment errors
+export const voucherCodes: VoucherCode[] = products.flatMap(p => 
+  Array(20).fill(0).map((_, i) => ({
+    id: `vc-${p.id}-${i}`,
+    productId: p.id,
+    code: `${p.category.substring(0, 3).toUpperCase()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
     status: 'Available' as const,
     expiryDate: '2026-12-31',
     uploadDate: new Date().toISOString()
   }))
-];
+);
 
 export const lmsTests: LMSPracticeTest[] = [
   {
@@ -135,6 +144,8 @@ export const lmsTests: LMSPracticeTest[] = [
 export const countryGuides: CountryGuide[] = [
   { id: 'uk', countryId: 'uk', slug: 'uk', title: 'Study in United Kingdom', heroImage: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1200', costOfLiving: '£1,200/mo', visaRequirements: 'Student Visa (Tier 4)', content: 'UK Excellence.' },
   { id: 'australia', countryId: 'australia', slug: 'australia', title: 'Study in Australia', heroImage: 'https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?w=1200', costOfLiving: 'A$2,200/mo', visaRequirements: 'Subclass 500', content: 'Australian Hub.' },
+  { id: 'usa', countryId: 'usa', slug: 'usa', title: 'Study in USA', heroImage: 'https://images.unsplash.com/photo-1485738422979-f5c462d49f74?w=1200', costOfLiving: '$2,500/mo', visaRequirements: 'F-1 Student Visa', content: 'American Dream.' },
+  { id: 'canada', countryId: 'canada', slug: 'canada', title: 'Study in Canada', heroImage: 'https://images.unsplash.com/photo-1503614472-8c93d56e92ce?w=1200', costOfLiving: 'C$2,000/mo', visaRequirements: 'Study Permit', content: 'Canadian Opportunities.' },
 ];
 
 export const universities: University[] = [
