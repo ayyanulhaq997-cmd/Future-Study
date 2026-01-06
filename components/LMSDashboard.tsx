@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/apiService';
-import { LMSCourse, ViewState } from '../types';
+import { LMSCourse, ViewState, LMSPracticeTest } from '../types';
 
 interface LMSDashboardProps {
   onNavigate: (v: ViewState) => void;
@@ -9,6 +9,7 @@ interface LMSDashboardProps {
 
 const LMSDashboard: React.FC<LMSDashboardProps> = ({ onNavigate }) => {
   const [courses, setCourses] = useState<LMSCourse[]>([]);
+  const [tests, setTests] = useState<LMSPracticeTest[]>([]);
   const [enrolledIds, setEnrolledIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'all' | 'my-learning'>('all');
@@ -16,8 +17,14 @@ const LMSDashboard: React.FC<LMSDashboardProps> = ({ onNavigate }) => {
   const [redeeming, setRedeeming] = useState(false);
 
   const fetchData = async () => {
+    // We assume getTests doesn't exist yet, we'll manually fetch test-2 for now
     const all = await api.getAllLMSCourses();
     const enrolled = await api.getEnrolledCourses();
+    
+    // Manual injection of the LanguageCert test for visualization
+    const t2 = await api.getTestById('lc-test-2');
+    if (t2) setTests([t2]);
+
     setCourses(all);
     setEnrolledIds(enrolled.map(c => c.id));
     setLoading(false);
@@ -97,61 +104,94 @@ const LMSDashboard: React.FC<LMSDashboardProps> = ({ onNavigate }) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-        {filteredCourses.map(course => {
-          const isEnrolled = enrolledIds.includes(course.id);
-          return (
-            <div key={course.id} className="bg-white rounded-[3rem] overflow-hidden border border-slate-200 flex flex-col hover:border-unicou-orange/20 transition-all group shadow-lg hover:shadow-2xl">
-              <div className="relative aspect-video overflow-hidden">
-                <img src={course.thumbnail} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" alt={course.title} />
-                <div className="absolute top-6 left-6 bg-unicou-navy/95 backdrop-blur-md px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest text-white shadow-xl">
-                  {course.category} MASTERCLASS
+      <div className="space-y-20 pb-32">
+        {/* MOCK EXAM SECTION - NEW FOR TESTING */}
+        <section>
+          <div className="flex items-center gap-4 mb-10">
+             <div className="h-1 w-12 bg-unicou-orange rounded-full" />
+             <h2 className="text-xs font-black text-unicou-navy uppercase tracking-[0.4em]">Practice Test Registry</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {tests.map(test => (
+              <div key={test.id} className="bg-slate-50 p-10 rounded-[4rem] border border-slate-200 shadow-xl group hover:border-unicou-navy transition-all">
+                <div className="flex justify-between items-start mb-8">
+                  <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-2xl shadow-inner border border-slate-100">📝</div>
+                  <span className="px-4 py-1.5 bg-unicou-navy text-white text-[9px] font-black uppercase tracking-widest rounded-full">Official Mock</span>
                 </div>
+                <h3 className="text-2xl font-display font-black text-slate-950 mb-2 uppercase">{test.title}</h3>
+                <p className="text-slate-500 font-bold italic text-sm mb-10">"Full simulation including Reading Parts 2, 3, and 4."</p>
+                <button 
+                  onClick={() => onNavigate({ type: 'lms-practice-test', testId: test.id })}
+                  className="w-full py-5 bg-white border-2 border-unicou-navy text-unicou-navy hover:bg-unicou-navy hover:text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 shadow-lg"
+                >Launch Exam Node</button>
               </div>
-              
-              <div className="p-10 flex-grow flex flex-col">
-                <h3 className="text-2xl font-display font-black mb-4 text-slate-950 group-hover:text-unicou-navy transition-colors">{course.title}</h3>
-                <p className="text-slate-800 text-sm font-bold line-clamp-2 mb-10 leading-relaxed italic">"{course.description}"</p>
-                
-                <div className="flex items-center gap-6 text-[11px] font-black uppercase tracking-widest text-slate-600 mb-10 mt-auto">
-                  <span className="flex items-center gap-2">
-                    <svg className="w-4 h-4 text-unicou-orange" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    {course.duration}
-                  </span>
-                  <span className="flex items-center gap-2">
-                    <svg className="w-4 h-4 text-unicou-orange" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                    {course.instructor}
-                  </span>
-                </div>
+            ))}
+          </div>
+        </section>
 
-                {isEnrolled ? (
-                  <button 
-                    onClick={() => onNavigate({ type: 'lms-course-player', courseId: course.id })}
-                    className="w-full py-5 bg-unicou-navy hover:bg-slate-950 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 flex items-center justify-center gap-3"
-                  >
-                    Resume Hub
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-                  </button>
-                ) : (
-                  <div className="flex items-center justify-between pt-6 border-t border-slate-100">
-                    <div>
-                       <p className="text-[10px] font-black text-slate-500 uppercase mb-1">Standard Fee</p>
-                       <span className="text-3xl font-display font-black text-slate-950">
-                        {course.price > 0 ? `$${course.price}` : 'FREE'}
+        {/* COURSES SECTION */}
+        <section>
+          <div className="flex items-center gap-4 mb-10">
+             <div className="h-1 w-12 bg-unicou-navy rounded-full" />
+             <h2 className="text-xs font-black text-unicou-navy uppercase tracking-[0.4em]">Masterclass Catalogue</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            {filteredCourses.map(course => {
+              const isEnrolled = enrolledIds.includes(course.id);
+              return (
+                <div key={course.id} className="bg-white rounded-[3rem] overflow-hidden border border-slate-200 flex flex-col hover:border-unicou-orange/20 transition-all group shadow-lg hover:shadow-2xl">
+                  <div className="relative aspect-video overflow-hidden">
+                    <img src={course.thumbnail} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" alt={course.title} />
+                    <div className="absolute top-6 left-6 bg-unicou-navy/95 backdrop-blur-md px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest text-white shadow-xl">
+                      {course.category} MASTERCLASS
+                    </div>
+                  </div>
+                  
+                  <div className="p-10 flex-grow flex flex-col">
+                    <h3 className="text-2xl font-display font-black mb-4 text-slate-950 group-hover:text-unicou-navy transition-colors">{course.title}</h3>
+                    <p className="text-slate-800 text-sm font-bold line-clamp-2 mb-10 leading-relaxed italic">"{course.description}"</p>
+                    
+                    <div className="flex items-center gap-6 text-[11px] font-black uppercase tracking-widest text-slate-600 mb-10 mt-auto">
+                      <span className="flex items-center gap-2">
+                        <svg className="w-4 h-4 text-unicou-orange" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        {course.duration}
+                      </span>
+                      <span className="flex items-center gap-2">
+                        <svg className="w-4 h-4 text-unicou-orange" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                        {course.instructor}
                       </span>
                     </div>
-                    <button 
-                      onClick={() => onNavigate({ type: 'course-catalogue' })}
-                      className="px-8 py-4 bg-unicou-orange hover:bg-orange-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl active:scale-95 transition-all"
-                    >
-                      Authorize
-                    </button>
+
+                    {isEnrolled ? (
+                      <button 
+                        onClick={() => onNavigate({ type: 'lms-course-player', courseId: course.id })}
+                        className="w-full py-5 bg-unicou-navy hover:bg-slate-950 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 flex items-center justify-center gap-3"
+                      >
+                        Resume Hub
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                      </button>
+                    ) : (
+                      <div className="flex items-center justify-between pt-6 border-t border-slate-100">
+                        <div>
+                           <p className="text-[10px] font-black text-slate-500 uppercase mb-1">Standard Fee</p>
+                           <span className="text-3xl font-display font-black text-slate-950">
+                            {course.price > 0 ? `$${course.price}` : 'FREE'}
+                          </span>
+                        </div>
+                        <button 
+                          onClick={() => onNavigate({ type: 'course-catalogue' })}
+                          className="px-8 py-4 bg-unicou-orange hover:bg-orange-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl active:scale-95 transition-all"
+                        >
+                          Authorize
+                        </button>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            </div>
-          );
-        })}
+                </div>
+              );
+            })}
+          </div>
+        </section>
       </div>
     </div>
   );
