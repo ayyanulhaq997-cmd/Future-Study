@@ -192,12 +192,12 @@ const LMSCoursePlayer: React.FC<LMSCoursePlayerProps> = ({ courseId, initialLess
         setCourse(c || null);
         setModules(mods);
         
-        // Fixed Build Error (Property progress does not exist on type never):
-        // Ensure enrollment is checked correctly before accessing property.
-        if (enrollment) {
-          setProgress(enrollment.progress);
+        // Fix TS Build Error: Property progress does not exist on type 'never'
+        // Ensure the enrollment type is recognized or defaulted.
+        if (enrollment && (enrollment as Enrollment).progress !== undefined) {
+           setProgress((enrollment as Enrollment).progress);
         } else {
-          setProgress(0);
+           setProgress(0);
         }
         
         // Auto-select first lesson or initialLessonId

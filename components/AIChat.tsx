@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { GeminiService } from '../services/geminiService';
 
@@ -9,10 +10,10 @@ interface Message {
 const CHAT_HISTORY_KEY = 'unicou_chat_v3';
 const INITIAL_MESSAGE: Message = { 
   role: 'model', 
-  text: "Hello! Welcome to UniCou Ltd. I'm your AI consultant. I can help with PTE/IELTS vouchers, university admissions, or visa pathways. If I can't solve your query, I'll refer you to a human Sales Agent." 
+  text: "Hello! Welcome to UniCou Ltd. I'm your AI study abroad consultant. To begin, please sign up using your email for secure voucher delivery. I can help with PTE/IELTS vouchers, admissions, or visa strategy." 
 };
 
-// Sales Agent Compliance Filtering (Requirement V)
+// Security Filters to block contact sharing (Requirement V.v)
 const filterPersonalData = (text: string) => {
   const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
   const phoneRegex = /(\+?\d{1,4}[-.\s]?)?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}/g;
@@ -48,6 +49,7 @@ const AIChat: React.FC = () => {
     if (!input.trim() || isTyping) return;
 
     const rawInput = input.trim();
+    // Restriction on contact details sharing (Requirement V.v)
     const sanitizedInput = filterPersonalData(rawInput);
     
     setInput('');
@@ -56,10 +58,10 @@ const AIChat: React.FC = () => {
     setIsTyping(true);
 
     try {
-      // Logic for escalation to human agent (Requirement V.v)
-      if (rawInput.toLowerCase().includes('agent') || rawInput.toLowerCase().includes('help') || rawInput.toLowerCase().includes('human')) {
-        await new Promise(r => setTimeout(r, 1000));
-        setMessages(prev => [...prev, { role: 'model', text: "I am referring your session to a specialized Sales Agent for manual verification. Please wait while the terminal synchronizes..." }]);
+      // Escalation logic if AI cannot handle (Requirement V.v)
+      if (rawInput.toLowerCase().includes('agent') || rawInput.toLowerCase().includes('human') || rawInput.toLowerCase().includes('help')) {
+        await new Promise(r => setTimeout(r, 800));
+        setMessages(prev => [...prev, { role: 'model', text: "I'm referring your session to a specialized Sales Agent for manual verification. Please wait for the terminal hand-off..." }]);
         setIsTyping(false);
         return;
       }
@@ -78,7 +80,7 @@ const AIChat: React.FC = () => {
         });
       }
     } catch (error) {
-      setMessages(prev => [...prev, { role: 'model', text: "Protocol sync interrupted. Please verify your connection." }]);
+      setMessages(prev => [...prev, { role: 'model', text: "Protocol sync interrupted. Please verify connection." }]);
     } finally {
       setIsTyping(false);
     }
@@ -102,12 +104,12 @@ const AIChat: React.FC = () => {
       {isOpen && (
         <div className="absolute bottom-20 right-0 w-[380px] h-[600px] bg-white rounded-3xl border border-slate-100 shadow-premium flex flex-col overflow-hidden animate-in slide-in-from-bottom-4">
           <div className="p-8 bg-unicou-navy flex items-center gap-4 border-b border-slate-100">
-            <div className="w-12 h-12 rounded-xl bg-unicou-orange flex items-center justify-center text-2xl">🤖</div>
+            <div className="w-12 h-12 rounded-xl bg-unicou-orange flex items-center justify-center text-2xl shadow-lg">🤖</div>
             <div>
-              <h3 className="text-white font-bold text-lg leading-none">Global Assistant</h3>
+              <h3 className="text-white font-bold text-lg leading-none uppercase tracking-tighter">Global Assistant</h3>
               <div className="flex items-center gap-2 mt-1.5">
                  <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                 <p className="text-emerald-400 text-[9px] font-bold uppercase tracking-widest">Protocol V4 Active</p>
+                 <p className="text-emerald-400 text-[9px] font-black uppercase tracking-widest">Privacy Guard Active</p>
               </div>
             </div>
           </div>
@@ -118,7 +120,7 @@ const AIChat: React.FC = () => {
                 <div className={`max-w-[85%] px-5 py-4 rounded-2xl text-sm leading-relaxed ${
                   m.role === 'user' 
                   ? 'bg-unicou-orange text-white rounded-tr-none shadow-action' 
-                  : 'bg-white text-slate-800 rounded-tl-none border border-slate-100 shadow-premium'
+                  : 'bg-white text-slate-800 rounded-tl-none border border-slate-100 shadow-premium font-medium italic'
                 }`}>
                   {m.text}
                 </div>
@@ -137,7 +139,7 @@ const AIChat: React.FC = () => {
             <input
               type="text" value={input} onChange={(e) => setInput(e.target.value)}
               placeholder="Ask me anything..."
-              className="flex-grow bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-unicou-navy transition-all"
+              className="flex-grow bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-unicou-navy transition-all font-bold placeholder:font-normal"
             />
             <button
               type="submit" disabled={isTyping || !input.trim()}
@@ -146,8 +148,8 @@ const AIChat: React.FC = () => {
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
             </button>
           </form>
-          <div className="bg-slate-100 px-8 py-2 text-center">
-             <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Privacy Protected: Email/Contact sharing Restricted.</p>
+          <div className="bg-slate-100 px-8 py-2 text-center border-t border-slate-200">
+             <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Privacy Protected: No contact sharing allowed in chat node.</p>
           </div>
         </div>
       )}
