@@ -24,6 +24,7 @@ import FinanceDashboard from './components/FinanceDashboard';
 import TrainerDashboard from './components/TrainerDashboard';
 import SupportDashboard from './components/SupportDashboard';
 import CustomerDashboard from './components/CustomerDashboard';
+import SalesDashboard from './components/SalesDashboard';
 import CourseCatalogue from './components/CourseCatalogue';
 import QualificationCatalogue from './components/QualificationCatalogue';
 import PolicyPage from './components/PolicyPage';
@@ -73,6 +74,8 @@ const App: React.FC = () => {
            return <div className="view-container"><SupportDashboard user={user} /></div>;
          case 'Trainer':
            return <div className="view-container"><TrainerDashboard user={user} /></div>;
+         case 'Sales':
+           return <div className="view-container"><SalesDashboard user={user} /></div>;
          case 'Agent':
          case 'Institute':
            return <div className="view-container"><AgentDashboard user={user} onBuy={(p, q) => navigateTo({ type: 'checkout', productId: p, quantity: q })} /></div>;
@@ -120,7 +123,6 @@ const App: React.FC = () => {
         return <div className="view-container"><LMSDashboard onNavigate={navigateTo} /></div>;
       case 'agent':
       case 'institute':
-        // Mandatory Identity Verification: Redirect Students away from Partner Nodes
         if (user && user.role === 'Student') {
            navigateTo({ type: 'lms-dashboard' });
            return null;

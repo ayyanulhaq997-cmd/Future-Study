@@ -13,6 +13,16 @@ const INITIAL_MESSAGE: Message = {
   text: "Hello! Welcome to UniCou Ltd. I'm your AI study abroad consultant. How can I help you today? I can guide you through exam vouchers, university admissions, or visa requirements for different countries." 
 };
 
+// Security Filters for Sales Agent Compliance (Requirement V)
+const filterPersonalData = (text: string) => {
+  const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+  const phoneRegex = /(\+?\d{1,4}[-.\s]?)?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}/g;
+  
+  return text
+    .replace(emailRegex, "[IDENTITY PROTECTED]")
+    .replace(phoneRegex, (match) => match.length > 8 ? "[CONTACT PROTECTED]" : match);
+};
+
 const AIChat: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -38,9 +48,11 @@ const AIChat: React.FC = () => {
     e.preventDefault();
     if (!input.trim() || isTyping) return;
 
-    const userMessage = input.trim();
+    // Apply Sales Agent Privacy Filtering (Requirement V)
+    const sanitizedInput = filterPersonalData(input.trim());
+    
     setInput('');
-    const updated = [...messages, { role: 'user', text: userMessage } as Message];
+    const updated = [...messages, { role: 'user', text: sanitizedInput } as Message];
     setMessages(updated);
     setIsTyping(true);
 
@@ -49,7 +61,7 @@ const AIChat: React.FC = () => {
       let fullResponse = '';
       setMessages(prev => [...prev, { role: 'model', text: '' }]);
 
-      const stream = GeminiService.chatStream(userMessage, history.slice(0, -1));
+      const stream = GeminiService.chatStream(sanitizedInput, history.slice(0, -1));
       for await (const chunk of stream) {
         fullResponse += chunk;
         setMessages(prev => {
@@ -59,7 +71,7 @@ const AIChat: React.FC = () => {
         });
       }
     } catch (error) {
-      setMessages(prev => [...prev, { role: 'model', text: "I'm having a slight technical glitch. Please reach out to us on WhatsApp at +44 700 UNICOU for immediate help!" }]);
+      setMessages(prev => [...prev, { role: 'model', text: "Protocol sync interrupted. Please verify your connection." }]);
     } finally {
       setIsTyping(false);
     }
@@ -85,10 +97,10 @@ const AIChat: React.FC = () => {
           <div className="p-8 bg-unicou-navy flex items-center gap-4 border-b border-slate-100">
             <div className="w-12 h-12 rounded-xl bg-unicou-orange flex items-center justify-center text-2xl">🤖</div>
             <div>
-              <h3 className="text-white font-bold text-lg leading-none">UniCou Assistant</h3>
+              <h3 className="text-white font-bold text-lg leading-none">Sales Bot Node</h3>
               <div className="flex items-center gap-2 mt-1.5">
                  <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                 <p className="text-emerald-400 text-[9px] font-bold uppercase tracking-widest">Online</p>
+                 <p className="text-emerald-400 text-[9px] font-bold uppercase tracking-widest">Protocol V3 Active</p>
               </div>
             </div>
           </div>
@@ -127,6 +139,9 @@ const AIChat: React.FC = () => {
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
             </button>
           </form>
+          <div className="bg-slate-100 px-8 py-2 text-center">
+             <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Privacy Guard Enabled: No contact info sharing allowed.</p>
+          </div>
         </div>
       )}
     </div>

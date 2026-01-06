@@ -1,113 +1,94 @@
 
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/apiService';
-import { Lead, Order, User } from '../types';
+import { Lead, Order, User, OrderStatus } from '../types';
 
 const SalesDashboard: React.FC<{ user: User }> = ({ user }) => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'leads' | 'orders'>('leads');
+  const [activeTab, setActiveTab] = useState<'leads' | 'orders'>('orders');
 
-  useEffect(() => {
-    const fetch = async () => {
-      const [le, o] = await Promise.all([api.getLeads(), api.getOrders()]);
-      setLeads(le);
-      setOrders(o);
-      setLoading(false);
-    };
-    fetch();
-  }, []);
+  const refreshData = async () => {
+    const [le, o] = await Promise.all([api.getLeads(), api.getOrders()]);
+    setLeads(le);
+    setOrders(o);
+    setLoading(false);
+  };
+
+  useEffect(() => { refreshData(); }, []);
+
+  const handleAction = async (orderId: string, status: OrderStatus) => {
+    await api.updateOrderStatus(orderId, status);
+    refreshData();
+  };
 
   if (loading) return <div className="p-40 text-center animate-pulse text-unicou-navy font-black uppercase tracking-[0.4em]">Initializing Sales Management Node...</div>;
 
   return (
-    <div className="max-w-7xl mx-auto px-6 pb-24 bg-white">
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 mb-16">
+    <div className="max-w-[1600px] mx-auto px-6 pb-24 bg-white">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 mb-16 pt-12">
         <div>
-          <h1 className="text-5xl font-display font-black tracking-tight text-slate-900 leading-none uppercase">Sales <span className="text-unicou-orange">Management</span></h1>
-          <p className="text-slate-500 mt-4 font-bold uppercase text-xs tracking-widest">Operator: {user.name} • Node: <span className="text-unicou-navy">Global Sales Registry</span></p>
+          <h1 className="text-5xl font-display font-black tracking-tight text-slate-900 leading-none uppercase">Sales <span className="text-unicou-orange">Manager</span></h1>
+          <p className="text-slate-500 mt-4 font-bold uppercase text-xs tracking-widest">Operator Node: {user.name} • <span className="text-unicou-navy font-black">Registry Control</span></p>
         </div>
         <div className="flex bg-slate-50 p-2 rounded-[2rem] border border-slate-200 shadow-inner">
-          <button onClick={() => setActiveTab('leads')} className={`px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'leads' ? 'bg-white text-unicou-navy shadow-lg' : 'text-slate-400'}`}>Lead Registry</button>
-          <button onClick={() => setActiveTab('orders')} className={`px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'orders' ? 'bg-white text-unicou-navy shadow-lg' : 'text-slate-400'}`}>Order Feed</button>
+          <button onClick={() => setActiveTab('leads')} className={`px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'leads' ? 'bg-white text-unicou-navy shadow-lg' : 'text-slate-400'}`}>Leads Registry</button>
+          <button onClick={() => setActiveTab('orders')} className={`px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'orders' ? 'bg-white text-unicou-navy shadow-lg' : 'text-slate-400'}`}>Verification Queue</button>
         </div>
       </div>
 
       <div className="bg-white p-10 rounded-[4rem] border border-slate-200 shadow-2xl overflow-hidden min-h-[600px]">
-        {activeTab === 'leads' ? (
+        {activeTab === 'orders' && (
           <div className="overflow-x-auto">
-            <h3 className="text-xl font-black mb-8 uppercase tracking-tighter">Global Lead Registry</h3>
-            <table className="w-full text-left">
+             <h3 className="text-xl font-black mb-8 uppercase tracking-tighter">ii. Sales Agent Dash Board (Verification Feed)</h3>
+             <table className="w-full text-left text-[10px]">
               <thead>
-                <tr className="bg-slate-50 text-[10px] font-black uppercase text-slate-500 tracking-widest border-y border-slate-100">
-                  <th className="px-8 py-6">Timestamp</th>
-                  <th className="px-8 py-6">Type</th>
-                  <th className="px-8 py-6">Identity / Name</th>
-                  <th className="px-8 py-6">Status</th>
-                  <th className="px-8 py-6 text-right">Fulfillment</th>
+                <tr className="bg-slate-50 font-black uppercase text-slate-500 tracking-widest border-y border-slate-100">
+                  <th className="px-4 py-6">Order No.</th>
+                  <th className="px-4 py-6">Date</th>
+                  <th className="px-4 py-6">Time</th>
+                  <th className="px-4 py-6">Buyer Name</th>
+                  <th className="px-4 py-6">Bank A/C (4)</th>
+                  <th className="px-4 py-6">Voucher Type</th>
+                  <th className="px-4 py-6">Qty</th>
+                  <th className="px-4 py-6">Amount</th>
+                  <th className="px-4 py-6 text-center">Verify and Deliver Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
-                {leads.map(l => (
-                  <tr key={l.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-8 py-6 text-[11px] font-mono text-slate-400">{new Date(l.timestamp).toLocaleString()}</td>
-                    <td className="px-8 py-6"><span className="px-3 py-1 bg-slate-100 rounded text-[9px] font-black uppercase">{l.type}</span></td>
-                    <td className="px-8 py-6">
-                      <div className="font-black text-slate-900 uppercase text-xs">{l.data.name || 'Anonymous Node'}</div>
-                      <div className="text-[10px] text-slate-500 font-mono italic">{l.data.email}</div>
-                    </td>
-                    <td className="px-8 py-6">
-                      <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase ${l.status === 'New' ? 'bg-orange-50 text-orange-600' : 'bg-emerald-50 text-emerald-600'}`}>{l.status}</span>
-                    </td>
-                    <td className="px-8 py-6 text-right">
-                      <button className="px-5 py-2 bg-unicou-navy text-white rounded-xl text-[9px] font-black uppercase tracking-widest shadow-lg hover:bg-slate-950 transition-all">Connect</button>
+              <tbody className="divide-y divide-slate-100 uppercase">
+                {orders.map(o => (
+                  <tr key={o.id} className="hover:bg-slate-50 font-bold text-slate-600">
+                    <td className="px-4 py-6 font-mono text-unicou-navy">{o.id}</td>
+                    <td className="px-4 py-6 font-mono">{o.date}</td>
+                    <td className="px-4 py-6 font-mono">{o.time}</td>
+                    <td className="px-4 py-6 font-black text-slate-900">{o.buyerName}</td>
+                    <td className="px-4 py-6 font-mono">****{o.bankLastFour}</td>
+                    <td className="px-4 py-6">{o.productName}</td>
+                    <td className="px-4 py-6">{o.quantity}</td>
+                    <td className="px-4 py-6 font-display font-black text-slate-950">${o.totalAmount}</td>
+                    <td className="px-4 py-6">
+                       <div className="flex items-center justify-center gap-2">
+                          {o.status === 'Pending' ? (
+                            <>
+                              <button onClick={() => handleAction(o.id, 'Approved')} className="px-3 py-1.5 bg-emerald-500 text-white rounded-lg text-[8px] font-black uppercase">Verify</button>
+                              <button onClick={() => handleAction(o.id, 'Hold')} className="px-3 py-1.5 bg-amber-500 text-white rounded-lg text-[8px] font-black uppercase">Further Verification</button>
+                              <button onClick={() => handleAction(o.id, 'Rejected')} className="px-3 py-1.5 bg-red-600 text-white rounded-lg text-[8px] font-black uppercase">Reject</button>
+                            </>
+                          ) : (
+                            <span className={`px-4 py-1 rounded-full text-[8px] font-black border ${o.status === 'Approved' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-red-50 text-red-600 border-red-100'}`}>{o.status}</span>
+                          )}
+                       </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        ) : (
-          <div className="overflow-x-auto">
-             <h3 className="text-xl font-black mb-8 uppercase tracking-tighter">Live Fulfillment Feed</h3>
-             <table className="w-full text-left">
-              <thead>
-                <tr className="bg-slate-50 text-[10px] font-black uppercase text-slate-500 tracking-widest border-y border-slate-100">
-                  <th className="px-6 py-6">I. Order ID</th>
-                  <th className="px-6 py-6">II. Date</th>
-                  <th className="px-6 py-6">III. Time</th>
-                  <th className="px-6 py-6">IV. Buyer Name</th>
-                  <th className="px-6 py-6">V. Product Name</th>
-                  <th className="px-6 py-6">VI. Amount</th>
-                  <th className="px-6 py-6 text-right">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {orders.map(o => {
-                  const d = new Date(o.timestamp);
-                  return (
-                    <tr key={o.id} className="hover:bg-slate-50">
-                      <td className="px-6 py-6 font-mono font-bold text-unicou-navy text-xs">{o.id}</td>
-                      <td className="px-6 py-6 font-mono text-slate-400 text-xs">{d.toLocaleDateString()}</td>
-                      <td className="px-6 py-6 font-mono text-slate-400 text-xs">{d.toLocaleTimeString()}</td>
-                      <td className="px-6 py-6 font-black text-slate-900 uppercase text-xs">{o.buyerName}</td>
-                      <td className="px-6 py-6 font-black text-slate-700 uppercase text-xs">{o.productName}</td>
-                      <td className="px-6 py-6 font-display font-black text-slate-950">${o.totalAmount}</td>
-                      <td className="px-6 py-6 text-right">
-                        <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase ${
-                          o.status === 'Approved' ? 'bg-emerald-50 text-emerald-600' : 
-                          o.status === 'Hold' ? 'bg-amber-50 text-amber-600' :
-                          o.status === 'Rejected' ? 'bg-red-50 text-red-600' :
-                          'bg-orange-50 text-orange-600'
-                        }`}>{o.status}</span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+        )}
+
+        {activeTab === 'leads' && (
+           <div className="p-20 text-center text-slate-400 italic font-bold">Synchronizing global leads from Application Hub...</div>
         )}
       </div>
     </div>

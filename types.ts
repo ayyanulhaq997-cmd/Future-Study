@@ -7,7 +7,8 @@ export type UserRole =
   | 'Operation Manager'
   | 'Finance'
   | 'Support'
-  | 'Trainer';
+  | 'Trainer'
+  | 'Sales';
 
 export type FormType = 'student-apply' | 'agent-reg' | 'prep-center-reg' | 'institute-connect' | 'careers' | 'general' | 'immigration-consult';
 
@@ -20,7 +21,7 @@ export interface User {
   verified?: boolean;
   isAuthorized?: boolean;
   canBypassQuota?: boolean;
-  status: 'Active' | 'Pending' | 'Hold' | 'Rejected' | 'Frozen'; // Extended as per Business Specs
+  status: 'Active' | 'Pending' | 'Hold' | 'Rejected' | 'Frozen'; 
   agreementDate?: string; 
   isFlagged?: boolean; 
 }
@@ -43,7 +44,7 @@ export interface Product {
   pricingModel: 'Global' | 'Country-Wise';
   description: string;
   icon: string;
-  stockCount?: number; // Added for stock reports
+  stockCount?: number; 
 }
 
 export type VoucherStatus = 'Available' | 'Used' | 'Expired';
@@ -63,14 +64,14 @@ export interface VoucherCode {
 export type OrderStatus = 'Pending' | 'Approved' | 'Hold' | 'Rejected' | 'RefundRequested' | 'Refunded';
 
 export interface Order {
-  id: string; // I. Order No
-  date: string; // II. Date
-  time: string; // III. Time
-  buyerName: string; // IV. Buyer Name
-  bankLastFour: string; // V. Buyer Registered Bank A/C last four digits
-  productName: string; // VI. Voucher Type/Product Name
-  quantity: number; // VII. Vouchers Qty
-  totalAmount: number; // VIII. Paid Amount
+  id: string; 
+  date: string; 
+  time: string; 
+  buyerName: string; 
+  bankLastFour: string; 
+  productName: string; 
+  quantity: number; 
+  totalAmount: number; 
   currency: string;
   bankRef: string; 
   proofAttached: boolean; 
@@ -81,8 +82,8 @@ export interface Order {
   paymentMethod: 'Gateway' | 'BankTransfer';
   timestamp: string;
   voucherCodes: string[];
-  supportAgentName?: string; // For Support Agent reports
-  deliveryTime?: string; // For Time of Voucher Delivery report
+  supportAgentName?: string; 
+  deliveryTime?: string; 
 }
 
 export interface BusinessMetrics {
@@ -93,7 +94,7 @@ export interface BusinessMetrics {
   riskAlerts: number;
   refundRequests: number;
   systemHealth: 'Optimal' | 'Degraded' | 'Critical';
-  systemHalt: boolean; // X. Stop all Voucher System toggle
+  systemHalt: boolean; 
 }
 
 export type ViewState = 
