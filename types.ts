@@ -1,14 +1,17 @@
 
 export type UserRole = 
-  | 'Student' 
-  | 'Agent' 
-  | 'Institute'
   | 'System Admin/Owner'
   | 'Operation Manager'
-  | 'Finance'
-  | 'Support'
-  | 'Trainer'
-  | 'Sales';
+  | 'Finance Manager'
+  | 'Academic Manager'
+  | 'Sales Manager'
+  | 'Sales Agent'
+  | 'Agent'
+  | 'Academic Institute'
+  | 'Teacher'
+  | 'Student'
+  // Legacy mappings for compatibility
+  | 'Finance' | 'Support' | 'Trainer' | 'Sales' | 'Institute';
 
 export type FormType = 'student-apply' | 'agent-reg' | 'prep-center-reg' | 'institute-connect' | 'careers' | 'general' | 'immigration-consult';
 
@@ -184,19 +187,6 @@ export interface ManualSubmission {
   timestamp: string;
 }
 
-export interface APIEndpoint {
-  method: string;
-  path: string;
-  description: string;
-  authRequired: boolean;
-  params?: string[];
-  response: string;
-}
-
-/** 
- * Added missing definitions for exported members 
- */
-
 export interface University {
   id: string;
   name: string;
@@ -283,13 +273,14 @@ export interface ImmigrationGuideData {
   id: string;
   slug: string;
   title: string;
-  content: string;
   heroImage: string;
+  content: string;
   pathways: ImmigrationPathway[];
 }
 
 export interface QualificationLead {
   id: string;
+  timestamp: string;
   studentName: string;
   studentEmail: string;
   studentPhone: string;
@@ -297,11 +288,11 @@ export interface QualificationLead {
   workExperience: string;
   qualificationId: string;
   qualificationTitle: string;
-  timestamp: string;
 }
 
 export interface TestBooking {
   id: string;
+  timestamp: string;
   productId: string;
   productName: string;
   studentName: string;
@@ -309,5 +300,16 @@ export interface TestBooking {
   preferredDate: string;
   testCenter: string;
   serviceType: string;
-  timestamp: string;
+}
+
+/**
+ * Interface for system API documentation used in APIDocs component.
+ */
+export interface APIEndpoint {
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+  path: string;
+  description: string;
+  authRequired: boolean;
+  params?: string[];
+  response: string;
 }

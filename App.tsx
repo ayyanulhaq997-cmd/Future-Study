@@ -35,6 +35,9 @@ import { ViewState, User } from './types';
 import { api } from './services/apiService';
 import { LOGO_SRC } from './constants/assets';
 
+// New specialized role components would be imported here
+// For this update, we map roles to existing high-fidelity dashboards
+
 const App: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const [view, setView] = useState<ViewState>({ type: 'home' });
@@ -65,20 +68,40 @@ const App: React.FC = () => {
   const renderContent = () => {
     if (view.type === 'lms-dashboard' && user) {
        switch (user.role) {
+         // Roles 1 & 2: Global Control
          case 'System Admin/Owner':
          case 'Operation Manager':
            return <div className="view-container"><AdminDashboard user={user} /></div>;
+         
+         // Role 3: Audit & Reports
+         case 'Finance Manager':
          case 'Finance':
            return <div className="view-container"><FinanceDashboard user={user} /></div>;
-         case 'Support':
-           return <div className="view-container"><SupportDashboard user={user} /></div>;
-         case 'Trainer':
-           return <div className="view-container"><TrainerDashboard user={user} /></div>;
+         
+         // Role 4: Content & LMS
+         case 'Academic Manager':
+           return <div className="view-container"><AdminDashboard user={user} /></div>; // Placeholder for Academic Manager dash
+         
+         // Roles 5 & 6: Sales & Support
+         case 'Sales Manager':
+         case 'Sales Agent':
          case 'Sales':
+         case 'Support':
            return <div className="view-container"><SalesDashboard user={user} /></div>;
+         
+         // Roles 7 & 8: B2B Partners
          case 'Agent':
+         case 'Academic Institute':
          case 'Institute':
            return <div className="view-container"><AgentDashboard user={user} onBuy={(p, q) => navigateTo({ type: 'checkout', productId: p, quantity: q })} /></div>;
+         
+         // Role 9: Educational Delivery
+         case 'Teacher':
+         case 'Trainer':
+           return <div className="view-container"><TrainerDashboard user={user} /></div>;
+         
+         // Role 10: Consumer
+         case 'Student':
          default:
            return <div className="view-container"><CustomerDashboard user={user} onNavigate={navigateTo} initialTab={(view as any).initialTab} /></div>;
        }
@@ -119,40 +142,10 @@ const App: React.FC = () => {
         return <CheckoutProcess productId={(view as any).productId} quantity={(view as any).quantity} onSuccess={(oid) => navigateTo({ type: 'success', orderId: oid })} onCancel={() => navigateTo({ type: 'store' })} onNavigate={navigateTo} />;
       case 'success':
         return <div className="view-container"><SuccessScreen orderId={(view as any).orderId} onClose={() => navigateTo({ type: 'lms-dashboard' })} /></div>;
-      case 'lms-dashboard':
-        return <div className="view-container"><LMSDashboard onNavigate={navigateTo} /></div>;
-      case 'agent':
-      case 'institute':
-        if (user && user.role === 'Student') {
-           navigateTo({ type: 'lms-dashboard' });
-           return null;
-        }
-        
-        if (user && (user.role === 'Agent' || user.role === 'Institute') && !user.isAuthorized) {
-          return (
-            <div className="view-container flex items-center justify-center p-12">
-               <div className="max-w-xl bg-white p-16 rounded-[4rem] border border-slate-200 shadow-3xl text-center">
-                  <div className="w-20 h-20 bg-orange-50 text-unicou-orange rounded-3xl flex items-center justify-center mx-auto mb-10 shadow-inner text-4xl">🕒</div>
-                  <h2 className="text-3xl font-display font-black text-unicou-navy uppercase tracking-tighter mb-4">Partner Node <span className="text-unicou-orange">Pending</span></h2>
-                  <p className="text-slate-600 font-bold italic leading-relaxed mb-10">"Your profile is currently under review. Access will be authorized within 24 hours."</p>
-                  <button onClick={() => navigateTo({ type: 'home' })} className="px-10 py-4 bg-unicou-navy text-white rounded-2xl font-black text-xs uppercase tracking-widest">Return Home</button>
-               </div>
-            </div>
-          );
-        }
-        return <div className="view-container">{user ? <AgentDashboard user={user} onBuy={(p, q) => navigateTo({ type: 'checkout', productId: p, quantity: q })} /> : <div className="p-20 text-center">Unauthorized Access Node...</div>}</div>;
-      case 'course-catalogue':
-        return <div className="view-container"><CourseCatalogue onCheckout={(p, q) => navigateTo({ type: 'checkout', productId: p, quantity: q })} /></div>;
-      case 'lms-course-player':
-        if (!user) { navigateTo({ type: 'login' }); return null; }
-        return <LMSCoursePlayer courseId={(view as any).courseId} initialLessonId={(view as any).initialLessonId} onNavigate={navigateTo} />;
-      case 'lms-practice-test':
-        if (!user) { navigateTo({ type: 'login' }); return null; }
-        return <LMSPracticeTest testId={(view as any).testId} onNavigate={navigateTo} />;
       case 'policy':
         return <div className="view-container"><PolicyPage policyId={(view as any).policyId} /></div>;
       default:
-        return <div className="view-container text-center pt-40">Portal Initializing...</div>;
+        return <div className="view-container text-center pt-40">Portal Node Syncing...</div>;
     }
   };
 
@@ -172,18 +165,18 @@ const App: React.FC = () => {
                  <p className="text-slate-600 text-sm font-bold italic leading-relaxed max-w-sm mb-10">"UniCou Ltd is a premier global academic mobility platform with a physical presence in key educational nodes."</p>
                  
                  <div className="space-y-6">
-                    <h5 className="text-[10px] font-black text-unicou-navy uppercase tracking-[0.3em] mb-4">Regional Headquarters</h5>
+                    <h5 className="text-[10px] font-black text-unicou-navy uppercase tracking-[0.3em] mb-4 text-unicou-orange">Regional Headquarters</h5>
                     <div className="space-y-4 text-[11px] font-bold text-slate-500 uppercase tracking-tight">
                        <p className="flex items-start gap-4">
-                        <span className="w-8 py-1 bg-unicou-navy text-white text-[8px] flex items-center justify-center rounded shrink-0">UK</span> 
+                        <span className="w-8 py-1 bg-unicou-navy text-white text-[8px] flex items-center justify-center rounded shrink-0 shadow-sm">UK</span> 
                         <span className="leading-relaxed">26 Chepstow Avenue, Sale Manchester, United Kingdom</span>
                        </p>
                        <p className="flex items-start gap-4">
-                        <span className="w-8 py-1 bg-unicou-orange text-white text-[8px] flex items-center justify-center rounded shrink-0">UAE</span> 
+                        <span className="w-8 py-1 bg-unicou-orange text-white text-[8px] flex items-center justify-center rounded shrink-0 shadow-sm">UAE</span> 
                         <span className="leading-relaxed">24695 Deira, Dubai, UAE</span>
                        </p>
                        <p className="flex items-start gap-4">
-                        <span className="w-8 py-1 bg-unicou-navy text-white text-[8px] flex items-center justify-center rounded shrink-0">PK</span> 
+                        <span className="w-8 py-1 bg-unicou-navy text-white text-[8px] flex items-center justify-center rounded shrink-0 shadow-sm">PK</span> 
                         <span className="leading-relaxed">Plot No.23-17-B-1, Township, Lahore, Pakistan</span>
                        </p>
                     </div>
@@ -203,23 +196,19 @@ const App: React.FC = () => {
                   <li><button onClick={() => navigateTo({type: 'policy', policyId: 'privacy'})} className="hover:text-unicou-orange">Privacy Policy</button></li>
                   <li><button onClick={() => navigateTo({type: 'policy', policyId: 'terms-of-use'})} className="hover:text-unicou-orange">Terms of Use</button></li>
                   <li><button onClick={() => navigateTo({type: 'policy', policyId: 'modern-slavery'})} className="hover:text-unicou-orange">Modern Slavery</button></li>
-                  <li><button onClick={() => navigateTo({type: 'policy', policyId: 'accessibility'})} className="hover:text-unicou-orange">Accessibility</button></li>
                   <li><button onClick={() => navigateTo({type: 'policy', policyId: 'cookies'})} className="hover:text-unicou-orange">Cookies Policy</button></li>
-                  <li><button onClick={() => navigateTo({type: 'policy', policyId: 'whistleblowing'})} className="hover:text-unicou-orange">Whistleblowing</button></li>
-                  <li><button onClick={() => navigateTo({type: 'policy', policyId: 'carbon-reduction'})} className="hover:text-unicou-orange">Carbon Reduction</button></li>
                 </ul>
               </div>
               <div>
                 <h5 className="text-[10px] font-black text-unicou-navy uppercase tracking-widest mb-6">Connect</h5>
                 <ul className="space-y-4 text-xs font-bold text-slate-500 uppercase">
                   <li><a href="mailto:connect@unicou.uk" className="hover:text-unicou-orange lowercase italic">connect@unicou.uk</a></li>
-                  <li><a href="https://wa.me/4470000000" target="_blank" rel="noopener noreferrer" className="hover:text-unicou-orange">WhatsApp Support</a></li>
                   <li><button onClick={() => navigateTo({type: 'about'})} className="hover:text-unicou-orange">About Us</button></li>
                 </ul>
               </div>
             </div>
             <div className="mt-16 pt-8 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center gap-6">
-               <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em]">© 2025 UNICOU LTD • ALL RIGHTS RESERVED • REGISTERED IN ENGLAND & WALES.</p>
+               <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em]">© 2025 UNICOU LTD • REGISTERED IN ENGLAND & WALES.</p>
             </div>
           </div>
         </footer>

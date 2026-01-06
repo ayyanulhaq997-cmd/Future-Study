@@ -47,7 +47,7 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
       type: 'lms-dashboard',
       subItems: [
         { label: 'Digital Library', type: 'lms-dashboard' },
-        { label: 'Mock Exams', type: 'lms-dashboard', tab: 'results' },
+        { label: 'Mock Exams', type: 'lms-dashboard', tab: 'exams' },
         { label: 'Prep Courses', type: 'lms-dashboard', tab: 'academy' },
         { label: 'Qualifications', type: 'qualifications' },
       ]

@@ -25,7 +25,7 @@ export class AIEvaluator {
           }
         }
       });
-      return JSON.parse(response.text);
+      return JSON.parse(response.text || '{}');
     } catch (e) {
       console.error("AI Evaluation Node Offline");
       return null;
