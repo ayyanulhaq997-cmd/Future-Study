@@ -1,4 +1,3 @@
-
 import * as db from './db';
 import { MailService } from './mailService';
 import { 
@@ -17,9 +16,18 @@ const LMS_COURSES_KEY = 'unicou_lms_courses_v3';
 const LMS_MODULES_KEY = 'unicou_lms_modules_v3';
 const LMS_ENROLLMENTS_KEY = 'unicou_lms_enrollments_v3';
 const LEADS_KEY = 'unicou_leads_v3';
+const SYSTEM_CONFIG_KEY = 'unicou_global_config_v1';
 
 export const api = {
-  // --- 1. BUSINESS INTELLIGENCE NODES ---
+  // --- 1. SYSTEM CONFIG & HALT NODE ---
+  getSystemHaltStatus: (): boolean => {
+    return localStorage.getItem(SYSTEM_CONFIG_KEY) === 'HALTED';
+  },
+
+  setSystemHaltStatus: (halted: boolean): void => {
+    localStorage.setItem(SYSTEM_CONFIG_KEY, halted ? 'HALTED' : 'ACTIVE');
+  },
+
   getBusinessMetrics: async (): Promise<BusinessMetrics> => {
     const orders: Order[] = await api.getOrders();
     const users: User[] = await api.getUsers();
@@ -46,11 +54,12 @@ export const api = {
       activeAgents: users.filter(u => u.role === 'Agent' && u.status === 'Active').length,
       riskAlerts: orders.filter(o => o.status === 'Hold' || o.status === 'Rejected').length,
       refundRequests: orders.filter(o => o.status === 'RefundRequested').length,
-      systemHealth: 'Optimal'
+      systemHealth: 'Optimal',
+      systemHalt: api.getSystemHaltStatus()
     };
   },
 
-  // --- 2. MANDATORY 3-STAGE ORDER PROCESSING (WITH EMAIL) ---
+  // --- 2. MANDATORY 3-STAGE ORDER PROCESSING ---
   updateOrderStatus: async (orderId: string, status: OrderStatus): Promise<void> => {
     const allOrders: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
     const orderIndex = allOrders.findIndex(o => o.id === orderId);
@@ -59,14 +68,10 @@ export const api = {
     const order = allOrders[orderIndex];
 
     if (status === 'Approved') {
-      // Stage I: Approval & Automated Fulfillment
       await api.fulfillOrder(orderId);
     } else {
-      // Stage II: Hold or Stage III: Rejected
       allOrders[orderIndex].status = status;
       localStorage.setItem(ORDERS_KEY, JSON.stringify(allOrders));
-      
-      // Mandatory Email Dispatch
       if (status === 'Hold' || status === 'Rejected') {
         await MailService.sendOrderStatusEmail(order.buyerName, order.customerEmail, order.id, status);
       }
@@ -90,14 +95,18 @@ export const api = {
     const updatedCodes = allCodes.map(c => assigned.includes(c.code) ? { ...c, status: 'Used' as const, orderId: order.id } : c);
     localStorage.setItem(CODES_KEY, JSON.stringify(updatedCodes));
 
-    allOrders[orderIndex] = { ...order, status: 'Approved', voucherCodes: assigned };
+    allOrders[orderIndex] = { 
+      ...order, 
+      status: 'Approved', 
+      voucherCodes: assigned,
+      deliveryTime: new Date().toLocaleTimeString('en-GB') // Required for ledger
+    };
     localStorage.setItem(ORDERS_KEY, JSON.stringify(allOrders));
 
-    // Mandatory Approval Email with Allocated Codes
     await MailService.sendOrderStatusEmail(order.buyerName, order.customerEmail, order.id, 'Approved', assigned);
   },
 
-  // --- 3. VOUCHER STOCK & INJECTION (FIX: ADD TO EXISTING) ---
+  // --- 3. VOUCHER STOCK & INJECTION ---
   addStockToProduct: async (productId: string, codes: string[]): Promise<void> => {
     const allCodes = await api.getCodes();
     const newEntries: VoucherCode[] = codes.map(code => ({
@@ -111,7 +120,7 @@ export const api = {
     localStorage.setItem(CODES_KEY, JSON.stringify([...allCodes, ...newEntries]));
   },
 
-  // --- 4. STAFF & USER MANAGEMENT (ADD/EDIT/REMOVE) ---
+  // --- 4. STAFF & USER MANAGEMENT (ADD/EDIT/REMOVE/FREEZE) ---
   upsertUser: async (userData: Partial<User>): Promise<void> => {
     const users = await api.getUsers();
     let updated;
@@ -136,19 +145,22 @@ export const api = {
     localStorage.setItem(USERS_KEY, JSON.stringify(filtered));
   },
 
-  // --- 5. RESTORED PAYMENT SUBMISSIONS ---
-  submitBankTransfer: async (productId: string, quantity: number, email: string, buyerName: string, bankRef: string): Promise<Order> => {
-    return api.createOrderNode(productId, quantity, email, buyerName, bankRef, 'BankTransfer', true);
+  // --- 5. ENHANCED PAYMENT SUBMISSIONS (8-COLUMN) ---
+  submitBankTransfer: async (productId: string, quantity: number, email: string, buyerName: string, bankRef: string, bankLastFour: string): Promise<Order> => {
+    return api.createOrderNode(productId, quantity, email, buyerName, bankRef, 'BankTransfer', true, bankLastFour);
   },
 
-  submitGatewayPayment: async (productId: string, quantity: number, email: string, buyerName: string): Promise<Order> => {
-    return api.createOrderNode(productId, quantity, email, buyerName, 'GATEWAY_AUTH_SYNC', 'Gateway', false);
+  submitGatewayPayment: async (productId: string, quantity: number, email: string, buyerName: string, bankLastFour: string): Promise<Order> => {
+    return api.createOrderNode(productId, quantity, email, buyerName, 'GATEWAY_AUTH_SYNC', 'Gateway', false, bankLastFour);
   },
 
-  createOrderNode: async (productId: string, quantity: number, email: string, buyerName: string, ref: string, method: 'BankTransfer' | 'Gateway', proof: boolean): Promise<Order> => {
+  createOrderNode: async (productId: string, quantity: number, email: string, buyerName: string, ref: string, method: 'BankTransfer' | 'Gateway', proof: boolean, bankLastFour: string): Promise<Order> => {
+    if (api.getSystemHaltStatus()) throw new Error("CRITICAL: Voucher system is currently halted by administration.");
+    
     const p = await api.getProductById(productId);
     const currentUser = api.getCurrentUser();
     if (!currentUser) throw new Error("Auth required.");
+    if (currentUser.status === 'Frozen') throw new Error("Identity access frozen. Contact administrator.");
 
     const now = new Date();
     const order: Order = {
@@ -156,6 +168,7 @@ export const api = {
       date: now.toLocaleDateString('en-GB'),
       time: now.toLocaleTimeString('en-GB'),
       buyerName: buyerName || currentUser.name,
+      bankLastFour: bankLastFour || 'XXXX', // Requirement 3.III.v
       productName: p?.name || 'Voucher',
       totalAmount: (p?.basePrice || 0) * quantity,
       bankRef: ref,
@@ -176,25 +189,12 @@ export const api = {
     return order;
   },
 
-  // --- 6. LEAD MANAGEMENT ---
-  submitLead: async (type: Lead['type'], data: Record<string, string>): Promise<Lead> => {
-    const lead: Lead = {
-      id: `LD-${Math.random().toString(36).substr(2, 7).toUpperCase()}`,
-      type,
-      data,
-      status: 'New',
-      timestamp: new Date().toISOString()
-    };
-    const all = await api.getLeads();
-    localStorage.setItem(LEADS_KEY, JSON.stringify([lead, ...all]));
-    return lead;
-  },
-  getLeads: async (): Promise<Lead[]> => JSON.parse(localStorage.getItem(LEADS_KEY) || '[]'),
-
   // --- CORE SYSTEM NODES ---
   getCurrentUser: (): User | null => {
     const session = localStorage.getItem(SESSION_KEY);
-    return session ? JSON.parse(session) : null;
+    const user = session ? JSON.parse(session) : null;
+    if (user && user.status === 'Frozen') return null;
+    return user;
   },
   getUsers: async (): Promise<User[]> => {
     const raw = localStorage.getItem(USERS_KEY);
@@ -232,7 +232,11 @@ export const api = {
   verifyLogin: async (id: string, p: string) => {
     const all = await api.getUsers();
     const user = all.find(u => u.email === id);
-    if (user) { localStorage.setItem(SESSION_KEY, JSON.stringify(user)); return user; }
+    if (user) {
+      if (user.status === 'Frozen') throw new Error("Identity frozen.");
+      localStorage.setItem(SESSION_KEY, JSON.stringify(user));
+      return user;
+    }
     throw new Error("Invalid Credentials.");
   },
   getAllLMSCourses: async (): Promise<LMSCourse[]> => {
@@ -253,32 +257,6 @@ export const api = {
       : [{ ...course, id: `lms-${Date.now()}` }, ...all];
     localStorage.setItem(LMS_COURSES_KEY, JSON.stringify(updated));
   },
-  saveLMSModule: async (courseId: string, module: LMSModule) => {
-    const raw = localStorage.getItem(LMS_MODULES_KEY);
-    const allModules: Record<string, LMSModule[]> = raw ? JSON.parse(raw) : {};
-    const courseModules = allModules[courseId] || [];
-    const updated = courseModules.some(m => m.id === module.id) 
-      ? courseModules.map(m => m.id === module.id ? module : m) 
-      : [...courseModules, { ...module, id: `mod-${Date.now()}`, lessons: [] }];
-    allModules[courseId] = updated;
-    localStorage.setItem(LMS_MODULES_KEY, JSON.stringify(allModules));
-  },
-  saveLMSLesson: async (courseId: string, moduleId: string, lesson: LMSLesson) => {
-    const raw = localStorage.getItem(LMS_MODULES_KEY);
-    const allModules: Record<string, LMSModule[]> = raw ? JSON.parse(raw) : {};
-    const updated = (allModules[courseId] || []).map(m => {
-      if (m.id === moduleId) {
-        const lessons = m.lessons || [];
-        const updatedLessons = lessons.some(l => l.id === lesson.id) 
-          ? lessons.map(l => l.id === lesson.id ? lesson : l) 
-          : [...lessons, { ...lesson, id: `les-${Date.now()}` }];
-        return { ...m, lessons: updatedLessons };
-      }
-      return m;
-    });
-    allModules[courseId] = updated;
-    localStorage.setItem(LMS_MODULES_KEY, JSON.stringify(allModules));
-  },
   getEnrolledCourses: async (): Promise<LMSCourse[]> => {
     const session = api.getCurrentUser();
     if (!session) return [];
@@ -287,6 +265,14 @@ export const api = {
     const myIds = all.filter(e => e.userId === session.id).map(e => e.courseId);
     const courses = await api.getAllLMSCourses();
     return courses.filter(c => myIds.includes(c.id));
+  },
+  // Added getEnrollmentByCourse to fix Error in components/LMSCoursePlayer.tsx on line 190
+  getEnrollmentByCourse: async (courseId: string): Promise<Enrollment | null> => {
+    const session = api.getCurrentUser();
+    if (!session) return null;
+    const raw = localStorage.getItem(LMS_ENROLLMENTS_KEY);
+    const all: Enrollment[] = raw ? JSON.parse(raw) : [];
+    return all.find(e => e.userId === session.id && e.courseId === courseId) || null;
   },
   redeemCourseVoucher: async (code: string) => {
     const session = api.getCurrentUser();
@@ -299,12 +285,6 @@ export const api = {
       localStorage.setItem(LMS_ENROLLMENTS_KEY, JSON.stringify(allEnrollments));
     }
   },
-  getEnrollmentByCourse: async (id: string): Promise<Enrollment | null> => {
-    const session = api.getCurrentUser();
-    if (!session) return null;
-    const all: Enrollment[] = JSON.parse(localStorage.getItem(LMS_ENROLLMENTS_KEY) || '[]');
-    return all.find(e => e.userId === session.id && e.courseId === id) || null;
-  },
   updateCourseProgress: async (id: string, p: number) => {
     const session = api.getCurrentUser();
     if (!session) return;
@@ -312,23 +292,16 @@ export const api = {
     const updated = all.map(e => (e.userId === session.id && e.courseId === id) ? { ...e, progress: p } : e);
     localStorage.setItem(LMS_ENROLLMENTS_KEY, JSON.stringify(updated));
   },
-  getGuideBySlug: async (s: string) => db.countryGuides.find(g => g.slug === s) || null,
-  getUniversitiesByCountry: async (id: string) => db.universities.filter(u => u.countryId === id),
   getTestById: async (id: string) => db.lmsTests.find(t => t.id === id) || null,
-  submitTestResult: async (testId: string, a: any, t: number) => {
-    return { id: `res-${Date.now()}`, userId: 'u', testId, testTitle: 'PTE Mock', skillScores: [], overallBand: 'PENDING', timeTaken: t, timestamp: new Date().toISOString() } as any;
-  },
-  getTestResults: async () => db.testResults,
   getPendingSubmissions: async () => db.manualSubmissions,
   gradeSubmission: async (id: string, s: number, f: string) => { console.log(`Evaluation Committed: ${id}`); },
-  verifyEmail: async (e: string) => { console.log(`Identity verified: ${e}`); },
   getUniversities: async (): Promise<University[]> => db.universities,
   getUniversityBySlug: async (slug: string): Promise<University | undefined> => db.universities.find(u => u.slug === slug),
   getCoursesByUniversity: async (uniId: string): Promise<Course[]> => db.courses.filter(c => c.universityId === uniId),
+  getUniversitiesByCountry: async (id: string) => db.universities.filter(u => u.countryId === id),
   getQualifications: async (): Promise<Qualification[]> => db.qualifications,
   getQualificationById: async (id: string): Promise<Qualification | undefined> => db.qualifications.find(q => q.id === id),
   submitQualificationLead: async (data: any): Promise<QualificationLead> => { return { ...data, id: `ql-${Date.now()}`, timestamp: new Date().toISOString() }; },
-  submitTestBooking: async (data: any): Promise<TestBooking> => { return { ...data, id: `tb-${Date.now()}`, timestamp: new Date().toISOString() }; },
   signup: async (email: string, role: UserRole): Promise<User> => {
     const newUser: User = { id: `u-${Date.now()}`, name: email.split('@')[0].toUpperCase(), email, role, status: 'Active', verified: true, isAuthorized: true };
     const all = await api.getUsers();
@@ -336,4 +309,18 @@ export const api = {
     return newUser;
   },
   getImmigrationGuides: async (): Promise<ImmigrationGuideData[]> => db.immigrationGuides,
+  getLeads: async (): Promise<Lead[]> => JSON.parse(localStorage.getItem(LEADS_KEY) || '[]'),
+  submitLead: async (type: Lead['type'], data: Record<string, string>): Promise<Lead> => {
+    const lead: Lead = { id: `LD-${Math.random().toString(36).substr(2, 7).toUpperCase()}`, type, data, status: 'New', timestamp: new Date().toISOString() };
+    const all = await api.getLeads();
+    localStorage.setItem(LEADS_KEY, JSON.stringify([lead, ...all]));
+    return lead;
+  },
+  getGuideBySlug: async (s: string) => db.countryGuides.find(g => g.slug === s) || null,
+  getTestResults: async () => db.testResults,
+  submitTestResult: async (testId: string, a: any, t: number) => {
+    return { id: `res-${Date.now()}`, userId: 'u', testId, testTitle: 'PTE Mock', skillScores: [], overallBand: 'PENDING', timeTaken: t, timestamp: new Date().toISOString() } as any;
+  },
+  verifyEmail: async (e: string) => { console.log(`Identity verified: ${e}`); },
+  submitTestBooking: async (data: any): Promise<TestBooking> => { return { ...data, id: `tb-${Date.now()}`, timestamp: new Date().toISOString() }; },
 };

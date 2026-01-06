@@ -20,7 +20,7 @@ export interface User {
   verified?: boolean;
   isAuthorized?: boolean;
   canBypassQuota?: boolean;
-  status: 'Active' | 'Pending' | 'Suspended';
+  status: 'Active' | 'Pending' | 'Hold' | 'Rejected' | 'Frozen'; // Extended as per Business Specs
   agreementDate?: string; 
   isFlagged?: boolean; 
 }
@@ -43,6 +43,7 @@ export interface Product {
   pricingModel: 'Global' | 'Country-Wise';
   description: string;
   icon: string;
+  stockCount?: number; // Added for stock reports
 }
 
 export type VoucherStatus = 'Available' | 'Used' | 'Expired';
@@ -57,29 +58,31 @@ export interface VoucherCode {
   orderId?: string;
   buyerName?: string;
   assignmentDate?: string;
-  salesExecutiveName?: string;
 }
 
 export type OrderStatus = 'Pending' | 'Approved' | 'Hold' | 'Rejected' | 'RefundRequested' | 'Refunded';
 
 export interface Order {
-  id: string; // I. Number
+  id: string; // I. Order No
   date: string; // II. Date
   time: string; // III. Time
-  buyerName: string; // IV. Buyer name
-  productName: string; // V. Product Name
-  totalAmount: number; // VI. Amount
-  bankRef: string; // VII. Payment Reference number
-  proofAttached: boolean; // VIII. Payment proof (Indicator)
+  buyerName: string; // IV. Buyer Name
+  bankLastFour: string; // V. Buyer Registered Bank A/C last four digits
+  productName: string; // VI. Voucher Type/Product Name
+  quantity: number; // VII. Vouchers Qty
+  totalAmount: number; // VIII. Paid Amount
+  currency: string;
+  bankRef: string; 
+  proofAttached: boolean; 
   userId: string;
   productId: string;
-  currency: string;
   customerEmail: string;
   status: OrderStatus;
   paymentMethod: 'Gateway' | 'BankTransfer';
   timestamp: string;
   voucherCodes: string[];
-  quantity: number;
+  supportAgentName?: string; // For Support Agent reports
+  deliveryTime?: string; // For Time of Voucher Delivery report
 }
 
 export interface BusinessMetrics {
@@ -90,6 +93,7 @@ export interface BusinessMetrics {
   riskAlerts: number;
   refundRequests: number;
   systemHealth: 'Optimal' | 'Degraded' | 'Critical';
+  systemHalt: boolean; // X. Stop all Voucher System toggle
 }
 
 export type ViewState = 
@@ -185,7 +189,6 @@ export interface FinanceReport {
   recentSales: Order[];
 }
 
-// Fixed missing exported member 'University'
 export interface University {
   id: string;
   name: string;
@@ -198,7 +201,6 @@ export interface University {
   website: string;
 }
 
-// Fixed missing exported member 'CountryGuide'
 export interface CountryGuide {
   id: string;
   countryId: string;
@@ -210,7 +212,6 @@ export interface CountryGuide {
   content: string;
 }
 
-// Fixed missing exported member 'Course'
 export interface Course {
   id: string;
   universityId: string;
@@ -221,7 +222,6 @@ export interface Course {
   description?: string;
 }
 
-// Fixed missing exported member 'Qualification'
 export interface Qualification {
   id: string;
   title: string;
@@ -234,7 +234,6 @@ export interface Qualification {
   requirements: string[];
 }
 
-// Fixed missing exported member 'Pathway'
 export interface Pathway {
   id: string;
   title: string;
@@ -242,7 +241,6 @@ export interface Pathway {
   requirements: string[];
 }
 
-// Fixed missing exported member 'ImmigrationGuideData'
 export interface ImmigrationGuideData {
   id: string;
   slug: string;
@@ -252,14 +250,12 @@ export interface ImmigrationGuideData {
   pathways: Pathway[];
 }
 
-// Fixed missing exported member 'SecurityStatus'
 export interface SecurityStatus {
   lastScan: string;
   threatLevel: 'Low' | 'Medium' | 'High';
   status: 'Secure' | 'Vulnerable';
 }
 
-// Fixed missing exported member 'APIEndpoint'
 export interface APIEndpoint {
   method: string;
   path: string;
@@ -269,7 +265,6 @@ export interface APIEndpoint {
   response: string;
 }
 
-// Fixed missing exported member 'LMSTestQuestion'
 export interface LMSTestQuestion {
   id: string;
   skill: 'Listening' | 'Reading' | 'Writing' | 'Speaking';
@@ -287,7 +282,6 @@ export interface LMSTestSection {
   questions: LMSTestQuestion[];
 }
 
-// Fixed missing exported member 'QualificationLead'
 export interface QualificationLead {
   id: string;
   studentName: string;
@@ -300,7 +294,6 @@ export interface QualificationLead {
   timestamp: string;
 }
 
-// Fixed missing exported member 'TestBooking'
 export interface TestBooking {
   id: string;
   productId: string;
