@@ -1,3 +1,4 @@
+
 import * as db from './db';
 import { MailService } from './mailService';
 import { 
@@ -15,6 +16,7 @@ const CODES_KEY = 'unicou_inventory_vault_v3';
 const LMS_COURSES_KEY = 'unicou_lms_courses_v3';
 const LMS_ENROLLMENTS_KEY = 'unicou_lms_enrollments_v3';
 const LEADS_KEY = 'unicou_leads_v3';
+const PRODUCTS_KEY = 'unicou_catalog_v3';
 const SYSTEM_CONFIG_KEY = 'unicou_global_config_v1';
 
 export const api = {
@@ -103,7 +105,31 @@ export const api = {
     localStorage.setItem(CODES_KEY, JSON.stringify([...allCodes, ...newEntries]));
   },
 
-  // --- 4. STAFF & USER GOVERNANCE ---
+  // --- 4. PRODUCT & CATALOG MANAGEMENT ---
+  getProducts: async (): Promise<Product[]> => {
+    const local = JSON.parse(localStorage.getItem(PRODUCTS_KEY) || '[]');
+    // Filter to ensure no duplicates between DB and Local
+    const dbIds = db.products.map(p => p.id);
+    return [...db.products, ...local.filter((p: Product) => !dbIds.includes(p.id))];
+  },
+
+  upsertProduct: async (product: Product): Promise<void> => {
+    const local = JSON.parse(localStorage.getItem(PRODUCTS_KEY) || '[]');
+    const index = local.findIndex((p: Product) => p.id === product.id);
+    if (index > -1) {
+      local[index] = product;
+    } else {
+      local.push(product);
+    }
+    localStorage.setItem(PRODUCTS_KEY, JSON.stringify(local));
+  },
+
+  deleteProduct: async (id: string): Promise<void> => {
+    const local = JSON.parse(localStorage.getItem(PRODUCTS_KEY) || '[]');
+    localStorage.setItem(PRODUCTS_KEY, JSON.stringify(local.filter((p: Product) => p.id !== id)));
+  },
+
+  // --- 5. STAFF & USER GOVERNANCE ---
   upsertUser: async (userData: Partial<User>): Promise<void> => {
     const users = await api.getUsers();
     let updated;
@@ -120,7 +146,7 @@ export const api = {
     localStorage.setItem(USERS_KEY, JSON.stringify(users.filter(u => u.id !== id)));
   },
 
-  // --- 5. PROCUREMENT TERMINAL LOGIC ---
+  // --- 6. PROCUREMENT TERMINAL LOGIC ---
   submitBankTransfer: async (productId: string, quantity: number, email: string, buyerName: string, bankRef: string, bankLastFour: string): Promise<Order> => {
     return api.createOrderNode(productId, quantity, email, buyerName, bankRef, 'BankTransfer', true, bankLastFour);
   },
@@ -175,8 +201,7 @@ export const api = {
     return [...db.users, ...local].filter((v, i, a) => a.findIndex(t => t.id === v.id) === i);
   },
   getCodes: async (): Promise<VoucherCode[]> => JSON.parse(localStorage.getItem(CODES_KEY) || JSON.stringify(db.voucherCodes)),
-  getProducts: async (): Promise<Product[]> => db.products,
-  getProductById: async (id: string): Promise<Product | undefined> => db.products.find(p => p.id === id),
+  getProductById: async (id: string): Promise<Product | undefined> => (await api.getProducts()).find(p => p.id === id),
   getOrders: async (): Promise<Order[]> => JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]'),
   getOrderById: async (id: string): Promise<Order | null> => (await api.getOrders()).find(o => o.id === id) || null,
   logout: () => localStorage.removeItem(SESSION_KEY),
@@ -205,7 +230,7 @@ export const api = {
   getEnrollmentByCourse: async (id: string): Promise<Enrollment | null> => null,
   updateCourseProgress: async (id: string, p: number): Promise<void> => {},
   redeemCourseVoucher: async (c: string): Promise<void> => {},
-  /* Added LMSPracticeTest to type imports above and here for getTestById */
+  getAllTests: async (): Promise<LMSPracticeTest[]> => db.lmsTests,
   getTestById: async (id: string): Promise<LMSPracticeTest | undefined> => db.lmsTests.find(t => t.id === id),
   getTestResults: async (): Promise<TestResult[]> => db.testResults,
   submitTestResult: async (tid: string, a: any, t: number): Promise<TestResult> => ({ id: 'res-1', overallBand: '75', skillScores: [], testTitle: 'PTE Mock', testId: tid, timeTaken: t, timestamp: new Date().toISOString(), userId: 'u' }),

@@ -17,14 +17,11 @@ const LMSDashboard: React.FC<LMSDashboardProps> = ({ onNavigate }) => {
   const [redeeming, setRedeeming] = useState(false);
 
   const fetchData = async () => {
-    // We assume getTests doesn't exist yet, we'll manually fetch test-2 for now
     const all = await api.getAllLMSCourses();
     const enrolled = await api.getEnrolledCourses();
+    const allTests = await api.getAllTests();
     
-    // Manual injection of the LanguageCert test for visualization
-    const t2 = await api.getTestById('lc-test-2');
-    if (t2) setTests([t2]);
-
+    setTests(allTests);
     setCourses(all);
     setEnrolledIds(enrolled.map(c => c.id));
     setLoading(false);
@@ -105,7 +102,7 @@ const LMSDashboard: React.FC<LMSDashboardProps> = ({ onNavigate }) => {
       </div>
 
       <div className="space-y-20 pb-32">
-        {/* MOCK EXAM SECTION - NEW FOR TESTING */}
+        {/* MOCK EXAM SECTION */}
         <section>
           <div className="flex items-center gap-4 mb-10">
              <div className="h-1 w-12 bg-unicou-orange rounded-full" />
@@ -119,7 +116,7 @@ const LMSDashboard: React.FC<LMSDashboardProps> = ({ onNavigate }) => {
                   <span className="px-4 py-1.5 bg-unicou-navy text-white text-[9px] font-black uppercase tracking-widest rounded-full">Official Mock</span>
                 </div>
                 <h3 className="text-2xl font-display font-black text-slate-950 mb-2 uppercase">{test.title}</h3>
-                <p className="text-slate-500 font-bold italic text-sm mb-10">"Full simulation including Reading Parts 2, 3, and 4."</p>
+                <p className="text-slate-500 font-bold italic text-sm mb-10">"Comprehensive simulation with Reading Parts 2, 3, and 4."</p>
                 <button 
                   onClick={() => onNavigate({ type: 'lms-practice-test', testId: test.id })}
                   className="w-full py-5 bg-white border-2 border-unicou-navy text-unicou-navy hover:bg-unicou-navy hover:text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 shadow-lg"

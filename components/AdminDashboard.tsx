@@ -1,29 +1,30 @@
+
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/apiService';
-import { Product, Order, User, OrderStatus, BusinessMetrics } from '../types';
+import { Product, Order, User, OrderStatus, BusinessMetrics, Lead } from '../types';
 
-type AdminTab = 'command' | 'reports' | 'ledger' | 'stock' | 'authority';
+type AdminTab = 'intelligence' | 'registrations' | 'vault' | 'ledgers' | 'staff';
 
 const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
-  const [activeTab, setActiveTab] = useState<AdminTab>('command');
+  const [activeTab, setActiveTab] = useState<AdminTab>('intelligence');
   const [metrics, setMetrics] = useState<BusinessMetrics | null>(null);
   const [halted, setHalted] = useState(api.getSystemHaltStatus());
   const [data, setData] = useState<{
     orders: Order[],
     users: User[],
-    products: Product[]
-  }>({ orders: [], users: [], products: [] });
+    products: Product[],
+    leads: Lead[]
+  }>({ orders: [], users: [], products: [], leads: [] });
   const [loading, setLoading] = useState(true);
 
-  // Stock Form State
-  const [stockInput, setStockInput] = useState({ productId: '', rawCodes: '' });
-  const [injecting, setInjecting] = useState(false);
+  const isOwner = user.role === 'System Admin/Owner';
+  const isManager = user.role === 'Operation Manager';
 
   const refreshData = async () => {
-    const [o, u, p, m] = await Promise.all([
-      api.getOrders(), api.getUsers(), api.getProducts(), api.getBusinessMetrics()
+    const [o, u, p, m, l] = await Promise.all([
+      api.getOrders(), api.getUsers(), api.getProducts(), api.getBusinessMetrics(), api.getLeads()
     ]);
-    setData({ orders: o, users: u, products: p });
+    setData({ orders: o, users: u, products: p, leads: l });
     setMetrics(m);
     setLoading(false);
   };
@@ -32,46 +33,44 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
 
   const handleToggleHalt = () => {
     const next = !halted;
-    if (confirm(`CRITICAL: Move all voucher procurement nodes to ${next ? 'HALTED' : 'ACTIVE'} status?`)) {
+    if (confirm(`CRITICAL: Stop all voucher procurement nodes immediately?`)) {
       api.setSystemHaltStatus(next);
       setHalted(next);
       refreshData();
     }
   };
 
-  const handleStatusUpdate = async (oid: string, status: OrderStatus) => {
-    await api.updateOrderStatus(oid, status);
+  const handleExportUsers = () => {
+    const headers = "ID,Name,Email,Role,Status,Verified\n";
+    const rows = data.users.map(u => `${u.id},${u.name},${u.email},${u.role},${u.status},${u.verified}`).join("\n");
+    const blob = new Blob([headers + rows], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.setAttribute('hidden', '');
+    a.setAttribute('href', url);
+    a.setAttribute('download', `UNICOU_USER_REGISTRY_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    alert("Requirement IV: All Registered Stakeholders record sheet exported to CSV.");
+  };
+
+  const handleUserAction = async (uid: string, nextStatus: any) => {
+    await api.upsertUser({ id: uid, status: nextStatus });
     refreshData();
   };
 
-  const handleInjectStock = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!stockInput.productId || !stockInput.rawCodes.trim()) return;
-    setInjecting(true);
-    const codes = stockInput.rawCodes.split('\n').filter(c => c.trim());
-    await api.addStockToProduct(stockInput.productId, codes);
-    setStockInput({ productId: '', rawCodes: '' });
-    setInjecting(false);
-    alert(`Success: ${codes.length} vouchers injected into Vault.`);
-    refreshData();
-  };
-
-  const handleFreezeUser = async (userId: string, currentStatus: string) => {
-    const nextStatus = currentStatus === 'Frozen' ? 'Active' : 'Frozen';
-    if (confirm(`${nextStatus} user access for node ${userId}?`)) {
-      await api.upsertUser({ id: userId, status: nextStatus as any });
-      refreshData();
-    }
-  };
-
-  if (loading) return <div className="p-40 text-center animate-pulse text-unicou-navy font-black uppercase tracking-[0.4em]">Initializing Global Authority Node...</div>;
+  if (loading) return <div className="p-40 text-center animate-pulse text-unicou-navy font-black uppercase tracking-[0.4em]">Establishing Secure Control Node...</div>;
 
   return (
     <div className="max-w-[1600px] mx-auto px-6 py-12 bg-white min-h-screen">
-      <div className="flex flex-col xl:flex-row justify-between items-center gap-10 mb-16 border-b border-slate-100 pb-12">
+      {/* GLOBAL HEADER */}
+      <div className="flex flex-col xl:flex-row justify-between items-center gap-10 mb-12 border-b border-slate-100 pb-12">
         <div>
-          <h1 className="text-5xl font-display font-black text-slate-900 uppercase tracking-tighter leading-none mb-2">SYSTEM <span className="text-unicou-orange">HUB</span></h1>
-          <p className="text-[10px] font-black text-unicou-navy uppercase tracking-[0.4em]">Business Owner & Operations Terminal</p>
+          <h1 className="text-5xl font-display font-black text-slate-900 uppercase tracking-tighter leading-none mb-2">
+            {isOwner ? 'OWNER' : 'OPS'} <span className="text-unicou-orange">CONTROL</span>
+          </h1>
+          <p className="text-[10px] font-black text-unicou-navy uppercase tracking-[0.4em]">Unified Authority Terminal: {user.email}</p>
         </div>
 
         <div className="flex items-center gap-4">
@@ -79,46 +78,126 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
             onClick={handleToggleHalt}
             className={`px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-xl ${halted ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white animate-pulse'}`}
           >
-            {halted ? 'I. RESUME VOUCHER SYSTEM' : 'X. STOP ALL VOUCHER SYSTEM'}
+            {halted ? 'I. RESUME SYSTEM' : 'X. STOP ALL VOUCHER SYSTEM'}
           </button>
+          
           <div className="flex bg-slate-50 p-1.5 rounded-[2rem] border border-slate-200 shadow-inner">
-            {(['command', 'reports', 'ledger', 'stock', 'authority'] as AdminTab[]).map(t => (
-              <button key={t} onClick={() => setActiveTab(t)} className={`px-6 py-3 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === t ? 'bg-white text-unicou-navy shadow-lg border border-slate-200' : 'text-slate-400'}`}>{t}</button>
+            {[
+              { id: 'intelligence', label: 'Reports' },
+              { id: 'registrations', label: 'Approvals' },
+              { id: 'vault', label: 'Stock' },
+              { id: 'ledgers', label: 'Finance' },
+              { id: 'staff', label: 'Staff/CRM' }
+            ].map(t => (
+              <button 
+                key={t.id} 
+                onClick={() => setActiveTab(t.id as any)} 
+                className={`px-6 py-3 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === t.id ? 'bg-white text-unicou-navy shadow-lg border border-slate-200' : 'text-slate-400'}`}
+              >
+                {t.label}
+              </button>
             ))}
           </div>
         </div>
       </div>
 
-      {activeTab === 'command' && metrics && (
+      {/* INTELLIGENCE / OWNER REPORTS */}
+      {activeTab === 'intelligence' && metrics && (
         <div className="animate-in fade-in duration-500 space-y-12">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-            <KPICard label="I. Daily Revenue" value={`$${metrics.todaySales.toLocaleString()}`} icon="💸" color="text-emerald-600" />
-            <KPICard label="II. Vault Stock" value={metrics.vouchersInStock.toString()} icon="🎫" color="text-unicou-orange" />
-            <KPICard label="III. Active Agents" value={metrics.activeAgents.toString()} icon="🤝" color="text-blue-600" />
-            <KPICard label="IV. Risk Alerts" value={metrics.riskAlerts.toString()} icon="🛡️" color="text-red-600" alert={metrics.riskAlerts > 0} />
-            <KPICard label="V. Node Status" value={halted ? 'HALTED' : 'ACTIVE'} icon="⚙️" color={halted ? 'text-red-600' : 'text-emerald-600'} />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <KPICard label="Gross Revenue" value={`$${metrics.monthRevenue.toLocaleString()}`} icon="💰" color="text-emerald-600" />
+            <KPICard label="Vault Inventory" value={metrics.vouchersInStock.toString()} icon="🎫" color="text-unicou-orange" />
+            <KPICard label="Active Agents" value={metrics.activeAgents.toString()} icon="🤝" color="text-blue-600" />
+            <KPICard label="Risk/Hold Orders" value={metrics.riskAlerts.toString()} icon="🛡️" color="text-red-600" alert={metrics.riskAlerts > 0} />
           </div>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-             <div className="bg-slate-900 p-12 rounded-[4rem] text-white shadow-3xl relative overflow-hidden">
-                <h3 className="text-2xl font-display font-black uppercase mb-8">VII. Revenue Balances</h3>
+
+          <div className="bg-slate-900 p-12 rounded-[4rem] text-white shadow-3xl">
+             <div className="flex justify-between items-start mb-12">
+                <h3 className="text-2xl font-display font-black uppercase">Business Intelligence Engine</h3>
+                <button onClick={handleExportUsers} className="px-6 py-3 bg-unicou-orange rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-orange-600">Export All Stakeholders (CSV)</button>
+             </div>
+             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                 <div className="space-y-6">
-                   <div className="flex justify-between items-center border-b border-white/10 pb-4">
-                      <span className="text-slate-400 font-bold uppercase text-[10px]">Month-to-Date Gross</span>
-                      <span className="text-2xl font-black text-unicou-orange">${metrics.monthRevenue.toLocaleString()}</span>
-                   </div>
-                   <div className="flex justify-between items-center border-b border-white/10 pb-4">
-                      <span className="text-slate-400 font-bold uppercase text-[10px]">Refund Liability Node</span>
-                      <span className="text-2xl font-black text-white">$0.00</span>
+                   <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Financial Performance Node</h4>
+                   <div className="h-40 bg-white/5 rounded-3xl border border-white/10 flex items-center justify-center italic text-slate-400">Real-time graph syncing...</div>
+                </div>
+                <div className="space-y-6">
+                   <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Support Agent Efficiency</h4>
+                   <div className="space-y-4">
+                      {data.users.filter(u => u.role === 'Support').map(s => (
+                        <div key={s.id} className="flex justify-between items-center p-4 bg-white/5 rounded-2xl">
+                           <span className="text-xs font-bold">{s.name}</span>
+                           <span className="text-emerald-400 font-mono text-xs">98% Res. Rate</span>
+                        </div>
+                      ))}
                    </div>
                 </div>
              </div>
+          </div>
+        </div>
+      )}
+
+      {/* REGISTRATIONS / APPROVALS */}
+      {activeTab === 'registrations' && (
+        <div className="animate-in fade-in duration-500 space-y-8">
+           <h3 className="text-2xl font-display font-black uppercase text-unicou-navy">Stakeholder Approval Queue</h3>
+           <div className="bg-white rounded-[3rem] border border-slate-200 shadow-2xl overflow-hidden">
+              <table className="w-full text-left">
+                <thead className="bg-slate-50 text-[9px] font-black uppercase text-slate-500 tracking-widest">
+                  <tr>
+                    <th className="px-6 py-6">User Node</th>
+                    <th className="px-6 py-6">Email</th>
+                    <th className="px-6 py-6">Applied Role</th>
+                    <th className="px-6 py-6">Identity Docs</th>
+                    <th className="px-6 py-6 text-center">Authority Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {data.users.filter(u => u.status === 'Pending').map(u => (
+                    <tr key={u.id}>
+                      <td className="px-6 py-5 font-black text-slate-900">{u.name}</td>
+                      <td className="px-6 py-5 font-mono text-slate-400">{u.email}</td>
+                      <td className="px-6 py-5"><span className="px-3 py-1 bg-unicou-navy text-white rounded-full text-[8px] font-black uppercase">{u.role}</span></td>
+                      <td className="px-6 py-5"><button className="text-unicou-orange font-black text-[9px] uppercase hover:underline">Download Agreement</button></td>
+                      <td className="px-6 py-5">
+                         <div className="flex justify-center gap-2">
+                           <button onClick={() => handleUserAction(u.id, 'Active')} className="px-4 py-2 bg-emerald-500 text-white rounded-lg text-[8px] font-black uppercase">Approve</button>
+                           <button onClick={() => handleUserAction(u.id, 'Hold')} className="px-4 py-2 bg-amber-500 text-white rounded-lg text-[8px] font-black uppercase">Hold</button>
+                           <button onClick={() => handleUserAction(u.id, 'Rejected')} className="px-4 py-2 bg-red-600 text-white rounded-lg text-[8px] font-black uppercase">Reject</button>
+                         </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {data.users.filter(u => u.status === 'Pending').length === 0 && (
+                    <tr><td colSpan={5} className="p-20 text-center text-slate-400 italic font-bold">No pending registration nodes in queue.</td></tr>
+                  )}
+                </tbody>
+              </table>
+           </div>
+        </div>
+      )}
+
+      {/* VAULT / STOCK */}
+      {activeTab === 'vault' && (
+        <div className="animate-in fade-in duration-500 space-y-12">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+             <div className="bg-slate-900 p-12 rounded-[4rem] text-white">
+                <h3 className="text-xl font-display font-black uppercase mb-8">Add Voucher Stock</h3>
+                <StockInjectionForm products={data.products} onRefresh={refreshData} />
+             </div>
              <div className="bg-white p-12 rounded-[4rem] border border-slate-100 shadow-2xl">
-                <h3 className="text-2xl font-display font-black text-unicou-navy uppercase mb-8">VIII. Audit Log (Live)</h3>
-                <div className="space-y-4 max-h-[250px] overflow-y-auto no-scrollbar">
-                   {data.orders.slice(0, 5).map((o, i) => (
-                     <div key={i} className="flex gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100 italic font-bold text-slate-500 text-xs">
-                        <span className="text-unicou-orange font-black">AUDIT:</span> Order {o.id} initialized for {o.buyerName}.
+                <h3 className="text-xl font-display font-black text-unicou-navy uppercase mb-8">Stock Audit Registry</h3>
+                <div className="space-y-6">
+                   {data.products.map(p => (
+                     <div key={p.id} className="flex justify-between items-center border-b pb-4">
+                        <div>
+                           <p className="font-black text-slate-900 uppercase text-xs">{p.name}</p>
+                           <p className="text-[9px] font-black text-slate-400 uppercase">Available Units</p>
+                        </div>
+                        <div className="flex items-center gap-4">
+                           <span className={`text-2xl font-black ${(p.stockCount || 0) < 5 ? 'text-red-500 animate-pulse' : 'text-unicou-navy'}`}>{p.stockCount || 0}</span>
+                           {(p.stockCount || 0) < 5 && <span className="px-3 py-1 bg-red-50 text-red-600 rounded-full text-[7px] font-black uppercase tracking-tighter">LOW STOCK ALERT</span>}
+                        </div>
                      </div>
                    ))}
                 </div>
@@ -127,153 +206,122 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
         </div>
       )}
 
-      {activeTab === 'reports' && (
-        <div className="animate-in fade-in duration-500 space-y-12">
-           <h3 className="text-3xl font-display font-black uppercase text-unicou-navy">IX. Performance Analytics</h3>
-           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="bg-slate-50 p-10 rounded-[3rem] border border-slate-100">
-                 <h4 className="font-black uppercase text-[11px] text-slate-400 mb-6">Sales Report (Item Wise)</h4>
-                 <div className="space-y-4">
-                    {data.products.map(p => (
-                      <div key={p.id} className="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm">
-                         <span className="font-bold text-unicou-navy uppercase text-xs">{p.name}</span>
-                         <span className="font-black text-unicou-orange">Sold: {data.orders.filter(o => o.productId === p.id && o.status === 'Approved').length}</span>
-                      </div>
+      {/* LEDGERS / FINANCE */}
+      {activeTab === 'ledgers' && (
+        <div className="animate-in fade-in duration-500 space-y-8">
+           <div className="flex justify-between items-center">
+             <h3 className="text-2xl font-display font-black uppercase text-unicou-navy">Unified Sales Ledger</h3>
+             <div className="flex gap-2">
+                <button className="px-4 py-2 bg-slate-100 rounded-xl text-[9px] font-black uppercase">Item-Wise</button>
+                <button className="px-4 py-2 bg-slate-100 rounded-xl text-[9px] font-black uppercase">Agent-Wise</button>
+             </div>
+           </div>
+           <div className="bg-white rounded-[3rem] border border-slate-200 shadow-2xl overflow-hidden">
+              <table className="w-full text-left text-[10px]">
+                 <thead className="bg-slate-50 font-black uppercase text-slate-500 border-b">
+                    <tr>
+                      <th className="px-6 py-6">Order ID</th>
+                      <th className="px-6 py-6">Buyer Name</th>
+                      <th className="px-6 py-6">Asset Node</th>
+                      <th className="px-6 py-6">Amount</th>
+                      <th className="px-6 py-6">Status</th>
+                      <th className="px-6 py-6 text-center">Fulfillment Action</th>
+                    </tr>
+                 </thead>
+                 <tbody className="divide-y divide-slate-100">
+                    {data.orders.map(o => (
+                      <tr key={o.id}>
+                        <td className="px-6 py-5 font-mono font-bold text-unicou-navy">{o.id}</td>
+                        <td className="px-6 py-5 font-black uppercase text-slate-900">{o.buyerName}</td>
+                        <td className="px-6 py-5 font-bold text-slate-600 uppercase">{o.productName}</td>
+                        <td className="px-6 py-5 font-display font-black text-slate-950 text-base">${o.totalAmount}</td>
+                        <td className="px-6 py-5">
+                          <span className={`px-4 py-1.5 rounded-full text-[8px] font-black border ${o.status === 'Approved' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-orange-50 text-orange-600 border-orange-100'}`}>{o.status}</span>
+                        </td>
+                        <td className="px-6 py-5">
+                           <div className="flex justify-center gap-1">
+                             <button className="p-2 bg-emerald-500 text-white rounded-lg text-[8px] font-black uppercase">Approve Refund</button>
+                           </div>
+                        </td>
+                      </tr>
                     ))}
-                 </div>
-              </div>
-              <div className="bg-slate-50 p-10 rounded-[3rem] border border-slate-100">
-                 <h4 className="font-black uppercase text-[11px] text-slate-400 mb-6">Regional Performance Node</h4>
-                 <p className="text-slate-500 font-bold italic">Reporting engine synchronizing with global edge nodes...</p>
-              </div>
+                 </tbody>
+              </table>
            </div>
         </div>
       )}
 
-      {activeTab === 'ledger' && (
-        <div className="animate-in fade-in duration-500 bg-white rounded-[3rem] border border-slate-200 shadow-2xl overflow-hidden">
-          <div className="p-8 bg-slate-900 text-white flex justify-between items-center">
-             <h3 className="text-xl font-display font-black uppercase">V. Official Sales Register</h3>
-             <button onClick={() => window.print()} className="px-6 py-2 bg-white/10 hover:bg-white/20 rounded-xl text-[9px] font-black uppercase tracking-widest border border-white/20">Download Ledger</button>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead className="bg-slate-50 text-[9px] font-black uppercase text-slate-500 tracking-[0.1em]">
-                <tr>
-                  <th className="px-6 py-6">I. Order ID</th>
-                  <th className="px-6 py-6">II. Date</th>
-                  <th className="px-6 py-6">III. Time</th>
-                  <th className="px-6 py-6">IV. Buyer Name</th>
-                  <th className="px-6 py-6">V. Bank A/C</th>
-                  <th className="px-6 py-6">VI. Asset Node</th>
-                  <th className="px-6 py-6">VII. Qty</th>
-                  <th className="px-6 py-6">VIII. Paid Amount</th>
-                  <th className="px-6 py-6 text-center">Fulfillment</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {data.orders.map(o => (
-                  <tr key={o.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-5 font-mono font-black text-[11px] text-unicou-navy">{o.id}</td>
-                    <td className="px-6 py-5 font-mono text-[11px] text-slate-500">{o.date}</td>
-                    <td className="px-6 py-5 font-mono text-[11px] text-slate-500">{o.time}</td>
-                    <td className="px-6 py-5 font-black text-[11px] text-slate-900 uppercase truncate max-w-[120px]">{o.buyerName}</td>
-                    <td className="px-6 py-5 font-mono text-[11px] text-slate-400">****{o.bankLastFour}</td>
-                    <td className="px-6 py-5 font-black text-[11px] text-slate-700 uppercase truncate max-w-[120px]">{o.productName}</td>
-                    <td className="px-6 py-5 font-mono font-bold text-slate-500">{o.quantity}</td>
-                    <td className="px-6 py-5 font-display font-black text-slate-950 text-base">${o.totalAmount}</td>
-                    <td className="px-6 py-5">
-                       <div className="flex flex-col items-center gap-2">
-                          <span className={`px-4 py-1 rounded-full text-[8px] font-black uppercase border ${o.status === 'Approved' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-orange-50 text-orange-600 border-orange-200'}`}>{o.status}</span>
-                          {o.status === 'Pending' && (
-                            <div className="flex gap-1">
-                               <button onClick={() => handleStatusUpdate(o.id, 'Approved')} className="p-2 bg-emerald-500 text-white rounded-lg text-[8px] font-black uppercase">Approve</button>
-                               <button onClick={() => handleStatusUpdate(o.id, 'Hold')} className="p-2 bg-amber-500 text-white rounded-lg text-[8px] font-black uppercase">Hold</button>
-                            </div>
-                          )}
-                       </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {activeTab === 'stock' && (
-        <div className="animate-in fade-in duration-500 max-w-4xl mx-auto">
-           <div className="bg-slate-900 p-12 rounded-[4rem] text-white shadow-3xl">
-              <h3 className="text-3xl font-display font-black uppercase mb-8 tracking-tighter">Vault Stock Injection</h3>
-              <form onSubmit={handleInjectStock} className="space-y-8">
-                 <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 ml-2">1. Target Asset Node</label>
-                    <select 
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-white font-bold outline-none focus:border-unicou-orange transition-all"
-                      value={stockInput.productId}
-                      onChange={e => setStockInput({...stockInput, productId: e.target.value})}
-                      required
-                    >
-                       <option value="" className="bg-slate-900">Select Product...</option>
-                       {data.products.map(p => <option key={p.id} value={p.id} className="bg-slate-900">{p.name}</option>)}
-                    </select>
-                 </div>
-                 <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 ml-2">2. Raw Node Cluster (One code per line)</label>
-                    <textarea 
-                      className="w-full bg-white/5 border border-white/10 rounded-[2.5rem] p-10 text-emerald-400 font-mono text-sm min-h-[300px] outline-none focus:border-unicou-orange transition-all"
-                      placeholder="XXXX-YYYY-ZZZZ&#10;AAAA-BBBB-CCCC"
-                      value={stockInput.rawCodes}
-                      onChange={e => setStockInput({...stockInput, rawCodes: e.target.value})}
-                      required
-                    />
-                 </div>
-                 <button 
-                  disabled={injecting}
-                  className="w-full py-6 bg-unicou-orange hover:bg-orange-600 text-white rounded-3xl font-black text-xs uppercase tracking-[0.3em] shadow-2xl transition-all active:scale-95 disabled:opacity-50"
-                 >
-                   {injecting ? 'SYNCHRONIZING VAULT...' : 'COMMIT STOCK INJECTION'}
-                 </button>
-              </form>
+      {/* STAFF / CRM */}
+      {activeTab === 'staff' && (
+        <div className="animate-in fade-in duration-500 space-y-10">
+           <div className="flex justify-between items-center">
+              <h3 className="text-2xl font-display font-black uppercase text-unicou-navy">Staff & Partner Directory</h3>
+              <button className="px-8 py-4 bg-unicou-navy text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl">+ Deploy New Node</button>
            </div>
-        </div>
-      )}
-
-      {activeTab === 'authority' && (
-        <div className="animate-in fade-in duration-500 space-y-12">
-          <div className="flex justify-between items-center">
-            <h3 className="text-3xl font-display font-black uppercase text-unicou-navy">XI. Registered Stakeholders</h3>
-            <button className="px-8 py-4 bg-unicou-navy text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl">Deploy New Staff Node</button>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {data.users.map(u => (
-              <div key={u.id} className="bg-slate-50 p-8 rounded-[3rem] border border-slate-200 hover:bg-white hover:shadow-2xl transition-all">
-                <div className="flex justify-between items-start mb-6">
-                  <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-2xl shadow-inner font-black text-unicou-navy">{u.name.charAt(0)}</div>
-                  <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase ${u.status === 'Frozen' ? 'bg-red-600 text-white' : 'bg-unicou-navy text-white'}`}>{u.status}</span>
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {data.users.map(u => (
+                <div key={u.id} className="bg-slate-50 p-8 rounded-[3rem] border border-slate-200 hover:bg-white transition-all group shadow-sm hover:shadow-2xl">
+                   <div className="flex justify-between items-start mb-6">
+                      <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center font-black text-unicou-navy text-xl shadow-inner">{u.name.charAt(0)}</div>
+                      <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase ${u.status === 'Frozen' ? 'bg-red-600 text-white' : 'bg-unicou-navy text-white'}`}>{u.status}</span>
+                   </div>
+                   <h4 className="font-black text-slate-900 uppercase truncate mb-1">{u.name}</h4>
+                   <p className="text-[10px] font-mono text-slate-400 mb-6 truncate">{u.email}</p>
+                   <p className="text-[10px] font-black text-unicou-orange uppercase tracking-widest mb-8">{u.role}</p>
+                   <div className="flex gap-2">
+                      <button onClick={() => handleUserAction(u.id, u.status === 'Frozen' ? 'Active' : 'Frozen')} className="flex-1 py-3 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase hover:bg-red-600 transition-all">
+                        {u.status === 'Frozen' ? 'Unfreeze' : 'Freeze'}
+                      </button>
+                      <button onClick={() => api.deleteUser(u.id).then(refreshData)} className="p-3 bg-red-50 text-red-600 rounded-xl hover:bg-red-600 hover:text-white transition-all">
+                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                      </button>
+                   </div>
                 </div>
-                <h4 className="text-xl font-black text-slate-900 uppercase mb-1">{u.name}</h4>
-                <p className="text-[10px] font-mono text-slate-400 mb-6 truncate">{u.email}</p>
-                <p className="text-[10px] font-black text-unicou-orange uppercase tracking-widest mb-6">{u.role}</p>
-                <div className="flex gap-2">
-                  <button onClick={() => handleFreezeUser(u.id, u.status)} className="flex-1 py-3 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase shadow-sm transition-all active:scale-95">
-                    {u.status === 'Frozen' ? 'V. Unfreeze' : 'V. Freeze'}
-                  </button>
-                  <button onClick={() => api.deleteUser(u.id).then(refreshData)} className="px-4 py-3 bg-red-50 text-red-600 rounded-xl text-[9px] font-black uppercase hover:bg-red-600 hover:text-white transition-all">Revoke</button>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+           </div>
         </div>
       )}
     </div>
   );
 };
 
+const StockInjectionForm = ({ products, onRefresh }: any) => {
+  const [pid, setPid] = useState('');
+  const [codes, setCodes] = useState('');
+  const [syncing, setSyncing] = useState(false);
+
+  const handleInject = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pid || !codes) return;
+    setSyncing(true);
+    await api.addStockToProduct(pid, codes.split('\n').filter(c => c.trim()));
+    setCodes('');
+    setSyncing(false);
+    alert("Voucher nodes successfully synchronized with Vault.");
+    onRefresh();
+  };
+
+  return (
+    <form onSubmit={handleInject} className="space-y-6">
+       <select className="w-full p-5 bg-white/5 border border-white/10 rounded-2xl font-bold text-white outline-none" value={pid} onChange={e => setPid(e.target.value)}>
+          <option value="" className="bg-slate-900">Select Product Node...</option>
+          {products.map((p: any) => <option key={p.id} value={p.id} className="bg-slate-900">{p.name}</option>)}
+       </select>
+       <textarea className="w-full p-5 bg-white/5 border border-white/10 rounded-3xl font-mono text-emerald-400 min-h-[200px] outline-none" placeholder="Enter codes (One per line)..." value={codes} onChange={e => setCodes(e.target.value)} />
+       <button disabled={syncing} className="w-full py-5 bg-unicou-orange rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-orange-600 transition-all">
+          {syncing ? 'Synchronizing...' : 'Commit Stock Injection'}
+       </button>
+    </form>
+  );
+};
+
 const KPICard = ({ label, value, icon, color, alert }: any) => (
-  <div className={`bg-white p-8 rounded-[2.5rem] border-2 transition-all ${alert ? 'border-red-500 shadow-red-500/10' : 'border-slate-50'} hover:shadow-xl flex flex-col`}>
-     <div className="flex justify-between items-start mb-4"><span className="text-2xl">{icon}</span>{alert && <span className="w-2 h-2 bg-red-500 rounded-full animate-ping" />}</div>
-     <p className={`text-2xl font-display font-black leading-none ${color} mb-1`}>{value}</p>
+  <div className={`bg-white p-8 rounded-[3rem] border-2 transition-all ${alert ? 'border-red-500 shadow-red-500/10' : 'border-slate-50'} hover:shadow-xl flex flex-col`}>
+     <div className="flex justify-between items-start mb-6">
+        <span className="text-3xl">{icon}</span>
+        {alert && <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-ping" />}
+     </div>
+     <p className={`text-4xl font-display font-black leading-none ${color} mb-2 tracking-tighter`}>{value}</p>
      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{label}</p>
   </div>
 );
