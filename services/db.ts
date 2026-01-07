@@ -36,6 +36,109 @@ export const lmsCourses: LMSCourse[] = [
   { id: 'c-ielts-7', title: 'IELTS Band 7.0 Express', category: 'IELTS', thumbnail: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800', description: 'Intensive preparation focusing on Writing and Speaking high-score criteria.', duration: '12 Hours', instructor: 'Dr. Anna Bell', price: 39 },
 ];
 
+export const countryGuides: CountryGuide[] = [
+  { 
+    id: 'uk', 
+    countryId: 'uk', 
+    slug: 'uk', 
+    title: 'Study in UK', 
+    heroImage: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1200', 
+    costOfLiving: '£1,200 - £1,500 / Month', 
+    visaRequirements: 'Student Visa (formerly Tier 4)', 
+    content: 'The UK remains a top destination for global education. With post-study work options (Graduate Route) and world-class universities like Oxford, Cambridge, and Imperial, it offers a premium academic environment.\n\n### Key Benefits\n- High-speed 1-year Masters programs.\n- Graduate Route: 2-year work permit after studies.\n- Cultural diversity and historic academic heritage.' 
+  },
+  { 
+    id: 'australia', 
+    countryId: 'au', 
+    slug: 'australia', 
+    title: 'Study in Australia', 
+    heroImage: 'https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?w=1200', 
+    costOfLiving: '$2,100 AUD / Month', 
+    visaRequirements: 'Student Visa (Subclass 500)', 
+    content: 'Australia is famous for its research facilities and high quality of life. Cities like Melbourne and Sydney are consistently ranked as the most student-friendly in the world.\n\n### Why Australia?\n- Simplified Student Visa Framework (SSVF).\n- Extensive part-time work opportunities.\n- High employability for graduates in STEM and Healthcare.' 
+  },
+  { 
+    id: 'canada', 
+    countryId: 'ca', 
+    slug: 'canada', 
+    title: 'Study in Canada', 
+    heroImage: 'https://images.unsplash.com/photo-1503614472-8c93d56e92ce?w=1200', 
+    costOfLiving: '$1,800 CAD / Month', 
+    visaRequirements: 'Study Permit / SDS Pathway', 
+    content: 'Canada is the ideal choice for students seeking long-term settlement. The Post-Graduation Work Permit (PGWP) provides a clear path to Permanent Residency.\n\n### Highlights\n- Affordable tuition compared to the USA.\n- World-class healthcare and safety.\n- Diverse landscape from Vancouver to Toronto.' 
+  },
+  { 
+    id: 'usa', 
+    countryId: 'us', 
+    slug: 'usa', 
+    title: 'Study in USA', 
+    heroImage: 'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=1200', 
+    costOfLiving: '$2,500 USD / Month', 
+    visaRequirements: 'F-1 Student Visa', 
+    content: 'The USA hosts the largest number of international students globally. With the Ivy League and thousands of specialized institutions, it is the center of global innovation.\n\n### Opportunities\n- OPT (Optional Practical Training) for up to 3 years (STEM).\n- Huge variety of scholarships and research grants.\n- Largest global professional network.' 
+  },
+  { 
+    id: 'germany', 
+    countryId: 'de', 
+    slug: 'germany', 
+    title: 'Study in Germany', 
+    heroImage: 'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=1200', 
+    costOfLiving: '€950 - €1,100 / Month', 
+    visaRequirements: 'National Visa for Studies', 
+    content: 'Germany offers low or no tuition fees at public universities. It is an industrial powerhouse with immense opportunities for engineering and technology students.\n\n### Key Facts\n- 18-month post-study job search visa.\n- Strong link between universities and industry.\n- Centrally located in Europe for easy travel.' 
+  },
+  { 
+    id: 'italy', 
+    countryId: 'it', 
+    slug: 'italy', 
+    title: 'Study in Italy', 
+    heroImage: 'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=1200', 
+    costOfLiving: '€700 - €900 / Month', 
+    visaRequirements: 'Type D (Study) Visa', 
+    content: 'Italy is home to some of the oldest and most prestigious universities in Europe. It is the world leader in Art, Design, and Architecture.\n\n### Advantages\n- Generous regional scholarships (DSU).\n- Low cost of living compared to North Europe.\n- Rich cultural experience and Mediterranean climate.' 
+  },
+  { 
+    id: 'europe', 
+    countryId: 'eu', 
+    slug: 'europe', 
+    title: 'Study in Europe Hub', 
+    heroImage: 'https://images.unsplash.com/photo-1471623197341-389f41434f8d?w=1200', 
+    costOfLiving: 'Variable', 
+    visaRequirements: 'Schengen Educational', 
+    content: 'Explore pathways in Sweden, Finland, Cyprus, and Ireland through our unified European hub. Each region offers unique academic and professional benefits.' 
+  },
+  { 
+    id: 'new-zealand', 
+    countryId: 'nz', 
+    slug: 'new-zealand', 
+    title: 'Study in NZ', 
+    heroImage: 'https://images.unsplash.com/photo-1469521669194-bdf95559c13d?w=1200', 
+    costOfLiving: '$1,900 NZD / Month', 
+    visaRequirements: 'Fee Paying Student Visa', 
+    content: 'New Zealand is known for its safe environment and focus on practical learning. It is a preferred destination for students seeking a balanced lifestyle.' 
+  },
+  { 
+    id: 'malaysia', 
+    countryId: 'my', 
+    slug: 'malaysia', 
+    title: 'Study in Malaysia', 
+    heroImage: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=1200', 
+    costOfLiving: '$600 USD / Month', 
+    visaRequirements: 'Student Pass / EMGS', 
+    content: 'Affordable high-quality education and a multicultural atmosphere in Southeast Asia. Malaysia is a hub for international branch campuses.' 
+  },
+  { 
+    id: 'turkey', 
+    countryId: 'tr', 
+    slug: 'turkey', 
+    title: 'Study in Turkey', 
+    heroImage: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=1200', 
+    costOfLiving: '$500 USD / Month', 
+    visaRequirements: 'Education Visa', 
+    content: 'Turkey bridges East and West with historic institutions and modern facilities. It is a gateway to Europe with competitive tuition rates.' 
+  },
+];
+
 export const lmsTests: LMSPracticeTest[] = [
   {
     id: 'test-lc-academic-02',
@@ -88,4 +191,3 @@ export const manualSubmissions: ManualSubmission[] = [];
 export const testResults: TestResult[] = [];
 export const immigrationGuides: any[] = [];
 export const voucherCodes: VoucherCode[] = [];
-export const countryGuides: CountryGuide[] = [];
