@@ -144,14 +144,15 @@ export interface LMSTestQuestion {
   type: 
     | 'MCQ' | 'MCQ-Multiple' | 'Fill-Blanks' | 'Note-Completion' | 'Table-Completion' 
     | 'Sentence-Completion' | 'Matching' | 'Highlight-Incorrect' | 'Select-Missing'
-    | 'Ordering' | 'Audio-Record' | 'Essay' | 'Integrated-Writing' | 'Insert-Sentence'
-    | 'Summary-Selection' | 'Describe-Image';
+    | 'Ordering' | 'Audio-Record' | 'Essay' | 'Independent-Essay' | 'Integrated-Writing' | 'Insert-Sentence'
+    | 'Summary-Selection' | 'Describe-Image' | 'TFNG' | 'YNMNG' | 'Read-Aloud' | 'Repeat-Sentence';
   text: string;
   options?: string[];
   correctOptions?: number[]; 
   correctText?: string;
   correctOrder?: string[];
   audioUrl?: string;
+  image?: string;
   targetSentence?: string;
   passageRef?: string;
   maxChoices?: number;
