@@ -51,7 +51,6 @@ const LMSPracticeTest: React.FC<LMSPracticeTestProps> = ({ testId, onNavigate })
 
   const handleSubmit = async () => {
     setIsFinished(true);
-    // Real-world logic: Send Reading/Listening for auto-scoring, Writing/Speaking to AI/Trainer
     const res = await api.submitTestResult(testId, answers, 0);
     setResult(res);
   };
@@ -80,6 +79,23 @@ const LMSPracticeTest: React.FC<LMSPracticeTestProps> = ({ testId, onNavigate })
                 <span className="font-bold">{opt}</span>
               </button>
             ))}
+          </div>
+        );
+
+      case 'Fill-Blanks':
+      case 'Sentence-Completion':
+      case 'Note-Completion':
+        return (
+          <div className="space-y-4">
+             <p className="text-slate-800 font-medium text-lg leading-relaxed">{q.text.split('___________________')[0]}</p>
+             <input 
+               type="text"
+               className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl p-5 text-lg font-bold text-unicou-navy outline-none focus:border-unicou-orange transition-all shadow-inner"
+               placeholder="Type your answer here..."
+               value={answers[q.id] || ''}
+               onChange={(e) => setAnswers({...answers, [q.id]: e.target.value})}
+             />
+             <p className="text-slate-800 font-medium text-lg leading-relaxed">{q.text.split('___________________')[1]}</p>
           </div>
         );
 
@@ -117,25 +133,11 @@ const LMSPracticeTest: React.FC<LMSPracticeTestProps> = ({ testId, onNavigate })
           </div>
         );
 
-      case 'Audio-Record':
-        return (
-          <div className="flex flex-col items-center justify-center p-16 bg-slate-50 rounded-[4rem] border border-slate-200 border-dashed">
-            <div className={`w-32 h-32 rounded-full flex items-center justify-center mb-8 transition-all shadow-3xl ${isRecording ? 'bg-red-600 animate-pulse scale-110' : 'bg-unicou-navy hover:scale-105'}`}>
-               <button onClick={() => setIsRecording(!isRecording)} className="text-white">
-                  {isRecording ? <div className="w-10 h-10 bg-white rounded" /> : <svg className="w-16 h-16" fill="currentColor" viewBox="0 0 20 20"><path d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 005.93 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" /></svg>}
-               </button>
-            </div>
-            <p className={`text-sm font-black uppercase tracking-widest ${isRecording ? 'text-red-600' : 'text-slate-400'}`}>
-              {isRecording ? 'Recording Active • Bitrate Syncing...' : 'Initiate Speaking Response'}
-            </p>
-          </div>
-        );
-
       case 'Insert-Sentence':
         return (
           <div className="space-y-6">
             <div className="bg-orange-50 p-6 rounded-2xl border border-orange-100 italic font-bold text-unicou-navy">
-              "{q.targetSentence}"
+              {q.targetSentence}
             </div>
             <div className="grid grid-cols-1 gap-2">
               {q.options?.map((opt, i) => (
@@ -143,7 +145,7 @@ const LMSPracticeTest: React.FC<LMSPracticeTestProps> = ({ testId, onNavigate })
                   key={i} onClick={() => setAnswers({...answers, [q.id]: i})}
                   className={`w-full text-left p-4 rounded-xl border transition-all text-[11px] font-black uppercase tracking-widest ${answers[q.id] === i ? 'bg-unicou-orange text-white' : 'bg-white text-slate-400 border-slate-200 hover:border-unicou-orange/30'}`}
                 >
-                  Place After Marker {String.fromCharCode(65+i)}
+                  Place At Marker: {opt}
                 </button>
               ))}
             </div>
@@ -174,7 +176,7 @@ const LMSPracticeTest: React.FC<LMSPracticeTestProps> = ({ testId, onNavigate })
           </div>
           <div className="bg-unicou-navy p-10 rounded-[4rem] text-white">
              <p className="text-[10px] font-black text-unicou-orange uppercase tracking-widest mb-4">AI Criteria Prediction</p>
-             <p className="text-3xl font-display font-black">CEFR B2+</p>
+             <p className="text-3xl font-display font-black">Official Results Pending</p>
           </div>
         </div>
         
@@ -188,7 +190,6 @@ const LMSPracticeTest: React.FC<LMSPracticeTestProps> = ({ testId, onNavigate })
 
   return (
     <div className="min-h-screen bg-white flex flex-col font-sans">
-      {/* PROFESSIONAL HEADER */}
       <header className="bg-unicou-navy text-white px-12 py-5 flex justify-between items-center shadow-2xl sticky top-0 z-[100]">
         <div className="flex items-center gap-6">
            <div className="w-10 h-10 bg-unicou-orange rounded-xl flex items-center justify-center font-black text-xl shadow-lg">U</div>
@@ -211,10 +212,7 @@ const LMSPracticeTest: React.FC<LMSPracticeTestProps> = ({ testId, onNavigate })
         </div>
       </header>
 
-      {/* DUAL-PANE TEST WORKSPACE */}
       <div className="flex-grow flex h-[calc(100vh-88px)] overflow-hidden">
-        
-        {/* LEFT: CONTEXT PANE (PASSAGE/AUDIO) */}
         <div className="w-1/2 border-r-2 border-slate-100 overflow-y-auto no-scrollbar bg-[#fdfdfd] p-16">
            {section.passageText && (
              <div className="prose prose-slate max-w-none">
@@ -222,7 +220,7 @@ const LMSPracticeTest: React.FC<LMSPracticeTestProps> = ({ testId, onNavigate })
                    <div className="h-1 w-12 bg-unicou-orange rounded-full" />
                    <h3 className="text-xs font-black text-unicou-navy uppercase tracking-[0.4em]">Official Context Material</h3>
                 </div>
-                <div className="text-xl leading-relaxed text-slate-800 font-medium italic whitespace-pre-wrap selection:bg-unicou-orange selection:text-white">
+                <div className="text-xl leading-relaxed text-slate-800 font-medium italic whitespace-pre-wrap">
                   {section.passageText}
                 </div>
              </div>
@@ -238,19 +236,19 @@ const LMSPracticeTest: React.FC<LMSPracticeTestProps> = ({ testId, onNavigate })
                    <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
                       <div className="h-full bg-unicou-navy w-1/3" />
                    </div>
+                   <button className="mt-8 w-full py-4 bg-unicou-navy text-white rounded-xl font-black text-[10px] uppercase tracking-widest">Start Audio Feed</button>
                 </div>
              </div>
            )}
         </div>
 
-        {/* RIGHT: INTERACTIVE QUESTION PANE */}
         <div className="w-1/2 overflow-y-auto no-scrollbar p-16 bg-white">
            <div className="space-y-16 max-w-2xl mx-auto">
               {section.questions.map((q, idx) => (
                 <div key={q.id} className="animate-in slide-in-from-right duration-500 delay-100">
                   <div className="flex items-start gap-6 mb-10">
                      <div className="w-12 h-12 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-center font-black text-xl text-unicou-navy shrink-0 shadow-sm">{idx + 1}</div>
-                     <h3 className="text-2xl font-display font-bold leading-tight text-slate-900 tracking-tight">{q.text}</h3>
+                     <h3 className="text-2xl font-display font-bold leading-tight text-slate-900 tracking-tight">{q.text.includes('___________________') ? 'Complete the following note:' : q.text}</h3>
                   </div>
                   {renderQuestionUI(q)}
                 </div>
@@ -259,16 +257,11 @@ const LMSPracticeTest: React.FC<LMSPracticeTestProps> = ({ testId, onNavigate })
         </div>
       </div>
 
-      {/* AUDIT FOOTER */}
       <footer className="bg-white border-t border-slate-100 px-12 py-4 flex justify-between items-center">
          <div className="flex gap-10">
             <div className="flex items-center gap-3">
                <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Biometric Node Syncing</span>
-            </div>
-            <div className="flex items-center gap-3">
-               <div className="w-2 h-2 rounded-full bg-blue-500" />
-               <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Encrypted Data Stream</span>
             </div>
          </div>
          <p className="text-[9px] font-black text-slate-900 uppercase tracking-[0.4em]">Node Registry ID: UC-2025-LC2-EXAM</p>

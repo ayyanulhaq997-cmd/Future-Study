@@ -14,34 +14,86 @@ export const users: User[] = [
   { id: 'u-std', name: 'Alex Student', email: 'student@test.com', role: 'Student', isAuthorized: true, verified: true, status: 'Active', country: 'United Kingdom' },
 ];
 
-export const countryGuides: CountryGuide[] = [
-  { id: 'uk', countryId: 'uk', slug: 'uk', title: 'Study in UK', heroImage: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1200', costOfLiving: '£1,200', visaRequirements: 'Tier 4 Student Visa', content: 'The UK remains a top destination for global education with post-study work options.' },
-  { id: 'australia', countryId: 'au', slug: 'australia', title: 'Study in Australia', heroImage: 'https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?w=1200', costOfLiving: '$2,100 AUD', visaRequirements: 'Subclass 500', content: 'Australia offers world-class research facilities and a vibrant lifestyle for international students.' },
-  { id: 'canada', countryId: 'ca', slug: 'canada', title: 'Study in Canada', heroImage: 'https://images.unsplash.com/photo-1503614472-8c93d56e92ce?w=1200', costOfLiving: '$1,800 CAD', visaRequirements: 'Study Permit / SDS', content: 'Canada is known for its high quality of life and friendly immigration pathways for graduates.' },
-  { id: 'usa', countryId: 'us', slug: 'usa', title: 'Study in USA', heroImage: 'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=1200', costOfLiving: '$2,500 USD', visaRequirements: 'F-1 Student Visa', content: 'The USA hosts the largest number of top-ranked universities globally with OPT opportunities.' },
-  { id: 'germany', countryId: 'de', slug: 'germany', title: 'Study in Germany', heroImage: 'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=1200', costOfLiving: '€950', visaRequirements: 'National Visa', content: 'Germany offers low-to-no tuition fees at public universities and a strong industrial base.' },
-  { id: 'italy', countryId: 'it', slug: 'italy', title: 'Study in Italy', heroImage: 'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=1200', costOfLiving: '€800', visaRequirements: 'Type D Visa', content: 'Italy is perfect for design, architecture, and humanities with generous regional scholarships.' },
-  { id: 'europe', countryId: 'eu', slug: 'europe', title: 'Study in Europe Hub', heroImage: 'https://images.unsplash.com/photo-1471623197341-389f41434f8d?w=1200', costOfLiving: 'Variable', visaRequirements: 'Schengen Educational', content: 'Explore pathways in Sweden, Finland, Cyprus and more through our unified hub.' },
-  { id: 'new-zealand', countryId: 'nz', slug: 'new-zealand', title: 'Study in NZ', heroImage: 'https://images.unsplash.com/photo-1469521669194-bdf95559c13d?w=1200', costOfLiving: '$1,900 NZD', visaRequirements: 'Fee Paying Student Visa', content: 'New Zealand offers a safe, peaceful environment with a focus on practical learning.' },
-  { id: 'malaysia', countryId: 'my', slug: 'malaysia', title: 'Study in Malaysia', heroImage: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=1200', costOfLiving: '$600 USD', visaRequirements: 'Student Pass', content: 'Affordable high-quality education and a multicultural atmosphere in Southeast Asia.' },
-  { id: 'turkey', countryId: 'tr', slug: 'turkey', title: 'Study in Turkey', heroImage: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=1200', costOfLiving: '$500 USD', visaRequirements: 'Education Visa', content: 'Turkey bridges East and West with historic institutions and competitive programs.' },
+export const products: Product[] = [
+  { id: 'v-pte-aca', name: 'PTE Academic Voucher', category: 'PTE', type: 'Voucher', basePrice: 165, currency: 'USD', pricingModel: 'Country-Wise', description: 'Standard PTE Academic for University Admissions.', icon: '📊' },
+  { id: 'v-pte-core', name: 'PTE Core Voucher', category: 'PTE', type: 'Voucher', basePrice: 170, currency: 'USD', pricingModel: 'Country-Wise', description: 'PTE Core for Canadian Migration.', icon: '🇨🇦' },
+  { id: 'v-pte-ukvi', name: 'PTE Academic UKVI', category: 'PTE', type: 'Voucher', basePrice: 185, currency: 'USD', pricingModel: 'Country-Wise', description: 'SELT version for UK Visa & Immigration.', icon: '🇬🇧' },
+  { id: 'v-ielts-aca', name: 'IELTS Academic Voucher', category: 'IELTS', type: 'Voucher', basePrice: 160, currency: 'USD', pricingModel: 'Country-Wise', description: 'IELTS Academic for Higher Education.', icon: '🌐' },
+  { id: 'v-ielts-ukvi', name: 'IELTS for UKVI', category: 'IELTS', type: 'Voucher', basePrice: 195, currency: 'USD', pricingModel: 'Country-Wise', description: 'Official SELT IELTS for UKVI purposes.', icon: '👑' },
+  { id: 'v-ielts-ls', name: 'IELTS Life Skills (A1/B1)', category: 'IELTS', type: 'Voucher', basePrice: 140, currency: 'USD', pricingModel: 'Global', description: 'IELTS Life Skills for Spouse/Settlement visas.', icon: '🗣️' },
+  { id: 'v-toefl-ibt', name: 'TOEFL iBT Voucher', category: 'TOEFL', type: 'Voucher', basePrice: 160, currency: 'USD', pricingModel: 'Global', description: 'TOEFL iBT Official Exam Code.', icon: '📜' },
+  { id: 'v-duolingo', name: 'Duolingo English Test', category: 'Duolingo', type: 'Voucher', basePrice: 59, currency: 'USD', pricingModel: 'Global', description: 'Fast, affordable online English test.', icon: '🦉' },
+  { id: 'v-lc-aca', name: 'LanguageCert Academic', category: 'LanguageCert', type: 'Voucher', basePrice: 155, currency: 'USD', pricingModel: 'Global', description: 'LanguageCert International ESOL.', icon: '📝' },
+  { id: 'v-sfe-selt', name: 'Skills for English SELT', category: 'Skills for English', type: 'Voucher', basePrice: 165, currency: 'USD', pricingModel: 'Country-Wise', description: 'PSI Skills for English for UKVI.', icon: '🎓' },
+  { id: 'v-gre-gen', name: 'GRE General Test', category: 'OTHER', type: 'Voucher', basePrice: 220, currency: 'USD', pricingModel: 'Global', description: 'GRE General Voucher for Grad School.', icon: '📈' },
+  { id: 'v-gmat-focus', name: 'GMAT Focus Edition', category: 'OTHER', type: 'Voucher', basePrice: 275, currency: 'USD', pricingModel: 'Global', description: 'GMAT Voucher for Business School.', icon: '💼' },
+  { id: 'c-pte-master', name: 'PTE 79+ Masterclass', category: 'PTE', type: 'Course', basePrice: 49, currency: 'USD', pricingModel: 'Global', description: 'Complete video training for PTE Academic.', icon: '📽️' },
+  { id: 'c-ielts-7', name: 'IELTS Band 7.0 Express', category: 'IELTS', type: 'Course', basePrice: 39, currency: 'USD', pricingModel: 'Global', description: 'Intensive 2-week IELTS preparation.', icon: '⚡' },
 ];
 
 export const lmsCourses: LMSCourse[] = [
-  { id: 'course-pte-1', title: 'PTE Academic Masterclass', category: 'PTE', thumbnail: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=800', description: 'Comprehensive strategies for all 20 item types in PTE Academic.', duration: '20 Hours', instructor: 'Dr. Sarah Smith', price: 49 },
-  { id: 'course-ielts-1', title: 'IELTS Band 8+ Foundation', category: 'IELTS', thumbnail: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800', description: 'Master the Writing and Speaking modules for IELTS Academic.', duration: '15 Hours', instructor: 'James Clear', price: 39 },
-  { id: 'course-toefl-1', title: 'TOEFL iBT Success Path', category: 'TOEFL', thumbnail: 'https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?w=800', description: 'Focused training for the computer-based TOEFL exam.', duration: '18 Hours', instructor: 'Amy Vance', price: 45 }
+  { id: 'c-pte-master', title: 'PTE 79+ Masterclass', category: 'PTE', thumbnail: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=800', description: 'Complete video training for PTE Academic, covering all 20 task types.', duration: '25 Hours', instructor: 'Prof. Michael Aris', price: 49 },
+  { id: 'c-ielts-7', title: 'IELTS Band 7.0 Express', category: 'IELTS', thumbnail: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800', description: 'Intensive preparation focusing on Writing and Speaking high-score criteria.', duration: '12 Hours', instructor: 'Dr. Anna Bell', price: 39 },
 ];
 
 export const lmsTests: LMSPracticeTest[] = [
-  { id: 'test-pte-1', title: 'PTE Mock Exam #01', sections: [{ id: 's1', title: 'Reading & Writing', skill: 'Reading', timeLimit: 30, questions: [{ id: 'q1', skill: 'Reading', type: 'MCQ', text: 'Select the best option.', options: ['A', 'B', 'C'] }] }] },
-  { id: 'test-ielts-1', title: 'IELTS Full Mock #01', sections: [{ id: 's1', title: 'Listening Module', skill: 'Listening', timeLimit: 40, questions: [{ id: 'q2', skill: 'Listening', type: 'MCQ', text: 'Where did they meet?', options: ['Library', 'Cafe', 'Park'] }] }] }
-];
-
-export const products: Product[] = [
-  { id: 'v-pte', name: 'PTE Academic Voucher', category: 'PTE', type: 'Voucher', basePrice: 165, currency: 'USD', pricingModel: 'Country-Wise', description: 'Standard PTE Voucher.', icon: '📊' },
-  { id: 'v-ielts', name: 'IELTS Exam Voucher', category: 'IELTS', type: 'Voucher', basePrice: 155, currency: 'USD', pricingModel: 'Country-Wise', description: 'Standard IELTS Voucher.', icon: '🌐' },
-  { id: 'v-toefl', name: 'TOEFL iBT Voucher', category: 'TOEFL', type: 'Voucher', basePrice: 160, currency: 'USD', pricingModel: 'Global', description: 'TOEFL Voucher.', icon: '📜' },
+  {
+    id: 'test-lc-academic-02',
+    title: 'LanguageCert Academic Test 2 (Full Mock)',
+    sections: [
+      {
+        id: 'lc-listening-3',
+        title: 'Listening Part 3: Lecture Note Completion',
+        skill: 'Listening',
+        timeLimit: 10,
+        audioUrl: 'SIMULATED_LECTURE_STREAM',
+        questions: [
+          { id: 'l3q18', skill: 'Listening', type: 'Fill-Blanks', text: 'This cave art was first brought to public attention in (18) ___________________.' },
+          { id: 'l3q19', skill: 'Listening', type: 'Fill-Blanks', text: 'In 2014, Adam Brumm dated a Sulawesi cave painting by analysing material found on an image of a (19) ______________________.' },
+          { id: 'l3q20', skill: 'Listening', type: 'Fill-Blanks', text: 'There is some disagreement about whether one 44,000-year-old painting is an attempt to represent (20) ______________________ in art.' },
+          { id: 'l3q21', skill: 'Listening', type: 'Fill-Blanks', text: 'The artwork they found in one cave near Makassar is probably intended to show (21) ______________________ between pigs.' },
+          { id: 'l3q22', skill: 'Listening', type: 'Fill-Blanks', text: 'The picture of pigs may be the earliest known example of what’s called (22) ______________________ art.' },
+          { id: 'l3q23', skill: 'Listening', type: 'Fill-Blanks', text: 'From what can still be seen, Brumm suggests that the picture of pigs may be part of a (23) ______________________.' },
+          { id: 'l3q24', skill: 'Listening', type: 'Fill-Blanks', text: 'Scientists use the word (24) ______________________ to describe the calcite deposit that allowed the picture of pigs to be dated accurately.' }
+        ]
+      },
+      {
+        id: 'lc-reading-2',
+        title: 'Reading Part 2: The Domestication of Chickens',
+        skill: 'Reading',
+        timeLimit: 15,
+        passageText: `The domestication of chickens\n\nFor millions of people around the world, chicken products are a staple food item, and chicken keeping is a common practice. But the question of when exactly chickens became domesticated and how humans have interacted with them over time has never, until now, been satisfactorily addressed. (12)…………… But one new study is changing this perception.\n\nThe study looked at what were thought to be the earliest examples of chicken bones to be found by archaeologists in Europe and northwest Africa. Twenty-three sets of bones underwent radio-carbon dating in an attempt to discover how old they actually were, so that researchers could get a clearer idea of when the species first arrived in Europe, and how the process of domestication may have taken place. (13) ..................The others were much more recent, sometimes by thousands of years.\n\nEarlier hypotheses suggested that chickens were present in Europe up to 7,000 years ago. But these results show they were not introduced until around 2,800 years ago. (14)...................Cattle and sheep, for example, are thought to have reached Europe around 6,000 years ago.\n\nThe radio-carbon dating also suggests that in many locations there was a gap of several hundred years between the introduction of the species to an area and chicken meat appearing in the local people’s diet. Indeed, many of the earliest chickens identified by the radio-carbon dating, including all of those from Britain, seem not to have been kept for their meat. (15)................... Further evidence for this conclusion comes from an estimate of chicken numbers at the time which remain low, and from the fact that the bones studied are from very mature animals. One specimen even has a well-healed leg fracture, indicating human care. (16) ..................They may have had spiritual significance too.\n\nIn some instances, in the period after chickens were introduced, they were buried alongside humans, perhaps because it was believed that they would lead the person’s soul to the afterlife. (17)……………. In later cases, the chickens were used as a food offering for the dead – a practice that became more common in Britain through the Ancient Roman period.`,
+        questions: [
+          { id: 'r2q12', skill: 'Reading', type: 'Insert-Sentence', text: 'Gap (12)', targetSentence: 'Sentence G: For many people it is difficult to imagine that chickens were ever anything other than a source of food.', options: ['Gap 12', 'Gap 13', 'Gap 14', 'Gap 15', 'Gap 16', 'Gap 17'] },
+          { id: 'r2q13', skill: 'Reading', type: 'Insert-Sentence', text: 'Gap (13)', targetSentence: 'Sentence D: In the event, only five of those tested turned out to be as old as had been claimed.', options: ['Gap 12', 'Gap 13', 'Gap 14', 'Gap 15', 'Gap 16', 'Gap 17'] },
+          { id: 'r2q14', skill: 'Reading', type: 'Insert-Sentence', text: 'Gap (14)', targetSentence: 'Sentence B: This makes them a relatively recent arrival compared to other domesticated species.', options: ['Gap 12', 'Gap 13', 'Gap 14', 'Gap 15', 'Gap 16', 'Gap 17'] },
+          { id: 'r2q15', skill: 'Reading', type: 'Insert-Sentence', text: 'Gap (15)', targetSentence: 'Sentence E: The skeletons studied were largely complete, and so clearly hadn’t been butchered for human consumption.', options: ['Gap 12', 'Gap 13', 'Gap 14', 'Gap 15', 'Gap 16', 'Gap 17'] },
+          { id: 'r2q16', skill: 'Reading', type: 'Insert-Sentence', text: 'Gap (16)', targetSentence: 'Sentence A: These clues suggest that rather than being considered a source of food, these birds were more likely regarded as rare, exotic creatures.', options: ['Gap 12', 'Gap 13', 'Gap 14', 'Gap 15', 'Gap 16', 'Gap 17'] }
+        ]
+      },
+      {
+        id: 'lc-reading-4',
+        title: 'Reading Part 4: Reality TV Sociology',
+        skill: 'Reading',
+        timeLimit: 15,
+        passageText: `What reality TV says about our culture\n\nYou may call reality TV a ‘guilty pleasure’ or, if you’re feeling less charitable, ‘trash’ or ‘train-wreck TV,’ or perhaps, like the respected broadcast journalist Ted Koppel, you may wonder aloud if the genre marks the end of civilization. The truth is that vastly more of us are watching reality TV than not, and those who avert their eyes are still haunted by its apparitions. One study found that college students who claimed not to watch reality TV still knew specific details about these shows. But even for those who really don’t watch, these programs have become part of the cultural ether. Elements from them reach us via product lines, online posts, advertisements, snippets of conversation, and references in the media.`,
+        questions: [
+          { 
+            id: 'r4q25', 
+            skill: 'Reading', 
+            type: 'MCQ', 
+            text: 'The writer uses the phrase ‘haunted by its apparitions’ in the first paragraph to emphasise', 
+            options: [
+              'a) the effort some people go to in order to avoid watching reality TV.',
+              'b) the exaggerated language often used to criticise reality TV.',
+              'c) the impossibility of remaining untouched by reality TV.',
+              'd) the horror with which many people regard reality TV.'
+            ] 
+          }
+        ]
+      }
+    ]
+  }
 ];
 
 export const universities: University[] = [];
@@ -51,3 +103,5 @@ export const manualSubmissions: ManualSubmission[] = [];
 export const testResults: TestResult[] = [];
 export const immigrationGuides: any[] = [];
 export const voucherCodes: VoucherCode[] = [];
+// Fix: Add missing countryGuides export required by services/apiService.ts
+export const countryGuides: CountryGuide[] = [];

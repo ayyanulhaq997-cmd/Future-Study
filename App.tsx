@@ -35,9 +35,6 @@ import { ViewState, User } from './types';
 import { api } from './services/apiService';
 import { LOGO_SRC } from './constants/assets';
 
-// New specialized role components would be imported here
-// For this update, we map roles to existing high-fidelity dashboards
-
 const App: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const [view, setView] = useState<ViewState>({ type: 'home' });
@@ -66,47 +63,40 @@ const App: React.FC = () => {
   const isFocusMode = view.type === 'lms-course-player' || view.type === 'lms-practice-test';
 
   const renderContent = () => {
+    // Identity-Locked Dashboard Routing (Req 13)
     if (view.type === 'lms-dashboard' && user) {
        switch (user.role) {
-         // Roles 1 & 2: Global Control
          case 'System Admin/Owner':
          case 'Operation Manager':
+         case 'Academic Manager':
            return <div className="view-container"><AdminDashboard user={user} /></div>;
          
-         // Role 3: Audit & Reports
          case 'Finance Manager':
          case 'Finance':
            return <div className="view-container"><FinanceDashboard user={user} /></div>;
          
-         // Role 4: Content & LMS
-         case 'Academic Manager':
-           return <div className="view-container"><AdminDashboard user={user} /></div>; // Placeholder for Academic Manager dash
-         
-         // Roles 5 & 6: Sales & Support
          case 'Sales Manager':
          case 'Sales Agent':
          case 'Sales':
          case 'Support':
            return <div className="view-container"><SalesDashboard user={user} /></div>;
          
-         // Roles 7 & 8: B2B Partners
          case 'Agent':
          case 'Academic Institute':
          case 'Institute':
            return <div className="view-container"><AgentDashboard user={user} onBuy={(p, q) => navigateTo({ type: 'checkout', productId: p, quantity: q })} /></div>;
          
-         // Role 9: Educational Delivery
          case 'Teacher':
          case 'Trainer':
            return <div className="view-container"><TrainerDashboard user={user} /></div>;
          
-         // Role 10: Consumer
          case 'Student':
          default:
            return <div className="view-container"><CustomerDashboard user={user} onNavigate={navigateTo} initialTab={(view as any).initialTab} /></div>;
        }
     }
 
+    // Public View Logic
     switch (view.type) {
       case 'home':
         return (
@@ -118,6 +108,9 @@ const App: React.FC = () => {
         );
       case 'store':
         return <div className="view-container"><VoucherStore onCheckout={(p, q) => navigateTo({ type: 'checkout', productId: p, quantity: q })} onBook={() => {}} onNavigateToAgent={() => navigateTo({ type: 'agent' })} /></div>;
+      case 'lms-dashboard':
+        // Fallback for logged-out users clicking Study Hub
+        return <div className="view-container"><LMSDashboard onNavigate={navigateTo} /></div>;
       case 'country-list':
         return <div className="view-container"><CountryList onNavigateToGuide={(slug) => navigateTo({ type: 'country-guide', slug })} /></div>;
       case 'country-guide':
@@ -144,8 +137,12 @@ const App: React.FC = () => {
         return <div className="view-container"><SuccessScreen orderId={(view as any).orderId} onClose={() => navigateTo({ type: 'lms-dashboard' })} /></div>;
       case 'policy':
         return <div className="view-container"><PolicyPage policyId={(view as any).policyId} /></div>;
+      case 'lms-course-player':
+        return <LMSCoursePlayer courseId={(view as any).courseId} onNavigate={navigateTo} />;
+      case 'lms-practice-test':
+        return <LMSPracticeTest testId={(view as any).testId} onNavigate={navigateTo} />;
       default:
-        return <div className="view-container text-center pt-40">Portal Node Syncing...</div>;
+        return <div className="view-container text-center pt-40">Synchronizing Global Portal...</div>;
     }
   };
 
