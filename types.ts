@@ -27,6 +27,7 @@ export interface User {
   status: 'Active' | 'Pending' | 'Hold' | 'Rejected' | 'Frozen'; 
   agreementDate?: string; 
   isFlagged?: boolean; 
+  country?: string;
 }
 
 export interface Lead {

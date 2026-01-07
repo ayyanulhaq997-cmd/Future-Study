@@ -2,16 +2,16 @@
 import { Product, VoucherCode, User, University, CountryGuide, Course, Qualification, LMSCourse, LMSPracticeTest, ManualSubmission, TestResult } from '../types';
 
 export const users: User[] = [
-  { id: 'u-owner', name: 'Business Owner', email: 'admin@unicou.uk', role: 'System Admin/Owner', isAuthorized: true, verified: true, status: 'Active' },
-  { id: 'u-ops', name: 'General Manager', email: 'ops@unicou.uk', role: 'Operation Manager', isAuthorized: true, verified: true, status: 'Active' },
-  { id: 'u-fin', name: 'Finance Lead', email: 'finance@unicou.uk', role: 'Finance Manager', isAuthorized: true, verified: true, status: 'Active' },
-  { id: 'u-aca', name: 'Academic Director', email: 'academic@unicou.uk', role: 'Academic Manager', isAuthorized: true, verified: true, status: 'Active' },
-  { id: 'u-sal-m', name: 'Sales Director', email: 'sales_mgr@unicou.uk', role: 'Sales Manager', isAuthorized: true, verified: true, status: 'Active' },
-  { id: 'u-sal-a', name: 'Support Frontline', email: 'sales_agent@unicou.uk', role: 'Sales Agent', isAuthorized: true, verified: true, status: 'Active' },
-  { id: 'u-agent', name: 'Consultancy Alpha', email: 'agent@test.com', role: 'Agent', isAuthorized: true, verified: true, status: 'Active', tier: 2 },
-  { id: 'u-inst', name: 'Prep Center Beta', email: 'center@test.com', role: 'Academic Institute', isAuthorized: true, verified: true, status: 'Active' },
-  { id: 'u-teacher', name: 'Lead Instructor', email: 'teacher@test.com', role: 'Teacher', isAuthorized: true, verified: true, status: 'Active' },
-  { id: 'u-std', name: 'Alex Student', email: 'student@test.com', role: 'Student', isAuthorized: true, verified: true, status: 'Active' },
+  { id: 'u-owner', name: 'Business Owner', email: 'admin@unicou.uk', role: 'System Admin/Owner', isAuthorized: true, verified: true, status: 'Active', country: 'United Kingdom' },
+  { id: 'u-ops', name: 'General Manager', email: 'ops@unicou.uk', role: 'Operation Manager', isAuthorized: true, verified: true, status: 'Active', country: 'United Kingdom' },
+  { id: 'u-fin', name: 'Finance Lead', email: 'finance@unicou.uk', role: 'Finance Manager', isAuthorized: true, verified: true, status: 'Active', country: 'United Kingdom' },
+  { id: 'u-aca', name: 'Academic Director', email: 'academic@unicou.uk', role: 'Academic Manager', isAuthorized: true, verified: true, status: 'Active', country: 'United Kingdom' },
+  { id: 'u-sal-m', name: 'Sales Director', email: 'sales_mgr@unicou.uk', role: 'Sales Manager', isAuthorized: true, verified: true, status: 'Active', country: 'United Kingdom' },
+  { id: 'u-sal-a', name: 'Support Frontline', email: 'sales_agent@unicou.uk', role: 'Sales Agent', isAuthorized: true, verified: true, status: 'Active', country: 'United Kingdom' },
+  { id: 'u-agent', name: 'Consultancy Alpha', email: 'agent@test.com', role: 'Agent', isAuthorized: true, verified: true, status: 'Active', tier: 2, country: 'Pakistan' },
+  { id: 'u-inst', name: 'Prep Center Beta', email: 'center@test.com', role: 'Academic Institute', isAuthorized: true, verified: true, status: 'Active', country: 'United Arab Emirates' },
+  { id: 'u-teacher', name: 'Lead Instructor', email: 'teacher@test.com', role: 'Teacher', isAuthorized: true, verified: true, status: 'Active', country: 'United Kingdom' },
+  { id: 'u-std', name: 'Alex Student', email: 'student@test.com', role: 'Student', isAuthorized: true, verified: true, status: 'Active', country: 'United Kingdom' },
 ];
 
 export const countryGuides: CountryGuide[] = [
