@@ -2,16 +2,34 @@
 import { Product, VoucherCode, User, University, CountryGuide, Course, Qualification, LMSCourse, LMSPracticeTest, ManualSubmission, TestResult } from '../types';
 
 export const users: User[] = [
+  // --- OWNER & ADMIN ---
   { id: 'u-owner', name: 'Business Owner', email: 'admin@unicou.uk', role: 'System Admin/Owner', isAuthorized: true, verified: true, status: 'Active', country: 'United Kingdom' },
+  
+  // --- OPERATIONS & MANAGEMENT ---
   { id: 'u-ops', name: 'General Manager', email: 'ops@unicou.uk', role: 'Operation Manager', isAuthorized: true, verified: true, status: 'Active', country: 'United Kingdom' },
+  { id: 'u-mgr1', name: 'Academic Manager 1', email: 'manager1@unicou.uk', role: 'Academic Manager', isAuthorized: true, verified: true, status: 'Active', country: 'United Kingdom' },
+  { id: 'u-mgr2', name: 'Academic Manager 2', email: 'manager2@unicou.uk', role: 'Academic Manager', isAuthorized: true, verified: true, status: 'Active', country: 'United Kingdom' },
+  
+  // --- FINANCE ---
   { id: 'u-fin', name: 'Finance Lead', email: 'finance@unicou.uk', role: 'Finance Manager', isAuthorized: true, verified: true, status: 'Active', country: 'United Kingdom' },
-  { id: 'u-aca', name: 'Academic Director', email: 'academic@unicou.uk', role: 'Academic Manager', isAuthorized: true, verified: true, status: 'Active', country: 'United Kingdom' },
-  { id: 'u-sal-m', name: 'Sales Director', email: 'sales_mgr@unicou.uk', role: 'Sales Manager', isAuthorized: true, verified: true, status: 'Active', country: 'United Kingdom' },
-  { id: 'u-sal-a', name: 'Support Frontline', email: 'sales_agent@unicou.uk', role: 'Sales Agent', isAuthorized: true, verified: true, status: 'Active', country: 'United Kingdom' },
-  { id: 'u-agent', name: 'Consultancy Alpha', email: 'agent@test.com', role: 'Agent', isAuthorized: true, verified: true, status: 'Active', tier: 2, country: 'Pakistan' },
-  { id: 'u-inst', name: 'Prep Center Beta', email: 'center@test.com', role: 'Academic Institute', isAuthorized: true, verified: true, status: 'Active', country: 'United Arab Emirates' },
+  
+  // --- SALES & SUPPORT ---
+  { id: 'u-sales', name: 'Sales Node', email: 'sales@unicou.uk', role: 'Sales Agent', isAuthorized: true, verified: true, status: 'Active', country: 'United Kingdom' },
+  { id: 'u-supp', name: 'Support Core', email: 'support@unicou.uk', role: 'Sales Agent', isAuthorized: true, verified: true, status: 'Active', country: 'United Kingdom' },
+  { id: 'u-supp1', name: 'Support Node 1', email: 'support1@unicou.uk', role: 'Sales Agent', isAuthorized: true, verified: true, status: 'Active', country: 'United Kingdom' },
+  { id: 'u-supp2', name: 'Support Node 2', email: 'support2@unicou.uk', role: 'Sales Agent', isAuthorized: true, verified: true, status: 'Active', country: 'United Kingdom' },
+  
+  // --- PARTNERS & TRAINING ---
+  { id: 'u-agent-a', name: 'Agent Alpha', email: 'agent_alpha@test.com', role: 'Agent', isAuthorized: true, verified: true, status: 'Active', tier: 2, country: 'Pakistan' },
+  { id: 'u-beta', name: 'Prep Center Beta', email: 'center_beta@test.com', role: 'Academic Institute', isAuthorized: true, verified: true, status: 'Active', country: 'United Arab Emirates' },
+  { id: 'u-train', name: 'Training Hub', email: 'training@unicou.uk', role: 'Teacher', isAuthorized: true, verified: true, status: 'Active', country: 'United Kingdom' },
   { id: 'u-teacher', name: 'Lead Instructor', email: 'teacher@test.com', role: 'Teacher', isAuthorized: true, verified: true, status: 'Active', country: 'United Kingdom' },
+  
+  // --- STUDENTS & CANDIDATES ---
+  { id: 'u-std-core', name: 'Main Student', email: 'student@unicou.uk', role: 'Student', isAuthorized: true, verified: true, status: 'Active', country: 'United Kingdom' },
   { id: 'u-std', name: 'Alex Student', email: 'student@test.com', role: 'Student', isAuthorized: true, verified: true, status: 'Active', country: 'United Kingdom' },
+  { id: 'u-cand1', name: 'Candidate 1', email: 'candidate1@test.com', role: 'Student', isAuthorized: true, verified: true, status: 'Active', country: 'Pakistan' },
+  { id: 'u-cand2', name: 'Candidate 2', email: 'candidate2@test.com', role: 'Student', isAuthorized: true, verified: true, status: 'Active', country: 'United Arab Emirates' },
 ];
 
 export const products: Product[] = [
@@ -45,7 +63,7 @@ export const countryGuides: CountryGuide[] = [
     heroImage: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1200', 
     costOfLiving: '£1,200 - £1,500 / Month', 
     visaRequirements: 'Student Visa (formerly Tier 4)', 
-    content: 'The UK remains a top destination for global education. With post-study work options (Graduate Route) and world-class universities like Oxford, Cambridge, and Imperial, it offers a premium academic environment.\n\n### Key Benefits\n- High-speed 1-year Masters programs.\n- Graduate Route: 2-year work permit after studies.\n- Cultural diversity and historic academic heritage.' 
+    content: 'The UK remains a top destination for global education. With world-class universities like Oxford, Cambridge, and Imperial, it offers a premium academic environment.\n\n### Key Benefits\n- High-speed 1-year Masters programs.\n- Graduate Route: 2-year work permit after studies.' 
   },
   { 
     id: 'australia', 
@@ -55,7 +73,7 @@ export const countryGuides: CountryGuide[] = [
     heroImage: 'https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?w=1200', 
     costOfLiving: '$2,100 AUD / Month', 
     visaRequirements: 'Student Visa (Subclass 500)', 
-    content: 'Australia is famous for its research facilities and high quality of life. Cities like Melbourne and Sydney are consistently ranked as the most student-friendly in the world.\n\n### Why Australia?\n- Simplified Student Visa Framework (SSVF).\n- Extensive part-time work opportunities.\n- High employability for graduates in STEM and Healthcare.' 
+    content: 'Australia is famous for its research facilities and high quality of life. Cities like Melbourne and Sydney are consistently ranked as the most student-friendly in the world.' 
   },
   { 
     id: 'canada', 
@@ -65,7 +83,7 @@ export const countryGuides: CountryGuide[] = [
     heroImage: 'https://images.unsplash.com/photo-1503614472-8c93d56e92ce?w=1200', 
     costOfLiving: '$1,800 CAD / Month', 
     visaRequirements: 'Study Permit / SDS Pathway', 
-    content: 'Canada is the ideal choice for students seeking long-term settlement. The Post-Graduation Work Permit (PGWP) provides a clear path to Permanent Residency.\n\n### Highlights\n- Affordable tuition compared to the USA.\n- World-class healthcare and safety.\n- Diverse landscape from Vancouver to Toronto.' 
+    content: 'Canada is the ideal choice for students seeking long-term settlement. The Post-Graduation Work Permit (PGWP) provides a clear path to Permanent Residency.' 
   },
   { 
     id: 'usa', 
@@ -75,7 +93,7 @@ export const countryGuides: CountryGuide[] = [
     heroImage: 'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=1200', 
     costOfLiving: '$2,500 USD / Month', 
     visaRequirements: 'F-1 Student Visa', 
-    content: 'The USA hosts the largest number of international students globally. With the Ivy League and thousands of specialized institutions, it is the center of global innovation.\n\n### Opportunities\n- OPT (Optional Practical Training) for up to 3 years (STEM).\n- Huge variety of scholarships and research grants.\n- Largest global professional network.' 
+    content: 'The USA hosts the largest number of international students globally. With the Ivy League and thousands of specialized institutions, it is the center of global innovation.' 
   },
   { 
     id: 'germany', 
@@ -85,7 +103,7 @@ export const countryGuides: CountryGuide[] = [
     heroImage: 'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=1200', 
     costOfLiving: '€950 - €1,100 / Month', 
     visaRequirements: 'National Visa for Studies', 
-    content: 'Germany offers low or no tuition fees at public universities. It is an industrial powerhouse with immense opportunities for engineering and technology students.\n\n### Key Facts\n- 18-month post-study job search visa.\n- Strong link between universities and industry.\n- Centrally located in Europe for easy travel.' 
+    content: 'Germany offers low or no tuition fees at public universities. It is an industrial powerhouse with immense opportunities for engineering and technology students.' 
   },
   { 
     id: 'italy', 
@@ -95,7 +113,7 @@ export const countryGuides: CountryGuide[] = [
     heroImage: 'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=1200', 
     costOfLiving: '€700 - €900 / Month', 
     visaRequirements: 'Type D (Study) Visa', 
-    content: 'Italy is home to some of the oldest and most prestigious universities in Europe. It is the world leader in Art, Design, and Architecture.\n\n### Advantages\n- Generous regional scholarships (DSU).\n- Low cost of living compared to North Europe.\n- Rich cultural experience and Mediterranean climate.' 
+    content: 'Italy is home to some of the oldest and most prestigious universities in Europe. It is the world leader in Art, Design, and Architecture.' 
   },
   { 
     id: 'europe', 
@@ -105,7 +123,7 @@ export const countryGuides: CountryGuide[] = [
     heroImage: 'https://images.unsplash.com/photo-1471623197341-389f41434f8d?w=1200', 
     costOfLiving: 'Variable', 
     visaRequirements: 'Schengen Educational', 
-    content: 'Explore pathways in Sweden, Finland, Cyprus, and Ireland through our unified European hub. Each region offers unique academic and professional benefits.' 
+    content: 'Explore pathways in Sweden, Finland, Cyprus, and Ireland through our unified European hub.' 
   },
   { 
     id: 'new-zealand', 
@@ -115,7 +133,7 @@ export const countryGuides: CountryGuide[] = [
     heroImage: 'https://images.unsplash.com/photo-1469521669194-bdf95559c13d?w=1200', 
     costOfLiving: '$1,900 NZD / Month', 
     visaRequirements: 'Fee Paying Student Visa', 
-    content: 'New Zealand is known for its safe environment and focus on practical learning. It is a preferred destination for students seeking a balanced lifestyle.' 
+    content: 'New Zealand is known for its safe environment and focus on practical learning.' 
   },
   { 
     id: 'malaysia', 
@@ -125,7 +143,7 @@ export const countryGuides: CountryGuide[] = [
     heroImage: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=1200', 
     costOfLiving: '$600 USD / Month', 
     visaRequirements: 'Student Pass / EMGS', 
-    content: 'Affordable high-quality education and a multicultural atmosphere in Southeast Asia. Malaysia is a hub for international branch campuses.' 
+    content: 'Affordable high-quality education and a multicultural atmosphere in Southeast Asia.' 
   },
   { 
     id: 'turkey', 
@@ -135,7 +153,7 @@ export const countryGuides: CountryGuide[] = [
     heroImage: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=1200', 
     costOfLiving: '$500 USD / Month', 
     visaRequirements: 'Education Visa', 
-    content: 'Turkey bridges East and West with historic institutions and modern facilities. It is a gateway to Europe with competitive tuition rates.' 
+    content: 'Turkey bridges East and West with historic institutions and modern facilities.' 
   },
 ];
 
