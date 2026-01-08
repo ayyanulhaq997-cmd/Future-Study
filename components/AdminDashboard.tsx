@@ -16,7 +16,9 @@ const AdminDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => void 
     products: Product[],
     leads: Lead[]
   }>({ orders: [], users: [], products: [], leads: [] });
+  
   const [loading, setLoading] = useState(true);
+  const [editingProduct, setEditingProduct] = useState<Partial<Product> | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // System Configuration State
@@ -52,14 +54,29 @@ const AdminDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => void 
     alert("System Node Updated: Global Mail Infrastructure Synchronized.");
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
+    if (file && editingProduct) {
+      if (file.size > 2000000) return alert("File too large. Max 2MB allowed.");
       const reader = new FileReader();
       reader.onloadend = () => {
-        // Logic for product icon upload
+        setEditingProduct({ ...editingProduct, icon: reader.result as string });
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSaveProduct = async () => {
+    if (!editingProduct?.name || !editingProduct?.basePrice) return alert("Node Name and Price mandatory.");
+    await api.upsertProduct(editingProduct as Product);
+    setEditingProduct(null);
+    refreshData();
+  };
+
+  const handleDeleteUser = async (uid: string) => {
+    if (confirm("Permanently delete this user identity?")) {
+      await api.deleteUser(uid);
+      refreshData();
     }
   };
 
@@ -85,7 +102,7 @@ const AdminDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => void 
           <p className="text-[10px] font-black text-unicou-navy uppercase tracking-[0.4em]">Terminal Access: {user.email}</p>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4 justify-center">
           <button 
             onClick={handleToggleHalt}
             className={`px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-xl ${halted ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white animate-pulse'}`}
@@ -99,6 +116,7 @@ const AdminDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => void 
               { id: 'catalog', label: 'Vouchers' },
               { id: 'vault', label: 'Vault' },
               { id: 'ledgers', label: 'Finance' },
+              { id: 'staff', label: 'Users' },
               { id: 'settings', label: 'Settings' }
             ].map(t => (
               <button 
@@ -143,24 +161,131 @@ const AdminDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => void 
                       <input className="w-full p-4 bg-white border border-slate-200 rounded-2xl font-mono text-sm outline-none focus:border-unicou-orange" placeholder="template_xxxxxxx" value={mailConfig.templateId_voucher} onChange={e => setMailConfig({...mailConfig, templateId_voucher: e.target.value})} />
                    </div>
                 </div>
-
-                <div className="p-6 bg-blue-50 border border-blue-100 rounded-3xl">
-                   <h4 className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-2 flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-                      Infrastructure Note
-                   </h4>
-                   <p className="text-xs text-blue-800 font-bold italic leading-relaxed">
-                      "Ensure your EmailJS templates use 'to_name', 'to_email', 'verification_code' and 'voucher_codes' as variables for automated dispatch node."
-                   </p>
-                </div>
-
                 <button type="submit" className="w-full py-6 bg-unicou-navy text-white rounded-3xl font-black uppercase text-xs tracking-[0.3em] shadow-3xl hover:bg-slate-900 transition-all active:scale-95">COMMIT SYSTEM CONFIGURATION</button>
              </form>
           </div>
         </div>
       )}
 
-      {/* INTELLIGENCE OVERVIEW */}
+      {activeTab === 'catalog' && (
+        <div className="animate-in fade-in duration-500 space-y-12">
+           <div className="flex justify-between items-center">
+              <h3 className="text-xl font-black uppercase tracking-tighter">Voucher Inventory Registry</h3>
+              <button 
+                onClick={() => setEditingProduct({ id: `p-${Date.now()}`, name: '', type: 'Voucher', basePrice: 0, category: 'PTE', currency: 'USD', pricingModel: 'Global', description: '', icon: '' })}
+                className="px-8 py-4 bg-unicou-orange text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl active:scale-95"
+              >
+                + ADD NEW VOUCHER NODE
+              </button>
+           </div>
+
+           {editingProduct && (
+             <div className="bg-slate-50 p-10 rounded-[3rem] border border-slate-200 shadow-2xl animate-in zoom-in-95 duration-300">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                   <div className="space-y-2">
+                      <label className="text-[9px] font-black uppercase text-slate-400">Voucher Name</label>
+                      <input className="w-full p-4 bg-white rounded-xl border border-slate-200" value={editingProduct.name} onChange={e => setEditingProduct({...editingProduct, name: e.target.value})} />
+                   </div>
+                   <div className="space-y-2">
+                      <label className="text-[9px] font-black uppercase text-slate-400">Base Price (USD)</label>
+                      <input type="number" className="w-full p-4 bg-white rounded-xl border border-slate-200" value={editingProduct.basePrice} onChange={e => setEditingProduct({...editingProduct, basePrice: Number(e.target.value)})} />
+                   </div>
+                   <div className="space-y-2">
+                      <label className="text-[9px] font-black uppercase text-slate-400">Category</label>
+                      <select className="w-full p-4 bg-white rounded-xl border border-slate-200" value={editingProduct.category} onChange={e => setEditingProduct({...editingProduct, category: e.target.value})}>
+                         {['PTE', 'IELTS', 'TOEFL', 'LanguageCert', 'Duolingo', 'OTHER'].map(c => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                   </div>
+                   <div className="space-y-2 flex flex-col justify-end">
+                      <input type="file" ref={fileInputRef} onChange={handleImageUpload} className="hidden" accept="image/png, image/jpeg" />
+                      <button 
+                        onClick={() => fileInputRef.current?.click()}
+                        className="w-full py-4 bg-unicou-navy text-white rounded-xl font-black text-[9px] uppercase tracking-widest flex items-center justify-center gap-2"
+                      >
+                         {editingProduct.icon ? '✅ LOGO SYNCED' : '📸 UPLOAD PNG/JPG'}
+                      </button>
+                   </div>
+                </div>
+                <div className="flex gap-4 mt-8 pt-8 border-t border-slate-200">
+                   <button onClick={handleSaveProduct} className="px-10 py-4 bg-emerald-600 text-white rounded-xl font-black text-[9px] uppercase tracking-widest shadow-lg">Save Node</button>
+                   <button onClick={() => setEditingProduct(null)} className="px-10 py-4 bg-slate-200 text-slate-500 rounded-xl font-black text-[9px] uppercase tracking-widest">Cancel</button>
+                </div>
+             </div>
+           )}
+
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+             {data.products.map(p => (
+               <div key={p.id} className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-xl group flex flex-col transition-all hover:border-unicou-navy">
+                 <div className="h-32 flex items-center justify-center mb-8 bg-slate-50 rounded-[2rem] overflow-hidden p-6 shadow-inner relative">
+                    {p.icon ? (
+                      <img src={p.icon} className="max-h-full max-w-full object-contain" alt={p.name} />
+                    ) : (
+                      <span className="text-4xl opacity-20">🎟️</span>
+                    )}
+                 </div>
+                 <h4 className="text-xl font-black text-slate-900 uppercase leading-tight mb-4 flex-grow">{p.name}</h4>
+                 <div className="flex justify-between items-center border-t border-slate-50 pt-6">
+                    <span className="text-2xl font-display font-black text-unicou-navy">${p.basePrice}</span>
+                    <button onClick={() => setEditingProduct(p)} className="text-[9px] font-black text-unicou-orange uppercase hover:underline">Edit Node</button>
+                 </div>
+               </div>
+             ))}
+           </div>
+        </div>
+      )}
+
+      {activeTab === 'staff' && (
+        <div className="animate-in fade-in duration-500 space-y-12">
+           <h3 className="text-xl font-black uppercase tracking-tighter">Unified User Registry</h3>
+           <div className="bg-white rounded-[3.5rem] border border-slate-200 shadow-2xl overflow-hidden">
+             <div className="overflow-x-auto">
+               <table className="w-full text-left text-[11px]">
+                 <thead>
+                   <tr className="bg-slate-50 font-black uppercase text-slate-500 tracking-widest border-b border-slate-100">
+                     <th className="px-8 py-6">Identity</th>
+                     <th className="px-8 py-6">Email Node</th>
+                     <th className="px-8 py-6">Role / Level</th>
+                     <th className="px-8 py-6">Status</th>
+                     <th className="px-8 py-6 text-right">Actions</th>
+                   </tr>
+                 </thead>
+                 <tbody className="divide-y divide-slate-50">
+                   {data.users.map(u => (
+                     <tr key={u.id} className="hover:bg-slate-50/50 transition-colors font-bold text-slate-700">
+                       <td className="px-8 py-5">
+                          <div className="flex items-center gap-4">
+                             <div className="w-8 h-8 rounded-lg bg-unicou-navy text-white flex items-center justify-center text-xs font-black">{u.name.charAt(0)}</div>
+                             <span className="text-slate-950">{u.name}</span>
+                          </div>
+                       </td>
+                       <td className="px-8 py-5 font-mono text-[10px] text-slate-400">{u.email}</td>
+                       <td className="px-8 py-5">
+                          <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase border ${u.role === 'Student' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-purple-50 text-purple-600 border-purple-100'}`}>{u.role}</span>
+                       </td>
+                       <td className="px-8 py-5">
+                          <div className="flex items-center gap-2">
+                             <div className={`w-1.5 h-1.5 rounded-full ${u.status === 'Active' ? 'bg-emerald-500 shadow-[0_0_5px_rgba(16,185,129,0.5)]' : 'bg-red-500'}`} />
+                             <span className="text-[10px] font-black uppercase tracking-widest">{u.status}</span>
+                          </div>
+                       </td>
+                       <td className="px-8 py-5 text-right">
+                          <div className="flex justify-end gap-3">
+                             {u.role !== 'System Admin/Owner' && (
+                               <button onClick={() => handleDeleteUser(u.id)} className="p-2 text-red-400 hover:text-red-600 transition-colors">
+                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                               </button>
+                             )}
+                          </div>
+                       </td>
+                     </tr>
+                   ))}
+                 </tbody>
+               </table>
+             </div>
+           </div>
+        </div>
+      )}
+
       {activeTab === 'intelligence' && metrics && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 animate-in fade-in duration-500">
            <div className="bg-slate-50 p-8 rounded-[3rem] border border-slate-200 shadow-inner">
@@ -172,11 +297,8 @@ const AdminDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => void 
               <h4 className="text-5xl font-display font-black text-unicou-orange tracking-tighter">{metrics.vouchersInStock}</h4>
            </div>
            <div className="bg-slate-50 p-8 rounded-[3rem] border border-slate-200 shadow-inner">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Mail Node Status</p>
-              <div className="flex items-center gap-4">
-                 <div className={`w-3 h-3 rounded-full ${mailConfig.serviceId ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'bg-red-500 animate-pulse'}`} />
-                 <h4 className="text-2xl font-display font-black text-slate-900 uppercase tracking-tighter">{mailConfig.serviceId ? 'ONLINE' : 'LOCAL ONLY'}</h4>
-              </div>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Users Registry</p>
+              <h4 className="text-5xl font-display font-black text-slate-900 tracking-tighter">{data.users.length}</h4>
            </div>
            <div className="bg-slate-50 p-8 rounded-[3rem] border border-slate-200 shadow-inner">
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Risk Alerts</p>
@@ -185,17 +307,22 @@ const AdminDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => void 
         </div>
       )}
 
-      {activeTab === 'catalog' && (
-        <div className="animate-in fade-in duration-500 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-           {data.products.map(p => (
-             <div key={p.id} className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-xl group flex flex-col">
-               <div className="h-24 flex items-center justify-center mb-6 bg-slate-50 rounded-2xl overflow-hidden p-4">
-                  {p.icon?.startsWith('data:') || p.icon?.includes('http') ? <img src={p.icon} className="h-full w-auto object-contain" /> : <span className="text-4xl">🎟️</span>}
-               </div>
-               <h4 className="text-lg font-black text-slate-900 uppercase leading-tight mb-2">{p.name}</h4>
-               <p className="text-[10px] font-black text-unicou-orange uppercase tracking-widest border-t pt-4 mt-auto">${p.basePrice} Node</p>
-             </div>
-           ))}
+      {/* FINANCE LEDGERS SUMMARY (FOR OWNER ONLY) */}
+      {activeTab === 'ledgers' && (
+        <div className="p-20 text-center animate-in fade-in duration-500 bg-slate-50 rounded-[4rem] border-4 border-dashed border-slate-200">
+           <div className="text-6xl mb-8">📊</div>
+           <h3 className="text-3xl font-display font-black uppercase text-slate-950 mb-4 tracking-tighter">Unified Financial Dashboard</h3>
+           <p className="text-slate-500 font-bold italic text-lg max-w-xl mx-auto">"Real-time visibility of gross sales, agent settlements, and tax reporting. This node is synchronized with the Finance Manager terminal."</p>
+        </div>
+      )}
+
+      {/* VAULT CONTROL */}
+      {activeTab === 'vault' && (
+        <div className="p-20 text-center animate-in fade-in duration-500 bg-slate-50 rounded-[4rem] border-4 border-dashed border-slate-200">
+           <div className="text-6xl mb-8">🔐</div>
+           <h3 className="text-3xl font-display font-black uppercase text-slate-950 mb-4 tracking-tighter">Encrypted Voucher Vault</h3>
+           <p className="text-slate-500 font-bold italic text-lg max-w-xl mx-auto">"Upload raw voucher keys directly into the secure cloud. The system handles atomic distribution to verified orders."</p>
+           <button className="mt-10 px-12 py-5 bg-unicou-navy text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl">BULK UPLOAD PROTOCOL</button>
         </div>
       )}
     </div>
