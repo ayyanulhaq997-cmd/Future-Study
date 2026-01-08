@@ -10,7 +10,7 @@ interface VoucherStoreProps {
   onNavigateToAgent: () => void;
 }
 
-const CATEGORIES = ['ALL', 'IELTS', 'PTE', 'LANGUAGECERT', 'SKILLS FOR ENGLISH', 'TOEFL', 'DUOLINGO', 'OTHER'];
+const CATEGORIES = ['ALL', 'IELTS', 'PTE', 'LANGUAGECERT', 'TOEFL', 'DUOLINGO', 'OTHER'];
 
 const VoucherStore: React.FC<VoucherStoreProps> = ({ onCheckout, onNavigateToAgent }) => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -31,17 +31,17 @@ const VoucherStore: React.FC<VoucherStoreProps> = ({ onCheckout, onNavigateToAge
   const filteredProducts = useMemo(() => {
     if (activeCategory === 'ALL') return products;
     const normalizedActive = activeCategory.toUpperCase();
-    return products.filter(p => p.category.toUpperCase().includes(normalizedActive));
+    return products.filter(p => p.category.toUpperCase().includes(normalizedActive) || normalizedActive.includes(p.category.toUpperCase()));
   }, [products, activeCategory]);
 
-  if (loading) return <div className="p-40 text-center animate-pulse text-unicou-navy font-black uppercase text-[11px] tracking-[0.4em]">Establishing Storefront...</div>;
+  if (loading) return <div className="p-40 text-center animate-pulse text-unicou-navy font-black uppercase text-[11px] tracking-[0.4em]">Synchronizing Registry Assets...</div>;
 
   return (
     <div className="max-w-7xl mx-auto px-6 bg-white pb-32 animate-in fade-in duration-700">
       <div className="flex flex-col lg:flex-row justify-between items-center mb-12 gap-8 pt-8">
         <div>
           <h2 className="text-4xl font-display font-black text-unicou-navy tracking-tighter uppercase leading-none mb-2">OFFICIAL <span className="text-unicou-orange">VOUCHERS</span></h2>
-          <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.4em]">Procurement Protocol V4.3</p>
+          <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.4em]">Procurement Protocol V4.5</p>
         </div>
         {!user || user.role !== 'Student' ? (
           <button onClick={onNavigateToAgent} className="px-8 py-3 bg-unicou-navy text-white rounded-full font-black text-[9px] uppercase tracking-widest shadow-xl hover:bg-black transition-all">Partner Access</button>
@@ -89,7 +89,7 @@ const VoucherStore: React.FC<VoucherStoreProps> = ({ onCheckout, onNavigateToAge
                   <span className="text-3xl font-display font-black text-unicou-navy">${p.basePrice}</span>
                 </div>
                 <div className="h-px bg-slate-200 mb-4" />
-                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest text-center">Instant Fulfillment Node Authorized</p>
+                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest text-center">Instant Dispatch Guaranteed</p>
               </div>
 
               <button onClick={() => onCheckout(p.id, 1)} className="w-full bg-unicou-navy hover:bg-unicou-orange text-white py-5 rounded-[1.5rem] font-black text-[10px] uppercase tracking-widest shadow-xl transition-all active:scale-95">AUTHORIZE PROCUREMENT</button>

@@ -9,15 +9,15 @@ import {
   QualificationLead, TestBooking, LMSPracticeTest
 } from '../types';
 
-const SESSION_KEY = 'unicou_active_session_v8';
-const ORDERS_KEY = 'unicou_orders_v8';
-const USERS_KEY = 'unicou_local_users_v8';
-const CODES_KEY = 'unicou_inventory_vault_v8';
-const LMS_ENROLLMENTS_KEY = 'unicou_lms_enrollments_v8';
-const LEADS_KEY = 'unicou_leads_v8';
-const PRODUCTS_KEY = 'unicou_catalog_v8';
+const SESSION_KEY = 'unicou_active_session_v9';
+const ORDERS_KEY = 'unicou_orders_v9';
+const USERS_KEY = 'unicou_local_users_v9';
+const CODES_KEY = 'unicou_inventory_vault_v9';
+const LMS_ENROLLMENTS_KEY = 'unicou_lms_enrollments_v9';
+const LEADS_KEY = 'unicou_leads_v9';
+const PRODUCTS_KEY = 'unicou_catalog_v9';
 const SYSTEM_CONFIG_KEY = 'unicou_global_config_v1';
-const LMS_PROGRESS_KEY = 'unicou_lms_progress_v8';
+const LMS_PROGRESS_KEY = 'unicou_lms_progress_v9';
 
 export const api = {
   // --- SYSTEM CONFIG ---
@@ -125,14 +125,13 @@ export const api = {
   },
 
   getCourseModules: async (courseId: string): Promise<LMSModule[]> => {
-    // Ensuring Course Player has functional content for testing
     return [
       { 
         id: `m1-${courseId}`, 
-        title: 'Strategy & Core Logic', 
+        title: 'Section 1: Fundamental Strategy', 
         lessons: [
-          { id: `l1-${courseId}`, title: 'Hub Orientation', type: 'Text', content: '### Welcome Student\nWelcome to the UNICOU e-Learning terminal. This module outlines your academic trajectory.' },
-          { id: `l2-${courseId}`, title: 'Test Dynamics & Timing', type: 'Text', content: '### Time Constraints\nMaster the 2-minute rule for short-answer questions in high-stakes environments.' }
+          { id: `l1-${courseId}`, title: 'Platform Orientation', type: 'Text', content: '### Welcome Student\nWelcome to the UNICOU Hub. This module establishes your academic baseline.' },
+          { id: `l2-${courseId}`, title: 'Introduction to Exam Logic', type: 'Text', content: '### Strategy Node\nLearn the core timing protocols required for high-stakes English testing.' }
         ] 
       }
     ];
@@ -151,8 +150,9 @@ export const api = {
 
   redeemCourseVoucher: async (code: string): Promise<void> => {
     const enrollments = JSON.parse(localStorage.getItem(LMS_ENROLLMENTS_KEY) || '[]');
-    if (code.toUpperCase().includes('UNLOCK') || code.toUpperCase() === 'PTE100') {
+    if (code.toUpperCase().includes('UNLOCK') || code.toUpperCase() === 'PTE100' || code.toUpperCase() === 'IELTS100') {
       enrollments.push(db.lmsCourses[0].id);
+      if (code.toUpperCase() === 'IELTS100') enrollments.push(db.lmsCourses[1]?.id);
     } else {
       throw new Error("Invalid Code.");
     }
@@ -171,9 +171,6 @@ export const api = {
         const assigned = await api.assignCodesToOrder(all[idx]);
         all[idx].voucherCodes = assigned;
         all[idx].deliveryTime = new Date().toLocaleTimeString();
-        if (assigned.length === 0) {
-          throw new Error("Insufficient stock in Vault node.");
-        }
       }
       all[idx].status = status;
       localStorage.setItem(ORDERS_KEY, JSON.stringify(all));
