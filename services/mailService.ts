@@ -35,7 +35,10 @@ export class MailService {
   static async sendVerificationCode(userName: string, userEmail: string): Promise<void> {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     this.activeVerificationCodes[userEmail.toLowerCase()] = code;
+    
+    // Always store the last code in a global for the UI fallback
     this.lastCodeDispatched = code;
+    (window as any)._last_unicou_code = code;
 
     const config = this.getConfigs();
 
@@ -43,8 +46,6 @@ export class MailService {
     if (!config || !config.serviceId || config.serviceId.includes('YOUR_') || config.serviceId === '') {
       console.warn("--- UNICOU SECURITY PROTOCOL: LOCAL DISPATCH MODE ---");
       console.info(`[INBOX SIMULATION] Verification Code for ${userEmail}: ${code}`);
-      // We also save it to a global window variable so developers can see it in a "Debug" helper if needed
-      (window as any)._last_unicou_code = code;
       return; 
     }
 
@@ -56,8 +57,9 @@ export class MailService {
         subject: "Your UNICOU Verification Code"
       });
     } catch (e) {
-      console.error("EmailJS Dispatch Failed. Falling back to local log.", e);
-      (window as any)._last_unicou_code = code;
+      console.error("EmailJS Dispatch Failed. Falling back to local UI display.", e);
+      // Ensure the UI knows an error happened but provide the code as fallback
+      throw new Error("MAIL_SERVER_OFFLINE");
     }
   }
 
@@ -70,6 +72,7 @@ export class MailService {
     if (isValid) {
       delete this.activeVerificationCodes[email.toLowerCase()];
       this.lastCodeDispatched = null;
+      (window as any)._last_unicou_code = null;
     }
     return isValid;
   }
