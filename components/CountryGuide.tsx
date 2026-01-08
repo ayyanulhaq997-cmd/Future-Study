@@ -96,7 +96,6 @@ const CountryGuide: React.FC<{ slug: string; onViewUniversity: (slug: string) =>
             </div>
           </section>
 
-          {/* New Handoff/Call to Action Section */}
           <section className="bg-unicou-navy p-12 md:p-20 rounded-[4rem] text-center text-white relative overflow-hidden shadow-3xl">
              <div className="absolute top-0 right-0 p-20 opacity-5">
                 <svg className="w-64 h-64" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
@@ -123,16 +122,16 @@ const CountryGuide: React.FC<{ slug: string; onViewUniversity: (slug: string) =>
             <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-2xl relative overflow-hidden">
                <h3 className="text-xl font-black mb-10 tracking-tight text-slate-950 flex items-center gap-3">
                  <span className="w-8 h-8 rounded-xl bg-slate-50 text-unicou-navy flex items-center justify-center text-xs">📊</span>
-                 Cost & Visa Facts
+                 Cost & Fee Facts
                </h3>
                <div className="space-y-8">
                  <div className="bg-slate-50 p-8 rounded-[2rem] border border-slate-100 shadow-inner">
-                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Est. Living Cost</p>
-                   <p className="text-3xl font-display font-black text-slate-950 tracking-tighter uppercase">{guide.costOfLiving}</p>
+                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Living Expenses* Annual</p>
+                   <p className="text-2xl font-display font-black text-slate-950 tracking-tighter uppercase">{guide.costOfLiving}</p>
                  </div>
                  <div className="bg-slate-50 p-8 rounded-[2rem] border border-slate-100 shadow-inner">
-                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Visa Requirements</p>
-                   <p className="text-lg font-black text-emerald-600 uppercase tracking-tight leading-tight uppercase">{guide.visaRequirements}</p>
+                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Tuition Fee* Annual</p>
+                   <p className="text-2xl font-display font-black text-unicou-navy tracking-tighter uppercase">{guide.visaRequirements}</p>
                  </div>
                </div>
             </div>

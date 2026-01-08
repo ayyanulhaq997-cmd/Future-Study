@@ -7,8 +7,8 @@ interface PolicyPageProps {
 
 const POLICY_DATA: Record<string, { title: string; subtitle: string; content: string[] }> = {
   'modern-slavery': {
-    title: 'Modern Slavery Policy',
-    subtitle: 'Modern Slavery and Human Trafficking Statement • UniCou Ltd',
+    title: 'Modern Slavery Statement',
+    subtitle: 'Modern Slavery and Human Trafficking Statement – UniCou Ltd',
     content: [
       'UniCou Ltd is committed to preventing modern slavery and human trafficking in all its business operations and supply chains. We recognise our responsibility under the UK Modern Slavery Act 2015 and support international efforts to eradicate slavery, forced labour, child labour, and human trafficking.',
       'UniCou Ltd operates as an education consultancy firm based in the United Kingdom, working with students, academic institutions, training providers, agents, and business partners across multiple countries. We take a zero-tolerance approach to modern slavery and expect the same high standards from all our partners, suppliers, and associates worldwide.',
@@ -20,7 +20,7 @@ const POLICY_DATA: Record<string, { title: string; subtitle: string; content: st
   },
   'accessibility': {
     title: 'Accessibility Statement',
-    subtitle: 'Website Accessibility Statement • UniCou Ltd',
+    subtitle: 'Website Accessibility Statement – UniCou Ltd',
     content: [
       'UniCou Ltd is committed to ensuring digital accessibility for all users, including people with disabilities. We aim to provide a website experience that is inclusive, user-friendly, and compliant with recognised accessibility standards.',
       'Our website is designed to align with the Web Content Accessibility Guidelines (WCAG) 2.1, Level AA, and relevant UK accessibility regulations. We strive to ensure that our content is accessible through assistive technologies such as screen readers, keyboard navigation, and text enlargement tools.',
@@ -31,7 +31,7 @@ const POLICY_DATA: Record<string, { title: string; subtitle: string; content: st
   },
   'cookies': {
     title: 'Cookie Use Policy',
-    subtitle: 'Data Tracking & Analytics • UniCou Ltd',
+    subtitle: 'Data Tracking & Analytics – UniCou Ltd',
     content: [
       'UniCou Ltd uses cookies and similar technologies to enhance user experience, analyse website performance, and support marketing activities. This Cookie Policy explains how and why cookies are used when you visit our website.',
       'Cookies are small text files stored on your device that help websites function efficiently. We use essential cookies required for website operation, as well as analytical and marketing cookies to understand user behaviour and improve our services.',
@@ -42,7 +42,7 @@ const POLICY_DATA: Record<string, { title: string; subtitle: string; content: st
   },
   'whistleblowing': {
     title: 'Whistleblowing Policy',
-    subtitle: 'Integrity & Transparency • UniCou Ltd',
+    subtitle: 'Integrity & Transparency – UniCou Ltd',
     content: [
       'UniCou Ltd encourages openness and transparency and is committed to conducting business with honesty and integrity. This Whistleblowing Policy provides a framework for employees, contractors, partners, and associates to report concerns safely and confidentially.',
       'Whistleblowing concerns may include unlawful activity, fraud, corruption, data misuse, modern slavery, unethical conduct, or breaches of company policy. Reports can be made without fear of retaliation.',
@@ -53,7 +53,7 @@ const POLICY_DATA: Record<string, { title: string; subtitle: string; content: st
   },
   'privacy': {
     title: 'Privacy Policy',
-    subtitle: 'Data Protection & GDPR • UniCou Ltd',
+    subtitle: 'Data Protection & GDPR – UniCou Ltd',
     content: [
       'UniCou Ltd is committed to protecting personal data and respecting privacy rights. This Privacy Policy explains how we collect, use, store, and share personal data in compliance with the UK GDPR, Data Protection Act 2018, and applicable international data protection laws.',
       'We collect personal data such as names, contact details, academic records, and identification documents for legitimate business purposes, including student counselling, university applications, visa guidance, marketing, and service improvement.',
@@ -64,7 +64,7 @@ const POLICY_DATA: Record<string, { title: string; subtitle: string; content: st
   },
   'carbon-reduction': {
     title: 'Carbon Reduction Plan',
-    subtitle: 'Environmental Responsibility • UniCou Ltd',
+    subtitle: 'Environmental Responsibility – UniCou Ltd',
     content: [
       'UniCou Ltd recognises its responsibility to reduce environmental impact and contribute to global sustainability goals. We are committed to reducing carbon emissions across our operations in line with UK environmental policies and international climate objectives.',
       'As a service-based organisation, our environmental impact primarily relates to office operations, energy usage, digital infrastructure, and business travel. We actively seek to minimise emissions through remote working practices, digital communication, and efficient resource use.',
@@ -74,7 +74,7 @@ const POLICY_DATA: Record<string, { title: string; subtitle: string; content: st
   },
   'terms-of-use': {
     title: 'Website Terms of Use',
-    subtitle: 'Platform Usage Standards • UniCou Ltd',
+    subtitle: 'Platform Usage Standards – UniCou Ltd',
     content: [
       'These Website Terms of Use govern access to and use of the UniCou Ltd website. By using our website, you agree to comply with these terms and all applicable UK and international laws.',
       'Website content is provided for general information purposes only and does not constitute legal, academic, or immigration advice. While we strive for accuracy, we do not guarantee completeness or reliability.',

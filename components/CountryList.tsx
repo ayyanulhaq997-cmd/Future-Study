@@ -84,13 +84,13 @@ const CountryList: React.FC<CountryListProps> = ({ onNavigateToGuide }) => {
               </p>
               
               <div className="grid grid-cols-2 gap-4 mb-10 mt-auto">
-                <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100">
-                  <p className="text-[9px] font-bold text-slate-400 uppercase mb-1 tracking-widest">Living Cost</p>
-                  <p className="text-[12px] font-bold text-slate-900 truncate uppercase">{guide.costOfLiving.split(' ')[0]}</p>
+                <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 min-h-[100px] flex flex-col justify-center">
+                  <p className="text-[9px] font-black text-slate-400 uppercase mb-1 tracking-widest">Living Expenses* Annual</p>
+                  <p className="text-[11px] font-black text-slate-900 leading-tight uppercase">{guide.costOfLiving}</p>
                 </div>
-                <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100">
-                  <p className="text-[9px] font-bold text-slate-400 uppercase mb-1 tracking-widest">Visa Type</p>
-                  <p className="text-[12px] font-bold text-slate-900 truncate uppercase">{guide.visaRequirements.split(' ')[0]}</p>
+                <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 min-h-[100px] flex flex-col justify-center">
+                  <p className="text-[9px] font-black text-slate-400 uppercase mb-1 tracking-widest">Tuition Fee* Annual</p>
+                  <p className="text-[11px] font-black text-slate-900 leading-tight uppercase">{guide.visaRequirements}</p>
                 </div>
               </div>
 
