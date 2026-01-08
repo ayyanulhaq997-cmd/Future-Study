@@ -9,15 +9,15 @@ import {
   QualificationLead, TestBooking, LMSPracticeTest
 } from '../types';
 
-const SESSION_KEY = 'unicou_active_session_v9';
-const ORDERS_KEY = 'unicou_orders_v9';
-const USERS_KEY = 'unicou_local_users_v9';
-const CODES_KEY = 'unicou_inventory_vault_v9';
-const LMS_ENROLLMENTS_KEY = 'unicou_lms_enrollments_v9';
-const LEADS_KEY = 'unicou_leads_v9';
-const PRODUCTS_KEY = 'unicou_catalog_v9';
+const SESSION_KEY = 'unicou_active_session_v10';
+const ORDERS_KEY = 'unicou_orders_v10';
+const USERS_KEY = 'unicou_local_users_v10';
+const CODES_KEY = 'unicou_inventory_vault_v10';
+const LMS_ENROLLMENTS_KEY = 'unicou_lms_enrollments_v10';
+const LEADS_KEY = 'unicou_leads_v10';
+const PRODUCTS_KEY = 'unicou_catalog_v10';
 const SYSTEM_CONFIG_KEY = 'unicou_global_config_v1';
-const LMS_PROGRESS_KEY = 'unicou_lms_progress_v9';
+const LMS_PROGRESS_KEY = 'unicou_lms_progress_v10';
 
 export const api = {
   // --- SYSTEM CONFIG ---

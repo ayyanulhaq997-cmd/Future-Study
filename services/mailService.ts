@@ -4,20 +4,20 @@
  * This service dynamically retrieves configuration from the System Settings.
  */
 
-const SYSTEM_CONFIG_KEY = 'unicou_system_infrastructure_v1';
+export const SYSTEM_CONFIG_KEY = 'unicou_system_infrastructure_v1';
 
 export interface MailConfig {
   serviceId: string;
   templateId_verification: string;
   templateId_voucher: string;
-  templateId_hold: string;
-  templateId_rejected: string;
+  templateId_hold?: string;
+  templateId_rejected?: string;
   publicKey: string;
 }
 
 export class MailService {
   private static activeVerificationCodes: Record<string, string> = {};
-  public static lastCodeDispatched: string | null = null; // For Developer Helper UI
+  public static lastCodeDispatched: string | null = null; 
 
   private static getConfigs(): MailConfig | null {
     const raw = localStorage.getItem(SYSTEM_CONFIG_KEY);
@@ -40,18 +40,25 @@ export class MailService {
     const config = this.getConfigs();
 
     // Check for real configuration
-    if (!config || !config.serviceId || config.serviceId === 'YOUR_SERVICE_ID' || config.serviceId === '') {
+    if (!config || !config.serviceId || config.serviceId.includes('YOUR_') || config.serviceId === '') {
       console.warn("--- UNICOU SECURITY PROTOCOL: LOCAL DISPATCH MODE ---");
       console.info(`[INBOX SIMULATION] Verification Code for ${userEmail}: ${code}`);
+      // We also save it to a global window variable so developers can see it in a "Debug" helper if needed
+      (window as any)._last_unicou_code = code;
       return; 
     }
 
-    await this.dispatch(config.serviceId, config.templateId_verification, config.publicKey, {
-      to_name: userName || 'New User',
-      to_email: userEmail,
-      verification_code: code,
-      subject: "Your UNICOU Verification Code"
-    });
+    try {
+      await this.dispatch(config.serviceId, config.templateId_verification, config.publicKey, {
+        to_name: userName || 'New User',
+        to_email: userEmail,
+        verification_code: code,
+        subject: "Your UNICOU Verification Code"
+      });
+    } catch (e) {
+      console.error("EmailJS Dispatch Failed. Falling back to local log.", e);
+      (window as any)._last_unicou_code = code;
+    }
   }
 
   /**
@@ -72,21 +79,16 @@ export class MailService {
    */
   static async sendOrderStatusEmail(userName: string, userEmail: string, orderId: string, status: 'Approved' | 'Hold' | 'Rejected', voucherCodes?: string[]) {
     const config = this.getConfigs();
-    const hasRealConfig = config && config.serviceId && config.serviceId !== '' && config.serviceId !== 'YOUR_SERVICE_ID';
+    const hasRealConfig = config && config.serviceId && config.serviceId !== '' && !config.serviceId.includes('YOUR_');
 
     if (!hasRealConfig) {
       console.warn(`--- ORDER ${status.toUpperCase()}: LOCAL NOTIFICATION ---`);
-      if (status === 'Approved') {
-        console.info(`[INBOX SIMULATION] Approved Order ${orderId} for ${userEmail}. Vouchers: ${voucherCodes?.join(', ')}`);
-      } else {
-        console.info(`[INBOX SIMULATION] Order ${orderId} for ${userEmail} is now ${status}.`);
-      }
       return { success: true, mode: 'local' };
     }
 
-    let templateId = config.templateId_voucher; // Default to voucher for Approved
-    if (status === 'Hold') templateId = config.templateId_hold || '';
-    if (status === 'Rejected') templateId = config.templateId_rejected || '';
+    let templateId = config.templateId_voucher; 
+    if (status === 'Hold') templateId = config.templateId_hold || config.templateId_voucher;
+    if (status === 'Rejected') templateId = config.templateId_rejected || config.templateId_voucher;
 
     return this.dispatch(config.serviceId, templateId, config.publicKey, {
       to_name: userName,

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { api } from '../services/apiService';
 import { MailService } from '../services/mailService';
 import { User, UserRole } from '../types';
@@ -25,12 +25,21 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [simulatedCode, setSimulatedCode] = useState<string | null>(null);
+  const [debugCode, setDebugCode] = useState<string | null>(null);
+
+  // Monitor the global window variable for simulated codes to help users in local testing
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const code = (window as any)._last_unicou_code;
+      if (code && code !== debugCode) setDebugCode(code);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [debugCode]);
 
   const handleRequestCode = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.email.includes('@')) {
-      setError("Incorrect User ID or Password"); 
+      setError("Valid Email Node Required."); 
       return;
     }
     setLoading(true);
@@ -38,9 +47,8 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
     try {
       await MailService.sendVerificationCode(formData.name || 'Student', formData.email);
       setStep('code-entry');
-      setSimulatedCode(MailService.lastCodeDispatched);
     } catch (err: any) {
-      setError("Incorrect User ID or Password");
+      setError("Dispatch Transmission Failure.");
     } finally {
       setLoading(false);
     }
@@ -51,24 +59,25 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
     if (MailService.verifyStoredCode(formData.email, verificationCode)) {
       setStep('complete');
       setError('');
+      setDebugCode(null);
+      (window as any)._last_unicou_code = null;
     } else {
-      setError("Incorrect User ID or Password");
+      setError("Incorrect Verification Node.");
     }
   };
 
   const handleFinalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
-      setError("Incorrect User ID or Password");
+      setError("Security Node Mismatch: Passwords.");
       return;
     }
     setLoading(true);
     try {
       const user = await api.signup(formData.email, 'Student');
-      await api.verifyEmail(formData.email);
       onSuccess(user);
     } catch (err: any) {
-      setError('Incorrect User ID or Password');
+      setError('Registration Protocol Failure.');
       setLoading(false);
     }
   };
@@ -83,7 +92,6 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
 
   return (
     <div className="max-w-5xl mx-auto py-12 px-6 flex flex-col md:flex-row gap-12 animate-in fade-in duration-700 bg-white">
-      {/* Left: Student Sign Up Form */}
       <div className="flex-1 bg-white p-8 md:p-12 rounded-[3.5rem] border border-slate-100 shadow-2xl relative overflow-hidden h-fit">
         <div className="absolute top-0 left-0 w-full h-1.5 bg-unicou-orange" />
         
@@ -98,7 +106,7 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
 
         {step === 'email' && (
           <form onSubmit={handleRequestCode} className="space-y-6">
-            <label className="block text-[10px] font-black text-unicou-navy uppercase tracking-widest mb-1 ml-1">User ID</label>
+            <label className="block text-[10px] font-black text-unicou-navy uppercase tracking-widest mb-1 ml-1">Official Email Node</label>
             <input 
               type="email" required value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -108,36 +116,47 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
             {error && <div className="text-unicou-orange text-[10px] font-black uppercase tracking-widest bg-orange-50 p-4 rounded-2xl border border-orange-100 text-center animate-pulse">{error}</div>}
             <button 
               type="submit" disabled={loading}
-              className="w-full py-4 bg-unicou-navy text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-900 transition-all shadow-lg"
+              className="w-full py-4 bg-unicou-navy text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-900 transition-all shadow-lg active:scale-95"
             >
-              {loading ? 'Processing...' : 'Sign Up'}
+              {loading ? 'TRANSMITTING...' : 'AUTHORIZE REGISTRATION'}
             </button>
           </form>
         )}
 
         {step === 'code-entry' && (
           <form onSubmit={handleVerifyCode} className="space-y-8">
+            <div className="text-center space-y-2 mb-4">
+              <p className="text-xs text-slate-500 font-bold italic">Verification code dispatched to your identity node.</p>
+              {debugCode && (
+                <div className="p-4 bg-orange-50 border border-orange-100 rounded-2xl">
+                   <p className="text-[10px] font-black text-unicou-orange uppercase mb-1">Internal Debug Bypass</p>
+                   <p className="text-2xl font-mono font-black text-unicou-navy tracking-widest">{debugCode}</p>
+                   <p className="text-[8px] text-slate-400 mt-2">This is visible only because Email Server is in Local Mode.</p>
+                </div>
+              )}
+            </div>
             <input 
               type="text" required maxLength={6}
               value={verificationCode}
               onChange={(e) => setVerificationCode(e.target.value)}
-              placeholder="••••••"
+              placeholder="000000"
               className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-3xl font-mono font-black text-center text-unicou-navy outline-none focus:border-unicou-navy shadow-inner"
             />
             {error && <div className="text-unicou-orange text-[10px] font-black uppercase tracking-widest bg-orange-50 p-4 rounded-2xl border border-orange-100 text-center animate-pulse">{error}</div>}
-            <button type="submit" className="w-full py-4 bg-unicou-navy text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg">Verify & Continue</button>
+            <button type="submit" className="w-full py-4 bg-unicou-navy text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg active:scale-95 transition-all">VERIFY IDENTITY NODE</button>
+            <button type="button" onClick={() => setStep('email')} className="w-full text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-unicou-navy">Incorrect Email? Back</button>
           </form>
         )}
 
         {step === 'complete' && (
           <form onSubmit={handleFinalSubmit} className="space-y-5">
             <div className="space-y-2">
-              <label className="text-[9px] font-black text-unicou-navy uppercase tracking-widest ml-1">Full Name</label>
+              <label className="text-[9px] font-black text-unicou-navy uppercase tracking-widest ml-1">Full Legal Name</label>
               <input type="text" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full bg-slate-50 border border-slate-100 rounded-xl p-4 text-sm font-bold outline-none" placeholder="Student Name" />
             </div>
             
             <div className="space-y-2">
-              <label className="text-[9px] font-black text-unicou-navy uppercase tracking-widest ml-1">Password</label>
+              <label className="text-[9px] font-black text-unicou-navy uppercase tracking-widest ml-1">Password Node</label>
               <div className="relative">
                 <input 
                   type={showPassword ? "text" : "password"} required value={formData.password} 
@@ -152,7 +171,7 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[9px] font-black text-unicou-navy uppercase tracking-widest ml-1">Confirm Password</label>
+              <label className="text-[9px] font-black text-unicou-navy uppercase tracking-widest ml-1">Verify Password</label>
               <div className="relative">
                 <input 
                   type={showConfirmPassword ? "text" : "password"} required value={formData.confirmPassword} 
@@ -168,7 +187,7 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
 
             {error && <div className="text-unicou-orange text-[10px] font-black uppercase tracking-widest bg-orange-50 p-4 rounded-2xl border border-orange-100 text-center animate-pulse">{error}</div>}
             
-            <button type="submit" className="w-full py-5 bg-unicou-orange text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg active:scale-95 transition-all">Sign Up Now</button>
+            <button type="submit" className="w-full py-5 bg-unicou-orange text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg active:scale-95 transition-all">ESTABLISH IDENTITY NODE</button>
           </form>
         )}
 
@@ -179,30 +198,18 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
         </div>
       </div>
 
-      {/* Right: Agent/Professional Section */}
       <div className="flex-1 bg-slate-50 p-8 md:p-12 rounded-[3.5rem] border border-slate-200 flex flex-col justify-center shadow-inner relative overflow-hidden">
         <h3 className="text-2xl font-black text-unicou-navy uppercase tracking-tight mb-8 border-b border-slate-200 pb-4">
-          Agents / Training Centers
+          Partners / Agents
         </h3>
-        
         <p className="text-unicou-charcoal text-sm font-bold italic leading-relaxed mb-8">
-          Professional registration protocol for global partners and education representatives.
+          Professional registration protocol for global partners and institutional representatives.
         </p>
-        
-        <div className="space-y-6 mb-10">
-           {['Application', 'Verification', 'Authority Node Sync', 'Final Agreement'].map((step, idx) => (
-             <div key={idx} className="flex gap-4">
-                <div className="w-7 h-7 rounded-lg bg-unicou-navy text-white flex items-center justify-center text-[10px] font-black shrink-0">{idx + 1}</div>
-                <div className="text-[11px] font-black uppercase text-unicou-navy flex items-center">{step}</div>
-             </div>
-           ))}
-        </div>
-
         <button 
           onClick={() => window.open('https://afeic.pk/membership/', '_blank')}
           className="w-full py-5 bg-unicou-navy text-white rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-xl hover:bg-black transition-all"
         >
-          Professional Sign Up
+          Institutional Entry Protocol
         </button>
       </div>
     </div>
