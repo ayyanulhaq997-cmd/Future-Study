@@ -38,6 +38,16 @@ const VoucherStore: React.FC<VoucherStoreProps> = ({ onCheckout, onNavigateToAge
     );
   }, [products, activeCategory]);
 
+  const getBrandLogo = (category: string) => {
+    const upperCat = category.toUpperCase();
+    return EXAM_LOGOS[upperCat] || EXAM_LOGOS[category] || EXAM_LOGOS['OTHER'];
+  };
+
+  const getBrandColor = (category: string) => {
+    const upperCat = category.toUpperCase();
+    return BRAND_COLORS[upperCat] || BRAND_COLORS[category] || BRAND_COLORS['OTHER'];
+  };
+
   if (loading) return <div className="p-40 text-center animate-pulse text-unicou-navy font-black uppercase text-[11px] tracking-[0.4em]">Synchronizing Registry Assets...</div>;
 
   return (
@@ -66,10 +76,10 @@ const VoucherStore: React.FC<VoucherStoreProps> = ({ onCheckout, onNavigateToAge
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
         {filteredProducts.map(p => {
-          const brandColor = BRAND_COLORS[p.category] || BRAND_COLORS['OTHER'];
+          const brandColor = getBrandColor(p.category);
           const logo = (p.icon && (p.icon.startsWith('data:') || p.icon.startsWith('http'))) 
             ? p.icon 
-            : (EXAM_LOGOS[p.category] || EXAM_LOGOS['OTHER']);
+            : getBrandLogo(p.category);
 
           return (
             <div key={p.id} className="bg-white p-8 rounded-[3.5rem] border border-slate-100 hover:border-unicou-orange/30 transition-all group shadow-premium flex flex-col relative overflow-hidden">

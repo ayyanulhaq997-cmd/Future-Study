@@ -21,7 +21,7 @@ const AgentDashboard: React.FC<{ user: User; onBuy: (pid: string, qty: number) =
     fetch();
   }, []);
 
-  const totalSpent = orders.reduce((acc, o) => acc + o.totalAmount, 0);
+  const totalSpent = orders.reduce((acc, o) => acc + (o.totalAmount || 0), 0);
 
   const handleQtyChange = (pid: string, val: string) => {
     const num = Math.max(1, Math.min(20, parseInt(val) || 1));
@@ -29,16 +29,8 @@ const AgentDashboard: React.FC<{ user: User; onBuy: (pid: string, qty: number) =
   };
 
   const getBrandLogo = (category: string) => {
-    const map: Record<string, string> = { 
-      'IELTS': 'IELTS', 
-      'PTE': 'PTE', 
-      'LanguageCert': 'LanguageCertAcademic', 
-      'ETS': 'TOEFL', 
-      'Duolingo': 'Duolingo', 
-      'Oxford ELLT': 'ELLT',
-      'Skills for English': 'Skills for English'
-    };
-    return EXAM_LOGOS[map[category] || category] || EXAM_LOGOS['OTHER'];
+    const upperCat = category.toUpperCase();
+    return EXAM_LOGOS[upperCat] || EXAM_LOGOS[category] || EXAM_LOGOS['OTHER'];
   };
 
   if (loading) return <div className="p-20 text-center animate-pulse text-unicou-navy font-black uppercase tracking-widest text-[10px]">Syncing Hub...</div>;
@@ -91,11 +83,11 @@ const AgentDashboard: React.FC<{ user: User; onBuy: (pid: string, qty: number) =
                 return (
                   <div key={p.id} className="bg-white p-7 rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col group transition-all hover:border-unicou-navy relative overflow-hidden">
                     {/* BRAND LOGO INTEGRATION */}
-                    <div className="h-24 flex items-center justify-center mb-6">
+                    <div className="h-24 flex items-center justify-center mb-6 bg-slate-50 rounded-2xl p-4 border border-slate-100/50">
                       <img 
                         src={logoSrc} 
                         alt={p.category} 
-                        className="h-14 w-auto object-contain transition-transform group-hover:scale-105" 
+                        className="h-full w-auto object-contain transition-transform group-hover:scale-105" 
                         onError={(e) => { (e.target as HTMLImageElement).src = EXAM_LOGOS['OTHER']; }}
                       />
                     </div>
