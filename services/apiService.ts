@@ -51,6 +51,7 @@ export const api = {
     const users = await api.getUsers();
     const user = users.find(u => u.email.toLowerCase() === id.toLowerCase());
     if (user) {
+      if (user.status === 'Frozen') throw new Error("Account Frozen by Admin Node.");
       if (p !== '123456' && p !== 'admin' && p !== 'student') throw new Error("Invalid Credentials.");
       localStorage.setItem(SESSION_KEY, JSON.stringify(user));
       return user;
@@ -61,8 +62,32 @@ export const api = {
   upsertUser: async (userData: Partial<User>): Promise<void> => {
     const local = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
     const index = local.findIndex((u: User) => u.id === userData.id);
-    if (index > -1) local[index] = { ...local[index], ...userData };
-    else local.push({ ...userData, id: `u-${Date.now()}`, status: 'Active', verified: true, isAuthorized: true } as User);
+    if (index > -1) {
+      local[index] = { ...local[index], ...userData };
+    } else {
+      local.push({ 
+        ...userData, 
+        id: userData.id || `u-${Date.now()}`, 
+        status: userData.status || 'Active', 
+        verified: true, 
+        isAuthorized: true 
+      } as User);
+    }
+    localStorage.setItem(USERS_KEY, JSON.stringify(local));
+  },
+
+  setUserStatus: async (id: string, status: User['status']): Promise<void> => {
+    const local = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+    const index = local.findIndex((u: User) => u.id === id);
+    if (index > -1) {
+      local[index].status = status;
+    } else {
+      // Check db users and convert to local if needed
+      const dbUser = db.users.find(u => u.id === id);
+      if (dbUser) {
+        local.push({ ...dbUser, status });
+      }
+    }
     localStorage.setItem(USERS_KEY, JSON.stringify(local));
   },
 
