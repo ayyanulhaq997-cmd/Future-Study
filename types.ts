@@ -113,6 +113,9 @@ export type ViewState =
   | { type: 'success'; orderId: string }
   | { type: 'university'; slug: string }
   | { type: 'policy'; policyId: string }
+  | { type: 'system-map' }
+  | { type: 'user-guide' }
+  | { type: 'handover' }
   | { type: 'verification'; email: string };
 
 export interface LMSCourse {

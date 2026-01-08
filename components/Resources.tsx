@@ -6,7 +6,7 @@ interface ResourcesProps {
   onNavigate: (view: ViewState) => void;
 }
 
-type ResourceTab = 'news' | 'blogs' | 'scholarships';
+type ResourceTab = 'news' | 'blogs' | 'scholarships' | 'documentation';
 
 const Resources: React.FC<ResourcesProps> = ({ onNavigate }) => {
   const [activeTab, setActiveTab] = useState<ResourceTab>('news');
@@ -43,7 +43,7 @@ const Resources: React.FC<ResourcesProps> = ({ onNavigate }) => {
         <div className="lg:col-span-8 flex-grow">
           {/* TAB SYSTEM */}
           <div className="flex bg-slate-50 p-2 rounded-[2.5rem] border border-slate-200 mb-12 shadow-inner overflow-x-auto no-scrollbar">
-            {(['news', 'blogs', 'scholarships'] as const).map(tab => (
+            {(['news', 'blogs', 'scholarships', 'documentation'] as const).map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -51,12 +51,27 @@ const Resources: React.FC<ResourcesProps> = ({ onNavigate }) => {
                   activeTab === tab ? 'bg-unicou-navy text-white shadow-xl' : 'text-slate-400 hover:text-unicou-navy'
                 }`}
               >
-                {tab === 'news' ? 'NEWS FEED' : tab === 'blogs' ? 'EXPERT BLOGS' : 'SCHOLARSHIP REGISTRY'}
+                {tab === 'news' ? 'NEWS FEED' : tab === 'blogs' ? 'EXPERT BLOGS' : tab === 'scholarships' ? 'SCHOLARSHIPS' : 'OPERATING GUIDES'}
               </button>
             ))}
           </div>
 
           <div className="space-y-10 min-h-[600px]">
+            {activeTab === 'documentation' && (
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in slide-in-from-bottom-4 duration-500">
+                  <div onClick={() => onNavigate({ type: 'user-guide' })} className="bg-slate-50 p-10 rounded-[3rem] border-2 border-slate-100 hover:bg-white hover:border-unicou-navy transition-all shadow-sm hover:shadow-2xl cursor-pointer group">
+                     <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-2xl mb-8 shadow-inner">📖</div>
+                     <h3 className="text-2xl font-display font-black text-unicou-navy mb-4 uppercase group-hover:text-unicou-orange">User Guide</h3>
+                     <p className="text-slate-500 font-bold italic text-sm">Step-by-step operating procedures for students and partners.</p>
+                  </div>
+                  <div onClick={() => onNavigate({ type: 'system-map' })} className="bg-slate-50 p-10 rounded-[3rem] border-2 border-slate-100 hover:bg-white hover:border-unicou-navy transition-all shadow-sm hover:shadow-2xl cursor-pointer group">
+                     <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-2xl mb-8 shadow-inner">🗺️</div>
+                     <h3 className="text-2xl font-display font-black text-unicou-navy mb-4 uppercase group-hover:text-unicou-orange">System Map</h3>
+                     <p className="text-slate-500 font-bold italic text-sm">Visual infrastructure of the UNICOU global academic mobility node.</p>
+                  </div>
+               </div>
+            )}
+
             {activeTab === 'news' && news.map((item, i) => (
               <div key={i} className="bg-white p-10 rounded-[3.5rem] border border-slate-100 hover:border-unicou-orange/20 transition-all shadow-lg group">
                 <div className="flex justify-between items-start mb-6">

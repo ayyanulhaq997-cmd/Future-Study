@@ -1,11 +1,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/apiService';
-import { Product, Order, User, OrderStatus, BusinessMetrics, Lead } from '../types';
+import { Product, Order, User, OrderStatus, BusinessMetrics, Lead, ViewState } from '../types';
 
-type AdminTab = 'intelligence' | 'registrations' | 'vault' | 'ledgers' | 'staff' | 'catalog';
+type AdminTab = 'intelligence' | 'registrations' | 'vault' | 'ledgers' | 'staff' | 'catalog' | 'handover';
 
-const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
+const AdminDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => void }> = ({ user, onNavigate }) => {
   const [activeTab, setActiveTab] = useState<AdminTab>('intelligence');
   const [metrics, setMetrics] = useState<BusinessMetrics | null>(null);
   const [halted, setHalted] = useState(api.getSystemHaltStatus());
@@ -21,7 +21,6 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
   const [newProduct, setNewProduct] = useState<Partial<Product>>({ type: 'Voucher', currency: 'USD', pricingModel: 'Global', category: 'PTE' });
 
   const isOwner = user.role === 'System Admin/Owner';
-  const isManager = user.role === 'Operation Manager';
 
   const refreshData = async () => {
     const [o, u, p, m, l] = await Promise.all([
@@ -55,7 +54,6 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    alert("Requirement IV: Master Registry record sheet exported to CSV.");
   };
 
   const handleUserAction = async (uid: string, nextStatus: any) => {
@@ -69,7 +67,6 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
     const id = `v-${newProduct.name.toLowerCase().replace(/\s+/g, '-')}`;
     await api.upsertProduct({ ...newProduct, id } as Product);
     setNewProduct({ type: 'Voucher', currency: 'USD', pricingModel: 'Global', category: 'PTE' });
-    alert("Product deployed to Catalog.");
     refreshData();
   };
 
@@ -101,7 +98,8 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
               { id: 'registrations', label: 'Approvals' },
               { id: 'vault', label: 'Stock' },
               { id: 'ledgers', label: 'Ledgers' },
-              { id: 'staff', label: 'Staff' }
+              { id: 'staff', label: 'Staff' },
+              { id: 'handover', label: 'Handover' }
             ].map(t => (
               <button 
                 key={t.id} 
@@ -114,6 +112,24 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
           </div>
         </div>
       </div>
+
+      {activeTab === 'handover' && (
+        <div className="animate-in zoom-in duration-500 max-w-4xl mx-auto py-12 text-center">
+           <div className="w-20 h-20 bg-unicou-navy text-white rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-3xl text-3xl">🛡️</div>
+           <h2 className="text-4xl font-display font-black text-slate-900 mb-6 uppercase">Technical Handover Terminal</h2>
+           <p className="text-slate-600 text-lg font-medium italic mb-12">Access mission-critical architecture documentation and fulfillment security protocols.</p>
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <button onClick={() => onNavigate({ type: 'handover' })} className="p-10 bg-slate-50 border border-slate-200 rounded-[3rem] hover:bg-white hover:shadow-2xl transition-all group">
+                 <h4 className="font-black text-unicou-navy uppercase tracking-widest mb-2 group-hover:text-unicou-orange">Architecture Blueprint</h4>
+                 <p className="text-xs text-slate-500 font-bold italic">Deep-dive into React state nodes and API bridges.</p>
+              </button>
+              <button onClick={() => onNavigate({ type: 'system-map' })} className="p-10 bg-slate-50 border border-slate-200 rounded-[3rem] hover:bg-white hover:shadow-2xl transition-all group">
+                 <h4 className="font-black text-unicou-navy uppercase tracking-widest mb-2 group-hover:text-unicou-orange">Stakeholder Map</h4>
+                 <p className="text-xs text-slate-500 font-bold italic">User lifecycle from registration to fulfillment.</p>
+              </button>
+           </div>
+        </div>
+      )}
 
       {/* INTELLIGENCE / OWNER REPORTS */}
       {activeTab === 'intelligence' && metrics && (
@@ -346,7 +362,6 @@ const StockInjectionForm = ({ products, onRefresh }: any) => {
     await api.addStockToProduct(pid, codes.split('\n').filter(c => c.trim()));
     setCodes('');
     setSyncing(false);
-    alert("Voucher nodes synchronized with Vault.");
     onRefresh();
   };
 

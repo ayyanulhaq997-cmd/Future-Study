@@ -31,6 +31,10 @@ import PolicyPage from './components/PolicyPage';
 import Resources from './components/Resources';
 import About from './components/About';
 import CookieConsent from './components/CookieConsent';
+import PartnerShowcase from './components/PartnerShowcase';
+import UserGuide from './components/UserGuide';
+import SystemMap from './components/SystemMap';
+import HandoverView from './components/HandoverView';
 import { ViewState, User } from './types';
 import { api } from './services/apiService';
 import { LOGO_SRC } from './constants/assets';
@@ -69,7 +73,7 @@ const App: React.FC = () => {
          case 'System Admin/Owner':
          case 'Operation Manager':
          case 'Academic Manager':
-           return <div className="view-container"><AdminDashboard user={user} /></div>;
+           return <div className="view-container"><AdminDashboard user={user} onNavigate={navigateTo} /></div>;
          
          case 'Finance Manager':
          case 'Finance':
@@ -103,6 +107,7 @@ const App: React.FC = () => {
           <div className="animate-in fade-in duration-1000">
             <Hero onStart={() => navigateTo({ type: 'store' })} onApplyClick={() => navigateTo({ type: 'apply', formType: 'student-apply' })} />
             <Features />
+            <PartnerShowcase />
             <CountryList onNavigateToGuide={(slug) => navigateTo({ type: 'country-guide', slug })} />
           </div>
         );
@@ -127,6 +132,12 @@ const App: React.FC = () => {
         return <div className="view-container"><About /></div>;
       case 'resources':
         return <div className="view-container"><Resources onNavigate={navigateTo} /></div>;
+      case 'user-guide':
+        return <div className="view-container"><UserGuide /></div>;
+      case 'system-map':
+        return <div className="view-container"><SystemMap /></div>;
+      case 'handover':
+        return <div className="view-container"><HandoverView /></div>;
       case 'login': 
         return <div className="view-container"><Login onLogin={handleAuthorizedNavigation} onNavigateToSignup={() => navigateTo({ type: 'signup' })} onNavigateToForgot={() => navigateTo({ type: 'forgot-password' })} /></div>;
       case 'signup':
