@@ -29,7 +29,7 @@ const CountryGuide: React.FC<{ slug: string; onViewUniversity: (slug: string) =>
   const renderContent = (text: string) => {
     return text.split('\n').map((line, i) => {
       if (line.startsWith('### ')) {
-        return <h2 key={i} className="text-3xl font-display font-black text-slate-950 mt-12 mb-6 tracking-tight uppercase">{line.replace('### ', '')}</h2>;
+        return <h2 key={i} className="text-3xl font-display font-black text-slate-950 mt-12 mb-6 tracking-tight uppercase border-b-4 border-unicou-orange/20 pb-2 inline-block">{line.replace('### ', '')}</h2>;
       }
       return line.trim() ? <p key={i} className="text-slate-700 leading-relaxed mb-6 font-semibold text-lg italic">{line}</p> : <div key={i} className="h-4" />;
     });
