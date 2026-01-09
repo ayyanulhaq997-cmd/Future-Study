@@ -19,6 +19,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  password?: string; // Visible only to Admin in reports (Requirement 1.VI)
   role: UserRole;
   tier?: number;
   verified?: boolean;
@@ -28,14 +29,22 @@ export interface User {
   agreementDate?: string; 
   isFlagged?: boolean; 
   country?: string;
+  timestamp: string;
 }
 
-export interface Lead {
+export interface PurchaseRecord {
   id: string;
-  type: 'student' | 'agent' | 'institute' | 'general';
-  data: Record<string, string>;
-  status: 'New' | 'Contacted' | 'Processed' | 'Approved' | 'Rejected';
-  timestamp: string;
+  invoiceNo: string;
+  date: string;
+  expiryDate: string;
+  sellerName: string;
+  description: string;
+  quantity: number;
+  currency: string;
+  valueExTax: number;
+  taxes: number;
+  valueInTax: number;
+  productId: string;
 }
 
 export interface Product {
@@ -49,6 +58,7 @@ export interface Product {
   description: string;
   icon: string;
   stockCount?: number; 
+  openingStock?: number;
 }
 
 export type VoucherStatus = 'Available' | 'Used' | 'Expired';
@@ -118,17 +128,6 @@ export type ViewState =
   | { type: 'handover' }
   | { type: 'verification'; email: string };
 
-export interface LMSCourse {
-  id: string;
-  title: string;
-  category: string;
-  thumbnail: string;
-  description: string;
-  duration: string;
-  instructor: string;
-  price: number;
-}
-
 export interface BusinessMetrics {
   todaySales: number;
   monthRevenue: number;
@@ -140,52 +139,6 @@ export interface BusinessMetrics {
   systemHalt: boolean;
 }
 
-export interface Qualification {
-  id: string;
-  title: string;
-  qualificationBody: string;
-  level: string;
-  tuitionFees: string;
-  description: string;
-  duration: string;
-  image: string;
-  requirements: string[];
-}
-
-export interface QualificationLead {
-  id: string;
-  timestamp: string;
-  studentName: string;
-  studentEmail: string;
-  studentPhone: string;
-  highestQualification: string;
-  workExperience: string;
-  qualificationId: string;
-  qualificationTitle: string;
-}
-
-export interface TestBooking {
-  id: string;
-  timestamp: string;
-  productId: string;
-  productName: string;
-  studentName: string;
-  studentEmail: string;
-  preferredDate: string;
-  testCenter: string;
-  serviceType: string;
-}
-
-export interface APIEndpoint {
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
-  path: string;
-  description: string;
-  authRequired: boolean;
-  params?: string[];
-  response: string;
-}
-
-// Added to fix compilation error: Module '"../types"' has no exported member 'University'.
 export interface University {
   id: string;
   name: string;
@@ -198,7 +151,6 @@ export interface University {
   website?: string;
 }
 
-// Added to fix compilation error: Module '"../types"' has no exported member 'CountryGuide'.
 export interface CountryGuide {
   id: string;
   countryId: string;
@@ -210,7 +162,6 @@ export interface CountryGuide {
   content: string;
 }
 
-// Added to fix compilation error: Module '"../types"' has no exported member 'Course'.
 export interface Course {
   id: string;
   universityId: string;
@@ -221,7 +172,36 @@ export interface Course {
   description: string;
 }
 
-// Added to fix compilation error: Module '"../types"' has no exported member 'LMSTestQuestion'.
+export interface LMSCourse {
+  id: string;
+  title: string;
+  category: string;
+  thumbnail: string;
+  description: string;
+  duration: string;
+  instructor: string;
+  price: number;
+}
+
+export interface LMSLesson {
+  id: string;
+  title: string;
+  type: 'Video' | 'Text' | 'Quiz' | string;
+  content: string;
+}
+
+export interface LMSModule {
+  id: string;
+  title: string;
+  lessons: LMSLesson[];
+}
+
+export interface Enrollment {
+  courseId: string;
+  userId: string;
+  progress: number;
+}
+
 export interface LMSTestQuestion {
   id: string;
   skill: string;
@@ -233,7 +213,6 @@ export interface LMSTestQuestion {
   targetSentence?: string;
 }
 
-// Added to fix compilation error: Module '"../types"' has no exported member 'LMSTestSection'.
 export interface LMSTestSection {
   id: string;
   title: string;
@@ -244,14 +223,23 @@ export interface LMSTestSection {
   questions: LMSTestQuestion[];
 }
 
-// Added to fix compilation error: Module '"../types"' has no exported member 'LMSPracticeTest'.
 export interface LMSPracticeTest {
   id: string;
   title: string;
   sections: LMSTestSection[];
 }
 
-// Added to fix compilation error: Module '"../types"' has no exported member 'ManualSubmission'.
+export interface TestResult {
+  id: string;
+  userId: string;
+  testId: string;
+  testTitle: string;
+  overallBand: string;
+  skillScores: { skill: string; score: string }[];
+  timeTaken: number;
+  timestamp: string;
+}
+
 export interface ManualSubmission {
   id: string;
   userId: string;
@@ -267,41 +255,18 @@ export interface ManualSubmission {
   status: 'Pending' | 'Graded';
 }
 
-// Added to fix compilation error: Module '"../types"' has no exported member 'TestResult'.
-export interface TestResult {
-  id: string;
-  userId: string;
-  testId: string;
-  testTitle: string;
-  overallBand: string;
-  skillScores: { skill: string; score: string }[];
-  timeTaken: number;
-  timestamp: string;
-}
-
-// Added to fix compilation error: Module '"../types"' has no exported member 'LMSLesson'.
-export interface LMSLesson {
+export interface Qualification {
   id: string;
   title: string;
-  type: 'Video' | 'Text' | 'Quiz' | string;
-  content: string;
+  qualificationBody: string;
+  level: string;
+  tuitionFees: string;
+  description: string;
+  duration: string;
+  image: string;
+  requirements: string[];
 }
 
-// Added to fix compilation error: Module '"../types"' has no exported member 'LMSModule'.
-export interface LMSModule {
-  id: string;
-  title: string;
-  lessons: LMSLesson[];
-}
-
-// Added to fix compilation error: Module '"../types"' has no exported member 'Enrollment'.
-export interface Enrollment {
-  courseId: string;
-  userId: string;
-  progress: number;
-}
-
-// Supporting interface for ImmigrationGuideData
 export interface ImmigrationPathway {
   id: string;
   title: string;
@@ -309,7 +274,6 @@ export interface ImmigrationPathway {
   requirements: string[];
 }
 
-// Added to fix compilation error: Module '"../types"' has no exported member 'ImmigrationGuideData'.
 export interface ImmigrationGuideData {
   id: string;
   slug: string;
@@ -317,4 +281,45 @@ export interface ImmigrationGuideData {
   heroImage: string;
   content: string;
   pathways: ImmigrationPathway[];
+}
+
+export interface APIEndpoint {
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+  path: string;
+  description: string;
+  authRequired: boolean;
+  params?: string[];
+  response: string;
+}
+
+export interface Lead {
+  id: string;
+  type: 'student' | 'agent' | 'institute' | 'general';
+  data: Record<string, string>;
+  status: 'New' | 'Contacted' | 'Processed' | 'Approved' | 'Rejected';
+  timestamp: string;
+}
+
+export interface QualificationLead {
+  id: string;
+  studentName: string;
+  studentEmail: string;
+  studentPhone: string;
+  highestQualification: string;
+  workExperience: string;
+  qualificationId: string;
+  qualificationTitle: string;
+  timestamp: string;
+}
+
+export interface TestBooking {
+  id: string;
+  productId: string;
+  productName: string;
+  studentName: string;
+  studentEmail: string;
+  preferredDate: string;
+  testCenter: string;
+  serviceType: string;
+  timestamp: string;
 }

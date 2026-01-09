@@ -163,7 +163,6 @@ const LMSCoursePlayer: React.FC<LMSCoursePlayerProps> = ({ courseId, initialLess
   const [quizStarted, setQuizStarted] = useState(false);
   const [lastCompletedId, setLastCompletedId] = useState<string | null>(null);
 
-  // Flattened lesson list for easy linear navigation
   const allLessons = useMemo(() => {
     return modules.flatMap((m: LMSModule) => m.lessons);
   }, [modules]);
@@ -173,7 +172,6 @@ const LMSCoursePlayer: React.FC<LMSCoursePlayerProps> = ({ courseId, initialLess
     return allLessons.findIndex(l => l.id === activeLesson.id);
   }, [allLessons, activeLesson]);
 
-  // Determine if a specific lesson is completed based on its index
   const isLessonCompleted = (lessonId: string) => {
     const idx = allLessons.findIndex(l => l.id === lessonId);
     if (idx === -1) return false;
@@ -187,20 +185,12 @@ const LMSCoursePlayer: React.FC<LMSCoursePlayerProps> = ({ courseId, initialLess
         const allCourses = await api.getAllLMSCourses();
         const c = allCourses.find(x => x.id === courseId);
         const mods = await api.getCourseModules(courseId);
-        const enrollment = await api.getEnrollmentByCourse(courseId);
+        const enrollment = await api.getEnrollmentByCourse(courseId) as Enrollment;
         
         setCourse(c || null);
         setModules(mods);
+        setProgress(enrollment?.progress || 0);
         
-        // Fix TS Build Error: Property progress does not exist on type 'never'
-        // Ensure the enrollment type is recognized or defaulted.
-        if (enrollment && (enrollment as Enrollment).progress !== undefined) {
-           setProgress((enrollment as Enrollment).progress);
-        } else {
-           setProgress(0);
-        }
-        
-        // Auto-select first lesson or initialLessonId
         if (mods.length > 0) {
           const flat = mods.flatMap((m: LMSModule) => m.lessons);
           const initial = initialLessonId ? flat.find(l => l.id === initialLessonId) : flat[0];
@@ -216,7 +206,6 @@ const LMSCoursePlayer: React.FC<LMSCoursePlayerProps> = ({ courseId, initialLess
   }, [courseId, initialLessonId]);
 
   useEffect(() => {
-    // Reset quiz state when switching lessons
     setQuizStarted(false);
   }, [activeLesson?.id]);
 
@@ -240,24 +229,20 @@ const LMSCoursePlayer: React.FC<LMSCoursePlayerProps> = ({ courseId, initialLess
     if (!course || savingProgress || !activeLesson) return;
     setSavingProgress(true);
     
-    // Calculate progress based on current index
     const newProgress = Math.min(100, Math.round(((activeLessonIndex + 1) / allLessons.length) * 100));
     const higherProgress = Math.max(progress, newProgress);
     
     try {
-      // Persist progress to simulated DB
       await api.updateCourseProgress(courseId, higherProgress);
       setProgress(higherProgress);
       setLastCompletedId(activeLesson.id);
       
-      // Clear last completed animation after a bit
       setTimeout(() => setLastCompletedId(null), 3000);
 
-      // Auto-move to next if available
       if (activeLessonIndex < allLessons.length - 1) {
         handleNext();
       } else {
-        alert("Congratulations! You have completed all lessons in this course.");
+        alert("Congratulations! Module Synchronization Authorized. Course Complete.");
       }
     } catch (e) {
       console.error("Failed to sync progress node.");
@@ -266,7 +251,7 @@ const LMSCoursePlayer: React.FC<LMSCoursePlayerProps> = ({ courseId, initialLess
     }
   };
 
-  if (loading) return <div className="p-20 text-center animate-pulse">Entering Secure Virtual Classroom...</div>;
+  if (loading) return <div className="p-20 text-center animate-pulse text-white">Entering Secure Virtual Classroom...</div>;
   if (error) return (
     <div className="max-w-xl mx-auto py-20 text-center">
       <div className="bg-red-500/10 border border-red-500/20 p-8 rounded-3xl">
@@ -282,7 +267,6 @@ const LMSCoursePlayer: React.FC<LMSCoursePlayerProps> = ({ courseId, initialLess
 
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-slate-950">
-      {/* Sidebar Content Tree */}
       <div className="w-full lg:w-80 h-auto lg:h-screen lg:overflow-y-auto glass border-r border-slate-900 sticky top-0 z-20">
         <div className="p-6 border-b border-slate-900">
           <button 
@@ -290,9 +274,9 @@ const LMSCoursePlayer: React.FC<LMSCoursePlayerProps> = ({ courseId, initialLess
             className="text-slate-500 text-xs font-black uppercase tracking-widest hover:text-white mb-4 flex items-center gap-2 transition-colors"
           >
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-            Exit Course
+            Exit Hub
           </button>
-          <h2 className="text-lg font-bold text-white">{course?.title}</h2>
+          <h2 className="text-lg font-bold text-white uppercase">{course?.title}</h2>
           <div className="w-full bg-slate-900 h-1.5 rounded-full mt-4 overflow-hidden relative">
              <div 
                className="bg-primary-500 h-full transition-all duration-700 ease-out shadow-[0_0_8px_rgba(14,165,233,0.5)]" 
@@ -351,24 +335,23 @@ const LMSCoursePlayer: React.FC<LMSCoursePlayerProps> = ({ courseId, initialLess
           <div className="p-4 mt-8">
              <button 
                onClick={() => onNavigate({ type: 'lms-practice-test', testId: 'full-mock-1' })}
-               className="w-full p-4 bg-emerald-600/10 border border-emerald-500/30 text-emerald-400 rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-emerald-600/20 transition-all shadow-lg hover:shadow-emerald-500/5"
+               className="w-full p-4 bg-emerald-600/10 border border-emerald-500/30 text-emerald-400 rounded-2xl font-bold text-[10px] uppercase tracking-widest hover:bg-emerald-600/20 transition-all shadow-lg hover:shadow-emerald-500/5"
              >
-               Take Final Mock Exam
+               Launch Full Practice Test
              </button>
           </div>
         </div>
       </div>
 
-      {/* Main Content Area */}
       <div className="flex-grow p-4 md:p-12 lg:h-screen lg:overflow-y-auto">
         {activeLesson ? (
           <div key={activeLesson.id} className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 text-white">
             <div className="flex justify-between items-end">
               <div>
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary-500 mb-2 block">Lesson Playback • {activeLessonIndex + 1} / {allLessons.length}</span>
-                <h1 className="text-3xl md:text-4xl font-display font-bold">{activeLesson.title}</h1>
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary-500 mb-2 block">Playback Terminal • {activeLessonIndex + 1} / {allLessons.length}</span>
+                <h1 className="text-3xl md:text-4xl font-display font-black uppercase tracking-tight">{activeLesson.title}</h1>
               </div>
-              <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl">
+              <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl shadow-inner">
                  <div className="w-2 h-2 rounded-full bg-primary-500 animate-pulse" />
                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Active Node</span>
               </div>
@@ -389,9 +372,9 @@ const LMSCoursePlayer: React.FC<LMSCoursePlayerProps> = ({ courseId, initialLess
 
             {activeLesson.type === 'Text' && (
               <div className="glass p-8 md:p-12 rounded-[2rem] border-slate-800 prose prose-invert prose-primary max-w-none shadow-2xl">
-                <div className="text-slate-300 leading-relaxed space-y-6 text-lg">
+                <div className="text-slate-300 leading-relaxed space-y-6 text-lg font-medium italic">
                    {activeLesson.content.split('\n').map((line, i) => (
-                     <p key={i}>{line.startsWith('###') ? <strong className="text-white text-2xl font-display block mb-4 pt-4 border-t border-white/5">{line.replace('###', '')}</strong> : line}</p>
+                     <p key={i}>{line.startsWith('###') ? <strong className="text-white text-2xl font-display font-black block mb-4 pt-4 border-t border-white/5 uppercase tracking-tighter">{line.replace('###', '')}</strong> : line}</p>
                    ))}
                 </div>
               </div>
@@ -402,16 +385,16 @@ const LMSCoursePlayer: React.FC<LMSCoursePlayerProps> = ({ courseId, initialLess
                 <LMSQuiz content={activeLesson.content} onComplete={handleMarkComplete} />
               ) : (
                 <div className="glass p-12 rounded-[2.5rem] border-slate-800 text-center space-y-6 shadow-2xl">
-                  <div className="w-16 h-16 bg-primary-600/10 text-primary-400 rounded-2xl flex items-center justify-center mx-auto">
+                  <div className="w-16 h-16 bg-primary-600/10 text-primary-400 rounded-2xl flex items-center justify-center mx-auto shadow-inner">
                     <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                   </div>
-                  <h2 className="text-2xl font-bold">Concept Checkpoint</h2>
-                  <p className="text-slate-500 max-w-sm mx-auto">Verify your understanding of the module before proceeding.</p>
+                  <h2 className="text-2xl font-black uppercase tracking-tighter">Module Assessment</h2>
+                  <p className="text-slate-500 max-w-sm mx-auto font-bold italic">"Establish your comprehension node before proceeding to high-stakes simulation."</p>
                   <button 
                     onClick={() => setQuizStarted(true)}
-                    className="px-8 py-3 bg-primary-600 hover:bg-primary-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-primary-500/20 active:scale-95"
+                    className="px-8 py-3 bg-primary-600 hover:bg-primary-500 text-white rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-primary-500/20 active:scale-95"
                   >
-                    Start Lesson Quiz
+                    Authorize Quiz
                   </button>
                 </div>
               )
@@ -421,17 +404,17 @@ const LMSCoursePlayer: React.FC<LMSCoursePlayerProps> = ({ courseId, initialLess
                <button 
                 onClick={handlePrev}
                 disabled={activeLessonIndex <= 0}
-                className="text-slate-500 font-bold hover:text-white transition-colors disabled:opacity-30 disabled:pointer-events-none flex items-center gap-2 group"
+                className="text-slate-500 font-black uppercase text-[10px] tracking-widest hover:text-white transition-colors disabled:opacity-30 disabled:pointer-events-none flex items-center gap-2 group"
                >
-                 <svg className="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-                 Previous Lesson
+                 <svg className="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" /></svg>
+                 Prev Node
                </button>
                
                {activeLesson.type !== 'Quiz' && (
                  <button 
                   onClick={handleMarkComplete}
                   disabled={savingProgress}
-                  className="px-10 py-4 bg-white hover:bg-slate-200 text-slate-950 rounded-2xl font-black text-sm uppercase tracking-widest transition-all shadow-2xl active:scale-95 disabled:opacity-50 flex items-center gap-3 group/complete"
+                  className="px-10 py-4 bg-white hover:bg-slate-200 text-slate-950 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-2xl active:scale-95 disabled:opacity-50 flex items-center gap-3 group/complete"
                  >
                    {savingProgress ? (
                      <>
@@ -440,8 +423,8 @@ const LMSCoursePlayer: React.FC<LMSCoursePlayerProps> = ({ courseId, initialLess
                      </>
                    ) : (
                      <>
-                       Mark as Complete
-                       <svg className="w-5 h-5 group-hover/complete:scale-125 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                       Commit Learning
+                       <svg className="w-5 h-5 group-hover/complete:scale-125 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                      </>
                    )}
                  </button>
@@ -450,17 +433,17 @@ const LMSCoursePlayer: React.FC<LMSCoursePlayerProps> = ({ courseId, initialLess
                <button 
                 onClick={handleNext}
                 disabled={activeLessonIndex === -1 || activeLessonIndex === allLessons.length - 1}
-                className="text-primary-400 font-bold hover:text-primary-300 transition-colors disabled:opacity-30 disabled:pointer-events-none flex items-center gap-2 group"
+                className="text-primary-400 font-black uppercase text-[10px] tracking-widest hover:text-primary-300 transition-colors disabled:opacity-30 disabled:pointer-events-none flex items-center gap-2 group"
                >
-                 Next Lesson
-                 <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                 Next Node
+                 <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" /></svg>
                </button>
             </div>
           </div>
         ) : (
           <div className="h-full flex flex-col items-center justify-center text-slate-500">
             <svg className="w-16 h-16 opacity-10 mb-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14h2v2h-2v-2zm0-10h2v8h-2V6z"/></svg>
-            <p>Select a lesson from the sidebar to begin.</p>
+            <p className="font-black uppercase tracking-widest text-[10px]">Select a module to begin playback.</p>
           </div>
         )}
       </div>

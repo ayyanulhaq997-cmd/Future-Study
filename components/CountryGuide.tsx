@@ -108,11 +108,6 @@ const CountryGuide: React.FC<{ slug: string; onViewUniversity: (slug: string) =>
                    OPEN REGISTRATION FORM
                    <svg className="w-8 h-8 group-hover:translate-x-2 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                 </button>
-                
-                <div className="mt-12 pt-12 border-t border-white/10 flex flex-col items-center gap-4">
-                   <p className="text-[10px] font-black text-white/50 uppercase tracking-[0.4em]">Direct Communication Node</p>
-                   <a href="mailto:connect@unicou.uk" className="text-2xl font-black text-unicou-vibrant hover:text-white transition-colors tracking-tight">connect@unicou.uk</a>
-                </div>
              </div>
           </section>
         </div>

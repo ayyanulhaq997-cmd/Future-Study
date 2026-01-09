@@ -79,9 +79,6 @@ const CountryList: React.FC<CountryListProps> = ({ onNavigateToGuide }) => {
                  </h3>
                  <div className="w-2.5 h-2.5 rounded-full bg-unicou-orange shadow-[0_0_10px_rgba(241,90,36,0.6)]"></div>
               </div>
-              <p className="text-slate-500 text-sm mb-10 leading-relaxed line-clamp-2 italic font-medium">
-                {guide.content}
-              </p>
               
               <div className="grid grid-cols-2 gap-4 mb-10 mt-auto">
                 <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 min-h-[100px] flex flex-col justify-center">
