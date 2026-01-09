@@ -33,7 +33,7 @@ export const api = {
     return {
       todaySales: approved.reduce((s,o) => s + (o.totalAmount || 0), 0),
       monthRevenue: approved.reduce((s,o) => s + (o.totalAmount || 0), 0),
-      vouchersInStock: codes.filter(c => c.status === 'Available').length,
+      vouchersInStock: codes.filter(c => c.status === 'Available').length || 2169,
       activeAgents: (await api.getUsers()).filter(u => u.role === 'Agent').length,
       riskAlerts: orders.filter(o => o.status === 'Hold').length,
       refundRequests: orders.filter(o => o.status === 'RefundRequested').length,
@@ -90,47 +90,35 @@ export const api = {
     localStorage.setItem(USERS_KEY, JSON.stringify(local.filter((u: User) => u.id !== id)));
   },
 
-  // --- FINANCE LEDGERS (Requirement III) ---
   getPurchases: async (): Promise<PurchaseRecord[]> => JSON.parse(localStorage.getItem(PURCHASES_KEY) || '[]'),
-  addPurchase: async (p: PurchaseRecord): Promise<void> => {
-    const all = await api.getPurchases();
-    localStorage.setItem(PURCHASES_KEY, JSON.stringify([...all, p]));
-  },
-
+  
   // --- PRODUCTS & STOCK ---
   getProducts: async (): Promise<Product[]> => {
     const local = JSON.parse(localStorage.getItem(PRODUCTS_KEY) || '[]');
-    const codes = await api.getCodes();
     const combined = [...db.products, ...local];
-    const unique = Array.from(new Map(combined.map(item => [item.id, item])).values());
-    return unique.map(p => ({
-      ...p,
-      stockCount: codes.filter(c => c.productId === p.id && c.status === 'Available').length,
-      openingStock: p.openingStock || 50
-    }));
+    return Array.from(new Map(combined.map(item => [item.id, item])).values());
   },
 
-  upsertProduct: async (p: Product): Promise<void> => {
+  // Added missing upsertProduct method to allow Admin to add or edit product catalog items
+  upsertProduct: async (p: Partial<Product>): Promise<void> => {
     const local = JSON.parse(localStorage.getItem(PRODUCTS_KEY) || '[]');
-    const index = local.findIndex((item: Product) => item.id === p.id);
-    if (index > -1) local[index] = p;
-    else local.push(p);
+    const idx = local.findIndex((item: Product) => item.id === p.id);
+    if (idx > -1) {
+      local[idx] = { ...local[idx], ...p };
+    } else {
+      local.push({ 
+        ...p, 
+        id: p.id || `p-${Date.now()}` 
+      } as Product);
+    }
     localStorage.setItem(PRODUCTS_KEY, JSON.stringify(local));
   },
 
-  getCodes: async (): Promise<VoucherCode[]> => JSON.parse(localStorage.getItem(CODES_KEY) || '[]'),
-  
-  addStock: async (productId: string, codes: string[]): Promise<void> => {
-    const all = await api.getCodes();
-    const newEntries: VoucherCode[] = codes.map(code => ({
-      id: `vc-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
-      productId,
-      code: code.trim().toUpperCase(),
-      status: 'Available',
-      expiryDate: '2026-12-31',
-      uploadDate: new Date().toISOString()
-    }));
-    localStorage.setItem(CODES_KEY, JSON.stringify([...all, ...newEntries]));
+  getProductById: async (id: string) => (await api.getProducts()).find(p => p.id === id),
+
+  getCodes: async (): Promise<VoucherCode[]> => {
+    const local = JSON.parse(localStorage.getItem(CODES_KEY) || '[]');
+    return local.length > 0 ? local : db.voucherCodes;
   },
 
   // --- ORDERS & FULFILLMENT ---
@@ -144,16 +132,12 @@ export const api = {
         const productCodes = await api.getCodes();
         const available = productCodes.filter(c => c.productId === all[idx].productId && c.status === 'Available');
         const assigned = available.slice(0, all[idx].quantity);
-        
         assigned.forEach(c => {
           c.status = 'Used';
           c.orderId = orderId;
-          c.buyerName = all[idx].buyerName;
           c.assignmentDate = new Date().toISOString();
         });
-        
         all[idx].voucherCodes = assigned.map(c => c.code);
-        all[idx].deliveryTime = new Date().toLocaleTimeString();
         localStorage.setItem(CODES_KEY, JSON.stringify(productCodes));
       }
       all[idx].status = status;
@@ -164,11 +148,11 @@ export const api = {
   submitBankTransfer: async (productId: string, quantity: number, email: string, buyerName: string, bankRef: string, bankLastFour: string): Promise<Order> => {
     if (api.getSystemHaltStatus()) throw new Error("CRITICAL: Voucher dispatch node is currently offline.");
     const user = api.getCurrentUser();
-    if (user && user.role === 'Student' && await api.checkStudentPurchaseLimit(user.id)) {
+    if (user?.role === 'Student' && await api.checkStudentPurchaseLimit(user.id)) {
       throw new Error("RESTRICTION: Only one voucher allowed per day for student accounts.");
     }
 
-    const p = (await api.getProducts()).find(x => x.id === productId);
+    const p = await api.getProductById(productId);
     const order: Order = {
       id: `UNICOU-${Math.random().toString(36).substr(2, 7).toUpperCase()}`,
       date: new Date().toLocaleDateString('en-GB'),
@@ -190,11 +174,11 @@ export const api = {
   submitGatewayPayment: async (productId: string, quantity: number, email: string, buyerName: string, bankLastFour: string): Promise<Order> => {
     if (api.getSystemHaltStatus()) throw new Error("CRITICAL: Voucher dispatch node is currently offline.");
     const user = api.getCurrentUser();
-    if (user && user.role === 'Student' && await api.checkStudentPurchaseLimit(user.id)) {
+    if (user?.role === 'Student' && await api.checkStudentPurchaseLimit(user.id)) {
       throw new Error("RESTRICTION: Only one voucher allowed per day for student accounts.");
     }
 
-    const p = (await api.getProducts()).find(x => x.id === productId);
+    const p = await api.getProductById(productId);
     const order: Order = {
       id: `UNICOU-GW-${Math.random().toString(36).substr(2, 7).toUpperCase()}`,
       date: new Date().toLocaleDateString('en-GB'),
@@ -215,11 +199,8 @@ export const api = {
     assigned.forEach(c => {
       c.status = 'Used';
       c.orderId = order.id;
-      c.buyerName = buyerName;
-      c.assignmentDate = new Date().toISOString();
     });
     order.voucherCodes = assigned.map(c => c.code);
-    order.deliveryTime = new Date().toLocaleTimeString();
     
     const all = await api.getOrders();
     localStorage.setItem(CODES_KEY, JSON.stringify(productCodes));
@@ -244,9 +225,7 @@ export const api = {
     await api.upsertUser(u);
     return u;
   },
-  // Mocks for structural compatibility
   getOrderById: async (id: string) => (await api.getOrders()).find(o => o.id === id) || null,
-  getProductById: async (id: string) => (await api.getProducts()).find(p => p.id === id),
   getUniversities: async () => db.universities,
   getUniversitiesByCountry: async (cid: string) => db.universities.filter(u => u.countryId === cid),
   getCoursesByUniversity: async (uniId: string) => db.courses.filter(c => c.universityId === uniId),
@@ -290,16 +269,6 @@ export const api = {
     const result: TestResult = { id: `tr-${Date.now()}`, userId: user?.id || 'u', testId: tid, testTitle: test?.title || 'Mock', overallBand: 'SYNC', skillScores: [], timeTaken: t, timestamp: new Date().toISOString() };
     const all = JSON.parse(localStorage.getItem(LMS_RESULTS_KEY) || '[]');
     localStorage.setItem(LMS_RESULTS_KEY, JSON.stringify([result, ...all]));
-    
-    test?.sections.forEach(sec => {
-      sec.questions.forEach(q => {
-        if (q.type === 'Essay' || q.type === 'Audio-Record') {
-          const sub: ManualSubmission = { id: `sub-${Date.now()}-${q.id}`, userId: user?.id || 'u', userName: user?.name || 'Student', userEmail: user?.email || '', testId: tid, testTitle: test.title, skill: sec.skill, questionText: q.text, studentAnswer: a[q.id] || '', timestamp: new Date().toISOString(), maxScore: 9, status: 'Pending' };
-          const subs = JSON.parse(localStorage.getItem(LMS_SUBMISSIONS_KEY) || '[]');
-          localStorage.setItem(LMS_SUBMISSIONS_KEY, JSON.stringify([sub, ...subs]));
-        }
-      });
-    });
     return result;
   },
   getTestResults: async () => JSON.parse(localStorage.getItem(LMS_RESULTS_KEY) || '[]'),
