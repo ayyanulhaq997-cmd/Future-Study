@@ -22,7 +22,7 @@ const LMS_SUBMISSIONS_KEY = 'unicou_lms_submissions_v11';
 const LMS_PROGRESS_KEY = 'unicou_lms_progress_v11';
 
 export const api = {
-  // --- SYSTEM CONFIG (Requirement 1.X) ---
+  // --- SYSTEM CONFIG ---
   getSystemHaltStatus: (): boolean => localStorage.getItem(SYSTEM_CONFIG_KEY) === 'HALTED',
   setSystemHaltStatus: (halted: boolean): void => localStorage.setItem(SYSTEM_CONFIG_KEY, halted ? 'HALTED' : 'ACTIVE'),
 
@@ -42,7 +42,6 @@ export const api = {
     };
   },
 
-  // --- BUYING RESTRICTION (Requirement I.viii.f) ---
   checkStudentPurchaseLimit: async (userId: string): Promise<boolean> => {
     const orders = await api.getOrders();
     const today = new Date().toLocaleDateString('en-GB');
@@ -54,7 +53,8 @@ export const api = {
   getUsers: async (): Promise<User[]> => {
     const local = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
     const combined = [...db.users, ...local];
-    return Array.from(new Map(combined.map(u => [u.email, u])).values());
+    // Return unique users by lowercase email to ensure no identity node collisions
+    return Array.from(new Map(combined.map(u => [u.email.toLowerCase(), u])).values());
   },
 
   verifyLogin: async (id: string, p: string): Promise<User> => {
@@ -99,17 +99,13 @@ export const api = {
     return Array.from(new Map(combined.map(item => [item.id, item])).values());
   },
 
-  // Added missing upsertProduct method to allow Admin to add or edit product catalog items
   upsertProduct: async (p: Partial<Product>): Promise<void> => {
     const local = JSON.parse(localStorage.getItem(PRODUCTS_KEY) || '[]');
     const idx = local.findIndex((item: Product) => item.id === p.id);
     if (idx > -1) {
       local[idx] = { ...local[idx], ...p };
     } else {
-      local.push({ 
-        ...p, 
-        id: p.id || `p-${Date.now()}` 
-      } as Product);
+      local.push({ ...p, id: p.id || `p-${Date.now()}` } as Product);
     }
     localStorage.setItem(PRODUCTS_KEY, JSON.stringify(local));
   },
@@ -221,7 +217,19 @@ export const api = {
      localStorage.setItem(LEADS_KEY, JSON.stringify([nl, ...all]));
   },
   signup: async (email: string, role: UserRole): Promise<User> => {
-    const u: User = { id: `u-${Date.now()}`, name: email.split('@')[0], email, role, status: 'Active', verified: true, isAuthorized: true, timestamp: new Date().toISOString() };
+    const allUsers = await api.getUsers();
+    // MANDATORY IDENTITY CHECK: Prevent duplicate signups on the same email ID
+    if (allUsers.some(u => u.email.toLowerCase() === email.toLowerCase())) {
+      throw new Error("SECURITY NODE: Identity already established in UNICOU registry. Please proceed to Sign In.");
+    }
+    const u: User = { 
+      id: `u-${Date.now()}`, 
+      name: email.split('@')[0], 
+      email, role, status: 'Active', 
+      verified: true, // Ensuring active verification status
+      isAuthorized: true, 
+      timestamp: new Date().toISOString() 
+    };
     await api.upsertUser(u);
     return u;
   },

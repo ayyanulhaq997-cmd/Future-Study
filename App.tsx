@@ -105,7 +105,7 @@ const App: React.FC = () => {
       case 'resources': return <div className="view-container"><Resources onNavigate={navigateTo} /></div>;
       case 'about': return <div className="view-container"><About /></div>;
       case 'login': return <div className="view-container"><Login onLogin={(u) => { setUser(u); navigateTo({ type: 'lms-dashboard' }); }} onNavigateToSignup={() => navigateTo({ type: 'signup' })} onNavigateToForgot={() => navigateTo({ type: 'home' })} /></div>;
-      case 'signup': return <div className="view-container"><Signup onSuccess={(u) => { setUser(u); navigateTo({ type: 'lms-dashboard' }); }} onNavigateToLogin={() => navigateTo({ type: 'login' })} /></div>;
+      case 'signup': return <div className="view-container"><Signup onSuccess={(u) => { setUser(u); navigateTo({ type: 'lms-dashboard' }); }} onNavigateToLogin={() => navigateTo({ type: 'login' })} onNavigate={navigateTo} /></div>;
       case 'checkout': return <CheckoutProcess productId={(view as any).productId} quantity={(view as any).quantity} onSuccess={(oid) => navigateTo({ type: 'success', orderId: oid })} onCancel={() => navigateTo({ type: 'store' })} onNavigate={navigateTo} />;
       case 'success': return <div className="view-container"><SuccessScreen orderId={(view as any).orderId} onClose={() => navigateTo({ type: 'lms-dashboard' })} /></div>;
       case 'lms-course-player': return <LMSCoursePlayer courseId={(view as any).courseId} onNavigate={navigateTo} />;

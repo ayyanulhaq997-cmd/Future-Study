@@ -2,16 +2,17 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/apiService';
 import { MailService } from '../services/mailService';
-import { User, UserRole } from '../types';
+import { User, UserRole, ViewState } from '../types';
 
 interface SignupProps {
   onSuccess: (user: User) => void;
   onNavigateToLogin: () => void;
+  onNavigate: (view: ViewState) => void;
 }
 
 type SignupStep = 'email' | 'code-entry' | 'complete';
 
-const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
+const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin, onNavigate }) => {
   const [step, setStep] = useState<SignupStep>('email');
   const [verificationCode, setVerificationCode] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -78,7 +79,7 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
       const user = await api.signup(formData.email, 'Student');
       onSuccess(user);
     } catch (err: any) {
-      setError('Registration Protocol Failure.');
+      setError(err.message || 'Registration Protocol Failure.');
       setLoading(false);
     }
   };
@@ -132,7 +133,6 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
               </div>
               <p className="text-sm text-slate-500 font-bold italic px-4">"Verification protocol initiated. Check your inbox for the authorization node."</p>
               
-              {/* EMERGENCY UI FALLBACK FOR LOCAL MODE */}
               <div className="p-8 bg-slate-950 rounded-[2.5rem] border border-slate-800 shadow-2xl relative overflow-hidden group">
                  <div className="absolute top-0 right-0 p-4 opacity-10 font-black text-white text-5xl select-none">SYNC</div>
                  <p className="text-[9px] font-black text-emerald-400 uppercase tracking-[0.3em] mb-4">On-Screen Identity Fallback</p>
@@ -224,7 +224,7 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
           Professional registration protocol for global partners and institutional representatives.
         </p>
         <button 
-          onClick={() => window.open('https://afeic.pk/membership/', '_blank')}
+          onClick={() => onNavigate({ type: 'apply', formType: 'agent-reg' })}
           className="w-full py-5 bg-unicou-navy text-white rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-xl hover:bg-black transition-all"
         >
           Institutional Entry Protocol

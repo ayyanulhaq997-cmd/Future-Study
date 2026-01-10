@@ -33,68 +33,67 @@ const CountryList: React.FC<CountryListProps> = ({ onNavigateToGuide }) => {
   };
 
   if (loading) return (
-    <div className="flex flex-col items-center justify-center p-20 min-h-[60vh] bg-white">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-unicou-orange mb-4"></div>
-      <p className="text-slate-800 font-bold uppercase tracking-widest text-xs">Scanning Global Nodes...</p>
+    <div className="flex flex-col items-center justify-center p-20 min-h-[50vh] bg-white">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-unicou-orange mb-4"></div>
+      <p className="text-slate-800 font-bold uppercase tracking-widest text-[9px]">Scanning Global Nodes...</p>
     </div>
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-24 animate-in fade-in duration-700 bg-white">
-      <div className="text-center mb-24">
-        <div className="vibrant-strip mx-auto mb-6 w-16"></div>
-        <h2 className="text-5xl md:text-7xl font-display font-bold mb-8 tracking-tighter text-slate-950 uppercase">
+    <div className="max-w-7xl mx-auto px-6 py-8 animate-in fade-in duration-700 bg-white">
+      <div className="text-center mb-12">
+        <div className="vibrant-strip mx-auto mb-4 w-10"></div>
+        <h2 className="text-3xl md:text-4xl font-display font-bold mb-4 tracking-tighter text-slate-950 uppercase">
           STUDY ABROAD <span className="text-unicou-orange">DESTINATIONS</span>
         </h2>
-        <p className="text-xl text-slate-500 max-w-2xl mx-auto leading-relaxed font-normal italic">
-          Authoritative intelligence for the world's premier academic hubs. 
-          Start your international journey with verified data.
+        <p className="text-sm text-slate-500 max-w-xl mx-auto leading-relaxed font-normal italic">
+          Authoritative intelligence for the world's premier academic hubs.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-        {guides.map((guide, idx) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {guides.map((guide) => (
           <div 
             key={guide.slug}
             onClick={() => onNavigateToGuide(guide.slug)}
-            className="group rounded-[3rem] overflow-hidden border border-slate-100 hover:border-unicou-orange/30 transition-all cursor-pointer shadow-premium relative bg-white flex flex-col"
+            className="group rounded-[2rem] overflow-hidden border border-slate-100 hover:border-unicou-orange/30 transition-all cursor-pointer shadow-sm hover:shadow-premium relative bg-white flex flex-col"
           >
-            <div className="relative h-64 overflow-hidden">
+            <div className="relative h-40 overflow-hidden">
               <img 
                 src={guide.heroImage} 
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" 
                 alt={guide.title} 
               />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 via-transparent to-transparent opacity-60" />
-              <div className="absolute top-6 left-6 flex items-center gap-3 bg-white/95 backdrop-blur-md px-5 py-2.5 rounded-2xl border border-slate-100 shadow-xl">
-                <span className="text-2xl">{flagMap[guide.slug] || '🌍'}</span>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-900">{guide.slug.toUpperCase()}</span>
+              <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-white/95 backdrop-blur-md px-2 py-1 rounded-lg border border-slate-100 shadow-lg">
+                <span className="text-sm">{flagMap[guide.slug] || '🌍'}</span>
+                <span className="text-[7px] font-black uppercase tracking-widest text-slate-900">{guide.slug.toUpperCase()}</span>
               </div>
             </div>
 
-            <div className="p-10 flex flex-col flex-grow">
-              <div className="flex justify-between items-start mb-6">
-                 <h3 className="text-3xl font-display font-bold group-hover:text-unicou-orange transition-colors leading-tight text-slate-900 uppercase">
+            <div className="p-4 flex flex-col flex-grow">
+              <div className="flex justify-between items-start mb-3">
+                 <h3 className="text-lg font-display font-black group-hover:text-unicou-orange transition-colors leading-tight text-slate-900 uppercase">
                    {guide.title.replace('Study in ', '')}
                  </h3>
-                 <div className="w-2.5 h-2.5 rounded-full bg-unicou-orange shadow-[0_0_10px_rgba(241,90,36,0.6)]"></div>
+                 <div className="w-1.5 h-1.5 rounded-full bg-unicou-orange shadow-[0_0_6px_rgba(241,90,36,0.6)]"></div>
               </div>
               
-              <div className="grid grid-cols-2 gap-4 mb-10 mt-auto">
-                <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 min-h-[100px] flex flex-col justify-center">
-                  <p className="text-[9px] font-black text-slate-400 uppercase mb-1 tracking-widest">Living Expenses* Annual</p>
-                  <p className="text-[11px] font-black text-slate-900 leading-tight uppercase">{guide.costOfLiving}</p>
+              <div className="grid grid-cols-1 gap-1.5 mb-4 mt-auto">
+                <div className="bg-slate-50 px-3 py-2 rounded-lg border border-slate-100 flex items-center justify-between">
+                  <p className="text-[6px] font-black text-slate-400 uppercase tracking-widest">Living Expenses*</p>
+                  <p className="text-[8px] font-black text-slate-900 uppercase">{guide.costOfLiving.split(' / ')[0]}</p>
                 </div>
-                <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 min-h-[100px] flex flex-col justify-center">
-                  <p className="text-[9px] font-black text-slate-400 uppercase mb-1 tracking-widest">Tuition Fee* Annual</p>
-                  <p className="text-[11px] font-black text-slate-900 leading-tight uppercase">{guide.visaRequirements}</p>
+                <div className="bg-slate-50 px-3 py-2 rounded-lg border border-slate-100 flex items-center justify-between">
+                  <p className="text-[6px] font-black text-slate-400 uppercase tracking-widest">Tuition Fee*</p>
+                  <p className="text-[8px] font-black text-slate-900 uppercase">{guide.visaRequirements.split(' / ')[0]}</p>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-8 border-t border-slate-50">
-                <span className="text-[10px] font-bold uppercase text-slate-400 tracking-widest group-hover:text-unicou-navy transition-colors">Access Guide</span>
-                <div className="w-12 h-12 rounded-2xl bg-unicou-navy text-white flex items-center justify-center group-hover:bg-unicou-orange group-hover:shadow-action transition-all duration-500 shadow-xl">
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+              <div className="flex items-center justify-between pt-3 border-t border-slate-50">
+                <span className="text-[7px] font-bold uppercase text-slate-400 tracking-widest group-hover:text-unicou-navy transition-colors">Access Node</span>
+                <div className="w-6 h-6 rounded-lg bg-unicou-navy text-white flex items-center justify-center group-hover:bg-unicou-orange transition-all duration-500 shadow-md">
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                 </div>
               </div>
             </div>

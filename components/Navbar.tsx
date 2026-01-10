@@ -21,6 +21,7 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
     { 
       label: 'Study Abroad', 
       type: 'country-list',
+      isMega: true,
       subItems: [
         { label: 'United Kingdom', slug: 'uk' },
         { label: 'Australia', slug: 'australia' },
@@ -29,6 +30,14 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
         { label: 'Germany', slug: 'germany' },
         { label: 'Italy', slug: 'italy' },
         { label: 'Europe Hub', slug: 'europe' },
+        { label: 'New Zealand', slug: 'new-zealand' },
+        { label: 'Ireland', slug: 'ireland' },
+        { label: 'Finland', slug: 'finland' },
+        { label: 'Sweden', slug: 'sweden' },
+        { label: 'Dubai', slug: 'dubai' },
+        { label: 'Malaysia', slug: 'malaysia' },
+        { label: 'Turkey', slug: 'turkey' },
+        { label: 'Cyprus', slug: 'cyprus' },
       ]
     },
     { 
@@ -68,25 +77,18 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
   const handleProfileClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!user) return;
-    
-    if (user.role === 'Agent' || user.role === 'Institute') {
-      onNavigate({ type: 'agent' });
-    } else if (['System Admin/Owner', 'Operation Manager', 'Finance', 'Support', 'Trainer'].includes(user.role)) {
-       onNavigate({ type: 'lms-dashboard' });
-    } else {
-      onNavigate({ type: 'lms-dashboard' });
-    }
+    onNavigate({ type: 'lms-dashboard' });
   };
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 navbar-fixed ${isVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'} ${scrolled ? 'py-3' : 'py-6'}`}>
+    <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 navbar-fixed ${isVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'} ${scrolled ? 'py-2' : 'py-4'}`}>
       <div className="max-w-7xl mx-auto px-6">
-        <div className={`rounded-3xl px-8 py-4 flex items-center justify-between transition-all duration-500 ${
-          scrolled ? 'shadow-premium bg-white border border-slate-100' : 'bg-white/90 border border-slate-100 backdrop-blur-md'
+        <div className={`rounded-3xl px-6 py-2 flex items-center justify-between transition-all duration-500 ${
+          scrolled ? 'shadow-premium bg-white border border-slate-100' : 'bg-white/95 border border-slate-100 backdrop-blur-md'
         }`}>
-          <div className="flex items-center gap-6 xl:gap-8">
+          <div className="flex items-center gap-4 xl:gap-6">
             <button onClick={() => onNavigate({ type: 'home' })} className="flex items-center transition-transform hover:scale-[1.03] active:scale-95 shrink-0 py-1">
-              <img src={LOGO_SRC} alt="UniCou" className="h-10 w-auto object-contain" />
+              <img src={LOGO_SRC} alt="UniCou" className="h-7 w-auto object-contain" />
             </button>
 
             <div className="hidden lg:flex items-center gap-0.5">
@@ -99,20 +101,20 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
                 >
                   <button
                     onClick={() => onNavigate({ type: item.type } as any)}
-                    className={`px-3 py-2 rounded-xl text-[11px] font-black uppercase tracking-tight transition-all flex items-center gap-1.5 ${
+                    className={`px-2 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-tight transition-all flex items-center gap-1 ${
                       view.type === item.type ? 'text-white bg-unicou-navy shadow-lg' : 'text-unicou-navy hover:text-unicou-orange'
                     }`}
                   >
                     {item.label}
                     {item.subItems && (
-                      <svg className={`w-3 h-3 transition-transform ${activeDropdown === item.label ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M19 9l-7 7-7-7" /></svg>
+                      <svg className={`w-2.5 h-2.5 transition-transform ${activeDropdown === item.label ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M19 9l-7 7-7-7" /></svg>
                     )}
                   </button>
 
                   {item.subItems && activeDropdown === item.label && (
-                    <div className="absolute top-full left-0 pt-2 w-64 animate-in fade-in slide-in-from-top-1">
-                      <div className="bg-white border border-slate-100 rounded-2xl shadow-premium p-4">
-                        <div className={`grid grid-cols-1 gap-1`}>
+                    <div className={`absolute top-full left-0 pt-1 animate-in fade-in slide-in-from-top-1 ${item.isMega ? 'w-[480px]' : 'w-48'}`}>
+                      <div className="bg-white border border-slate-100 rounded-2xl shadow-premium p-2">
+                        <div className={`grid ${item.isMega ? 'grid-cols-3 gap-x-1' : 'grid-cols-1'} gap-0.5`}>
                           {item.subItems.map((sub: any) => (
                             <button
                               key={sub.label}
@@ -120,8 +122,9 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
                                 if (sub.slug) onNavigate({ type: 'country-guide', slug: sub.slug });
                                 else if (sub.formType) onNavigate({ type: 'apply', formType: sub.formType } as any);
                                 else if (sub.type) onNavigate({ type: sub.type, initialTab: sub.tab } as any);
+                                setActiveDropdown(null);
                               }}
-                              className="w-full text-left px-4 py-2 rounded-lg text-[10px] font-black text-unicou-charcoal hover:text-unicou-navy hover:bg-slate-50 transition-all uppercase tracking-widest truncate"
+                              className="w-full text-left px-2 py-1.5 rounded-lg text-[8px] font-black text-unicou-charcoal hover:text-unicou-navy hover:bg-slate-50 transition-all uppercase tracking-widest truncate"
                             >
                               {sub.label}
                             </button>
@@ -136,24 +139,24 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
           </div>
 
           <div className="flex items-center gap-3">
-            <button onClick={(e) => { e.stopPropagation(); onOpenSearch(); }} className="p-2.5 bg-slate-50 hover:bg-slate-100 rounded-xl text-unicou-navy transition-colors border border-slate-100" title="Search Platform">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            <button onClick={(e) => { e.stopPropagation(); onOpenSearch(); }} className="p-1.5 bg-slate-50 hover:bg-slate-100 rounded-xl text-unicou-navy transition-colors border border-slate-100" title="Search Platform">
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             </button>
 
             {user ? (
               <div className="flex items-center gap-2">
-                <button onClick={handleProfileClick} className="flex items-center gap-2 pl-2 pr-3 py-1.5 bg-unicou-navy rounded-full hover:bg-slate-900 transition-all shadow-md group">
-                  <div className="w-6 h-6 rounded-full bg-unicou-orange flex items-center justify-center text-[10px] font-black text-white uppercase group-hover:scale-110 transition-transform">{user.name.charAt(0)}</div>
-                  <span className="text-[10px] font-black text-white uppercase tracking-widest">{user.name.split(' ')[0]}</span>
+                <button onClick={handleProfileClick} className="flex items-center gap-2 pl-1 pr-2 py-1 bg-unicou-navy rounded-full hover:bg-slate-900 transition-all shadow-md group">
+                  <div className="w-4 h-4 rounded-full bg-unicou-orange flex items-center justify-center text-[7px] font-black text-white uppercase group-hover:scale-110 transition-transform">{user.name.charAt(0)}</div>
+                  <span className="text-[8px] font-black text-white uppercase tracking-widest">{user.name.split(' ')[0]}</span>
                 </button>
-                <button onClick={(e) => { e.stopPropagation(); onLogout(); }} className="p-2 text-slate-400 hover:text-red-500 transition-colors">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                <button onClick={(e) => { e.stopPropagation(); onLogout(); }} className="p-1 text-slate-400 hover:text-red-500 transition-colors">
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
                 </button>
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <button onClick={(e) => { e.stopPropagation(); onNavigate({ type: 'login' }); }} className="px-4 py-2 text-[11px] font-black uppercase tracking-tight text-unicou-navy hover:text-unicou-orange transition-all">Sign In</button>
-                <button onClick={(e) => { e.stopPropagation(); onNavigate({ type: 'signup' }); }} className="px-6 py-3 bg-unicou-orange text-white rounded-2xl font-black text-[11px] uppercase tracking-tight shadow-action hover:bg-red-600 transition-all active:scale-95">Sign Up</button>
+                <button onClick={(e) => { e.stopPropagation(); onNavigate({ type: 'login' }); }} className="px-2 py-1.5 text-[9px] font-black uppercase tracking-tight text-unicou-navy hover:text-unicou-orange transition-all">Sign In</button>
+                <button onClick={(e) => { e.stopPropagation(); onNavigate({ type: 'signup' }); }} className="px-3 py-2 bg-unicou-orange text-white rounded-xl font-black text-[9px] uppercase tracking-tight shadow-action hover:bg-red-600 transition-all active:scale-95">Sign Up</button>
               </div>
             )}
           </div>
