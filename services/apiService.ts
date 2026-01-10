@@ -7,12 +7,12 @@ import {
   LMSPracticeTest, PurchaseRecord, QualificationLead, TestBooking
 } from '../types';
 
-const SESSION_KEY = 'unicou_active_session_v16';
-const ORDERS_KEY = 'unicou_orders_v16';
-const USERS_KEY = 'unicou_identity_registry_v16';
-const CODES_KEY = 'unicou_vault_inventory_v16';
-const PRODUCTS_KEY = 'unicou_catalog_v16';
-const SYSTEM_HALT_KEY = 'unicou_halt_status_v16';
+const SESSION_KEY = 'unicou_active_identity_v18';
+const ORDERS_KEY = 'unicou_orders_v18';
+const USERS_KEY = 'unicou_user_registry_v18';
+const CODES_KEY = 'unicou_voucher_vault_v18';
+const PRODUCTS_KEY = 'unicou_product_catalog_v18';
+const SYSTEM_HALT_KEY = 'unicou_system_halt_v18';
 
 export const api = {
   getSystemHaltStatus: (): boolean => localStorage.getItem(SYSTEM_HALT_KEY) === 'HALTED',
@@ -40,26 +40,26 @@ export const api = {
     return Array.from(new Map(combined.map(u => [u.email.toLowerCase(), u])).values());
   },
 
+  verifyLogin: async (id: string, p: string): Promise<User> => {
+    const users = await api.getUsers();
+    const user = users.find(u => u.email.toLowerCase() === id.toLowerCase());
+    if (user) {
+      if (user.status === 'Frozen') throw new Error("Registry access node revoked.");
+      localStorage.setItem(SESSION_KEY, JSON.stringify(user));
+      return user;
+    }
+    throw new Error("Identity node not found in global registry.");
+  },
+
   upsertUser: async (u: Partial<User>): Promise<void> => {
     const local = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
-    const idx = local.findIndex((item: User) => item.id === u.id || item.email === u.email);
+    const idx = local.findIndex((item: User) => item.id === u.id || item.email?.toLowerCase() === u.email?.toLowerCase());
     if (idx > -1) {
       local[idx] = { ...local[idx], ...u };
     } else {
       local.push({ ...u, id: u.id || `u-${Date.now()}`, status: u.status || 'Active', timestamp: new Date().toISOString() } as User);
     }
     localStorage.setItem(USERS_KEY, JSON.stringify(local));
-  },
-
-  verifyLogin: async (id: string, p: string): Promise<User> => {
-    const users = await api.getUsers();
-    const user = users.find(u => u.email.toLowerCase() === id.toLowerCase());
-    if (user) {
-      if (user.status === 'Frozen') throw new Error("Registry account deactivated.");
-      localStorage.setItem(SESSION_KEY, JSON.stringify(user));
-      return user;
-    }
-    throw new Error("Identity node not found in registry.");
   },
 
   getProducts: async (): Promise<Product[]> => {
@@ -105,13 +105,13 @@ export const api = {
     const all = await api.getOrders();
     const idx = all.findIndex(o => o.id === orderId);
     if (idx > -1) {
-      // THE WATCHER: Execution node for atomic fulfillment on approval
+      // ATOMIC FULFILLMENT: Move codes from Vault to Identity
       if (status === 'Approved' && all[idx].status !== 'Approved') {
         const productCodes = await api.getCodes();
         const available = productCodes.filter(c => c.productId === all[idx].productId && c.status === 'Available');
         
         if (available.length < all[idx].quantity) {
-          throw new Error("Vault Depleted: Please inject codes in Admin Terminal.");
+          throw new Error("Vault Depletion Error: Inject more stock in Admin Terminal.");
         }
 
         const assigned = available.slice(0, all[idx].quantity);
@@ -157,7 +157,7 @@ export const api = {
       id: `UC-${Math.random().toString(36).substr(2, 7).toUpperCase()}`,
       date: new Date().toLocaleDateString('en-GB'),
       time: new Date().toLocaleTimeString('en-GB'),
-      buyerName, bankLastFour, bankRef: 'DIRECT_SETTLEMENT',
+      buyerName, bankLastFour, bankRef: 'SETTLED_DIRECTly',
       productName: p?.name || 'Academic Asset',
       totalAmount: (p?.basePrice || 0) * quantity,
       proofAttached: true, userId: 'u-session',
@@ -191,11 +191,11 @@ export const api = {
     return s ? JSON.parse(s) : null;
   },
   logout: () => localStorage.removeItem(SESSION_KEY),
-  getLeads: async (): Promise<Lead[]> => JSON.parse(localStorage.getItem('leads_v16') || '[]'),
+  getLeads: async (): Promise<Lead[]> => JSON.parse(localStorage.getItem('leads_v18') || '[]'),
   submitLead: async (t: string, d: any): Promise<void> => {
      const all = await api.getLeads();
      const nl = { id: `L-${Date.now()}`, type: t as any, data: d, status: 'New', timestamp: new Date().toISOString() };
-     localStorage.setItem('leads_v16', JSON.stringify([nl, ...all]));
+     localStorage.setItem('leads_v18', JSON.stringify([nl, ...all]));
   },
   signup: async (email: string, role: UserRole): Promise<User> => {
     const u: User = { id: `u-${Date.now()}`, name: email.split('@')[0], email, role, status: 'Active', verified: true, isAuthorized: true, timestamp: new Date().toISOString() };
@@ -210,17 +210,17 @@ export const api = {
   getGuideBySlug: async (s: string) => db.countryGuides.find(g => g.slug === s) || null,
   getAllLMSCourses: async () => db.lmsCourses,
   getEnrolledCourses: async () => {
-    const local = JSON.parse(localStorage.getItem('enrolled_v16') || '[]');
+    const local = JSON.parse(localStorage.getItem('enrolled_v18') || '[]');
     return db.lmsCourses.filter(c => local.includes(c.id));
   },
   getEnrollmentByCourse: async (courseId: string) => {
-    const all = JSON.parse(localStorage.getItem('progress_v16') || '{}');
+    const all = JSON.parse(localStorage.getItem('progress_v18') || '{}');
     return { courseId, userId: 'u', progress: all[courseId] || 0 };
   },
   updateCourseProgress: async (courseId: string, progress: number) => {
-    const all = JSON.parse(localStorage.getItem('progress_v16') || '{}');
+    const all = JSON.parse(localStorage.getItem('progress_v18') || '{}');
     all[courseId] = progress;
-    localStorage.setItem('progress_v16', JSON.stringify(all));
+    localStorage.setItem('progress_v18', JSON.stringify(all));
   },
   getCourseModules: async (courseId: string): Promise<LMSModule[]> => db.lmsModules,
   getAllTests: async () => db.lmsTests,
@@ -229,37 +229,37 @@ export const api = {
     const user = api.getCurrentUser();
     const test = db.lmsTests.find(x => x.id === tid);
     const result: TestResult = { id: `tr-${Date.now()}`, userId: user?.id || 'u', testId: tid, testTitle: test?.title || 'Mock', overallBand: 'Evaluating', skillScores: [], timeTaken: t, timestamp: new Date().toISOString() };
-    const all = JSON.parse(localStorage.getItem('results_v16') || '[]');
-    localStorage.setItem('results_v16', JSON.stringify([result, ...all]));
+    const all = JSON.parse(localStorage.getItem('results_v18') || '[]');
+    localStorage.setItem('results_v18', JSON.stringify([result, ...all]));
     return result;
   },
-  getTestResults: async () => JSON.parse(localStorage.getItem('results_v16') || '[]'),
-  getPendingSubmissions: async () => JSON.parse(localStorage.getItem('submissions_v16') || '[]').filter((s: ManualSubmission) => s.status === 'Pending'),
+  getTestResults: async () => JSON.parse(localStorage.getItem('results_v18') || '[]'),
+  getPendingSubmissions: async () => JSON.parse(localStorage.getItem('submissions_v18') || '[]').filter((s: ManualSubmission) => s.status === 'Pending'),
   gradeSubmission: async (id: string, s: number, f: string) => {
-    const all = JSON.parse(localStorage.getItem('submissions_v16') || '[]');
+    const all = JSON.parse(localStorage.getItem('submissions_v18') || '[]');
     const idx = all.findIndex((x: ManualSubmission) => x.id === id);
     if (idx > -1) {
       all[idx].status = 'Graded';
-      localStorage.setItem('submissions_v16', JSON.stringify(all));
+      localStorage.setItem('submissions_v18', JSON.stringify(all));
     }
   },
   redeemCourseVoucher: async (code: string) => {
-    const enrolled = JSON.parse(localStorage.getItem('enrolled_v16') || '[]');
+    const enrolled = JSON.parse(localStorage.getItem('enrolled_v18') || '[]');
     const match = db.lmsCourses.find(c => code.includes(c.id.split('-')[1]));
     if (match) {
       if (!enrolled.includes(match.id)) {
         enrolled.push(match.id);
-        localStorage.setItem('enrolled_v16', JSON.stringify(enrolled));
+        localStorage.setItem('enrolled_v18', JSON.stringify(enrolled));
       }
     } else {
-      throw new Error("Invalid Authorization Node.");
+      throw new Error("Registry Fault: Invalid Authorization Code.");
     }
   },
   getQualifications: async (): Promise<Qualification[]> => db.qualifications,
   getQualificationById: async (id: string): Promise<Qualification | undefined> => db.qualifications.find(q => q.id === id),
   submitQualificationLead: async (data: any): Promise<QualificationLead> => {
     const lead: QualificationLead = { id: `QL-${Date.now()}`, ...data, timestamp: new Date().toISOString() };
-    await api.submitLead('student', { ...data, origin: 'Qualification-Registry' });
+    await api.submitLead('student', { ...data, origin: 'Qualification-Portal' });
     return lead;
   },
   submitTestBooking: async (data: any): Promise<TestBooking> => {

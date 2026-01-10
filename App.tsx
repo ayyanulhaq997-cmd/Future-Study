@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Hero from './components/Hero';
 import Features from './components/Features';
 import VoucherStore from './components/VoucherStore';
@@ -38,9 +38,19 @@ import { LOGO_SRC } from './constants/assets';
 
 const App: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
-  const [view, setView] = useState<ViewState>({ type: 'home' });
   const [user, setUser] = useState<User | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
+
+  // DOMAIN DETECTION LOGIC (For Separate Launches)
+  const domainView = useMemo<ViewState>(() => {
+    const host = window.location.hostname;
+    if (host.includes('exams.')) return { type: 'store' };
+    if (host.includes('lms.')) return { type: 'lms-dashboard' };
+    if (host.includes('agents.')) return { type: 'join-hub' };
+    return { type: 'home' };
+  }, []);
+
+  const [view, setView] = useState<ViewState>(domainView);
 
   useEffect(() => {
     const active = api.getCurrentUser();
@@ -112,14 +122,14 @@ const App: React.FC = () => {
       case 'policy': return <div className="view-container"><PolicyPage policyId={(view as any).policyId} /></div>;
       case 'system-map': return <div className="view-container"><SystemMap /></div>;
       case 'user-guide': return <div className="view-container"><UserGuide /></div>;
-      default: return <div className="view-container text-center pt-40 font-bold uppercase text-slate-400">Node Synchronization...</div>;
+      default: return <div className="view-container text-center pt-40 font-bold uppercase text-slate-400">Node Sync...</div>;
     }
   };
 
   return (
-    <div className="min-h-screen text-unicou-navy bg-white relative">
+    <div className="min-h-screen text-unicou-navy bg-white relative flex flex-col">
       <Navbar view={view as any} user={user} scrolled={scrolled} onNavigate={navigateTo} onLogout={handleLogout} onOpenSearch={() => setSearchOpen(true)} isVisible={!isFocusMode} />
-      <main className="relative z-0">{renderContent()}</main>
+      <main className="relative z-0 flex-grow">{renderContent()}</main>
       {!isFocusMode && (
         <footer className="bg-slate-900 text-white pt-24 pb-12 mt-auto">
           <div className="max-w-7xl mx-auto px-6">
@@ -151,16 +161,13 @@ const App: React.FC = () => {
                   <li><button onClick={() => navigateTo({type: 'policy', policyId: 'privacy'})} className="hover:text-unicou-orange transition-colors">Privacy Policy</button></li>
                   <li><button onClick={() => navigateTo({type: 'policy', policyId: 'modern-slavery'})} className="hover:text-unicou-orange transition-colors">Modern Slavery</button></li>
                   <li><button onClick={() => navigateTo({type: 'policy', policyId: 'accessibility'})} className="hover:text-unicou-orange transition-colors">Accessibility</button></li>
-                  <li><button onClick={() => navigateTo({type: 'policy', policyId: 'cookies'})} className="hover:text-unicou-orange transition-colors">Cookie Use</button></li>
-                  <li><button onClick={() => navigateTo({type: 'policy', policyId: 'whistleblowing'})} className="hover:text-unicou-orange transition-colors">Whistleblowing</button></li>
-                  <li><button onClick={() => navigateTo({type: 'policy', policyId: 'carbon-reduction'})} className="hover:text-unicou-orange transition-colors">Carbon Reduction</button></li>
                   <li><button onClick={() => navigateTo({type: 'policy', policyId: 'terms-of-use'})} className="hover:text-unicou-orange transition-colors">Terms of Use</button></li>
                 </ul>
               </div>
               <div>
                 <h5 className="text-[10px] font-black text-white uppercase tracking-widest mb-6">Contact</h5>
                 <div className="space-y-4 text-xs font-bold text-slate-400 uppercase">
-                   <p className="text-unicou-orange">connect@unicou.uk</p>
+                   <p className="text-unicou-orange underline">connect@unicou.uk</p>
                    <p>+44 7XX XXXXXXX</p>
                 </div>
               </div>

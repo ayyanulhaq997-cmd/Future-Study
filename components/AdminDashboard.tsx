@@ -42,7 +42,7 @@ const AdminDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => void 
     if (saved) {
       try {
         setMailConfig(JSON.parse(saved));
-      } catch (e) { console.error("Identity registry check failed."); }
+      } catch (e) { console.error("Communication registry check failed."); }
     }
     setLoading(false);
   };
@@ -51,7 +51,7 @@ const AdminDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => void 
 
   const handleSaveProduct = async () => {
     if (!editingProduct?.name) {
-      alert("Validation Error: Product Name is required for registry update.");
+      alert("Validation Node Failure: Product Name is required.");
       return;
     }
     await api.upsertProduct(editingProduct);
@@ -61,7 +61,7 @@ const AdminDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => void 
 
   const handleSaveUser = async () => {
     if (!editingUser?.email || !editingUser?.name) {
-      alert("Validation Error: Name and Email mandatory.");
+      alert("Validation Node Failure: Identify Node Incomplete.");
       return;
     }
     await api.upsertUser(editingUser);
@@ -71,12 +71,12 @@ const AdminDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => void 
 
   const handleSaveMailConfig = () => {
     localStorage.setItem(SYSTEM_CONFIG_KEY, JSON.stringify(mailConfig));
-    alert('Communication Node Synchronized Successfully.');
+    alert('Infrastructure Synchronized Successfully.');
   };
 
   const handleBulkSync = async () => {
     if (!targetProductId || !bulkCodes.trim()) {
-      alert("Identify target SKU and provide voucher list.");
+      alert("Selection Error: Select target product and provide voucher list.");
       return;
     }
     await api.injectBulkCodes(targetProductId, bulkCodes.split('\n'));
@@ -87,7 +87,7 @@ const AdminDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => void 
 
   const handleToggleHalt = () => {
     const next = !halted;
-    if (confirm(`CRITICAL OVERRIDE: Do you want to ${next ? 'HALT' : 'RESUME'} global transactions?`)) {
+    if (confirm(`CRITICAL SYSTEM OVERRIDE: Do you want to ${next ? 'HALT' : 'RESUME'} global transactions?`)) {
       api.setSystemHaltStatus(next);
       setHalted(next);
     }
@@ -97,18 +97,17 @@ const AdminDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => void 
 
   return (
     <div className="max-w-[1600px] mx-auto px-6 py-12 bg-white min-h-screen">
-      {/* HEADER NODE */}
       <div className="flex flex-col xl:flex-row justify-between items-center gap-10 mb-12 border-b border-slate-100 pb-12">
         <div>
           <h1 className="text-5xl font-display font-black text-slate-900 uppercase tracking-tighter mb-2 leading-none">
             ADMIN <span className="text-unicou-orange">CONTROL</span>
           </h1>
-          <p className="text-[10px] font-black text-unicou-navy uppercase tracking-widest">Authorized Identity: {user.email}</p>
+          <p className="text-[10px] font-black text-unicou-navy uppercase tracking-widest">Master Identity: {user.email}</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-4 justify-center">
           <button onClick={handleToggleHalt} className={`px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-xl ${halted ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white animate-pulse'}`}>
-            {halted ? 'RESUME SYSTEM' : 'HALT ALL VOUCHERS'}
+            {halted ? 'RESUME SYSTEM' : 'STOP ALL TRANSACTIONS'}
           </button>
           
           <div className="flex bg-slate-50 p-1.5 rounded-[2rem] border border-slate-200 shadow-inner overflow-x-auto no-scrollbar">
@@ -121,7 +120,6 @@ const AdminDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => void 
         </div>
       </div>
 
-      {/* INTELLIGENCE HUB */}
       {activeTab === 'intelligence' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 animate-in fade-in duration-500">
            {[
@@ -138,11 +136,10 @@ const AdminDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => void 
         </div>
       )}
 
-      {/* CATALOG REGISTRY */}
       {activeTab === 'catalog' && (
         <div className="space-y-12 animate-in fade-in duration-500">
            <div className="flex justify-between items-center px-4">
-              <h3 className="text-xl font-black uppercase tracking-tighter">Product Assets</h3>
+              <h3 className="text-xl font-black uppercase tracking-tighter text-slate-900">Product Assets</h3>
               <button onClick={() => setEditingProduct({ id: `p-${Date.now()}`, type: 'Voucher', category: 'PTE', basePrice: 0, currency: 'USD', pricingModel: 'Global', icon: '' })} className="px-8 py-4 bg-unicou-orange text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl hover:scale-105 transition-all">+ ADD PRODUCT</button>
            </div>
            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -155,7 +152,7 @@ const AdminDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => void 
                    <h4 className="text-sm font-black text-slate-900 uppercase leading-tight mb-4 flex-grow">{p.name}</h4>
                    <div className="flex justify-between items-center border-t border-slate-50 pt-4">
                       <span className="text-lg font-display font-black text-unicou-navy">${p.basePrice}</span>
-                      <button onClick={() => setEditingProduct(p)} className="text-[9px] font-black text-unicou-orange uppercase hover:underline">Edit Registry</button>
+                      <button onClick={() => setEditingProduct(p)} className="text-[9px] font-black text-unicou-orange uppercase hover:underline">Edit Node</button>
                    </div>
                 </div>
               ))}
@@ -163,11 +160,10 @@ const AdminDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => void 
         </div>
       )}
 
-      {/* STAFF AUTHORIZATION */}
       {activeTab === 'staff' && (
         <div className="space-y-12 animate-in fade-in duration-500">
           <div className="flex justify-between items-center px-4">
-            <h3 className="text-xl font-black uppercase tracking-tighter">Identity Management</h3>
+            <h3 className="text-xl font-black uppercase tracking-tighter text-slate-900">Identity Nodes</h3>
             <button onClick={() => setEditingUser({ role: 'Sales Agent', status: 'Active' })} className="px-8 py-4 bg-unicou-navy text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl hover:scale-105 transition-all">+ ADD STAFF</button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -191,46 +187,44 @@ const AdminDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => void 
         </div>
       )}
 
-      {/* VAULT INJECTION */}
       {activeTab === 'vault' && (
         <div className="max-w-3xl mx-auto space-y-12 animate-in slide-in-from-bottom-6 duration-500">
            <div className="bg-slate-950 p-10 rounded-[3.5rem] text-white shadow-3xl">
-              <h3 className="text-2xl font-display font-black uppercase mb-8">Voucher Vault Sync</h3>
+              <h3 className="text-2xl font-display font-black uppercase mb-8">Voucher Injection Node</h3>
               <div className="space-y-6">
                  <div>
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-2">Target Registry SKU</label>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-2">Target Product Registry</label>
                     <select value={targetProductId} onChange={e => setTargetProductId(e.target.value)} className="w-full p-4 bg-white/10 border border-white/20 rounded-2xl font-bold outline-none text-white focus:bg-white/20 appearance-none">
                        <option value="">Select Target...</option>
                        {data.products.map(p => <option key={p.id} value={p.id} className="text-slate-900">{p.name}</option>)}
                     </select>
                  </div>
                  <div>
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-2">Raw Encrypted Voucher List (New Line Separated)</label>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-2">Raw Voucher List (New Line Separated)</label>
                     <textarea 
                       value={bulkCodes} onChange={e => setBulkCodes(e.target.value)}
                       placeholder="UC-CODE-001&#10;UC-CODE-002..."
                       className="w-full p-8 bg-white/5 border border-white/20 rounded-[2rem] font-mono text-sm focus:bg-white/10 outline-none min-h-[300px] resize-none"
                     />
                  </div>
-                 <button onClick={handleBulkSync} className="w-full py-6 bg-unicou-orange text-white rounded-[1.8rem] font-black text-xs uppercase tracking-widest shadow-action hover:scale-[1.02] transition-all">START VAULT SYNC</button>
+                 <button onClick={handleBulkSync} className="w-full py-6 bg-unicou-orange text-white rounded-[1.8rem] font-black text-xs uppercase tracking-widest shadow-action hover:scale-[1.02] transition-all">START SYNC</button>
               </div>
            </div>
         </div>
       )}
 
-      {/* INFRASTRUCTURE SETTINGS */}
       {activeTab === 'settings' && (
         <div className="max-w-4xl mx-auto animate-in fade-in duration-500">
            <div className="bg-white p-12 rounded-[4rem] border border-slate-100 shadow-3xl">
               <h3 className="text-2xl font-display font-black text-unicou-navy uppercase mb-10">Infrastructure <span className="text-unicou-orange">Settings</span></h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                  <div className="space-y-6">
-                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b pb-2">Communications Node (EmailJS)</h4>
+                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b pb-2">Mail Node (EmailJS)</h4>
                     <Input label="Service ID" value={mailConfig.serviceId} onChange={(v:any) => setMailConfig({...mailConfig, serviceId: v})} />
                     <Input label="Public Key" value={mailConfig.publicKey} onChange={(v:any) => setMailConfig({...mailConfig, publicKey: v})} />
                  </div>
                  <div className="space-y-6">
-                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b pb-2">Logic Templates</h4>
+                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b pb-2">Templates</h4>
                     <Input label="Verification Template ID" value={mailConfig.templateId_verification} onChange={(v:any) => setMailConfig({...mailConfig, templateId_verification: v})} />
                     <Input label="Voucher Delivery Template ID" value={mailConfig.templateId_voucher} onChange={(v:any) => setMailConfig({...mailConfig, templateId_voucher: v})} />
                  </div>
@@ -246,10 +240,10 @@ const AdminDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => void 
       {editingProduct && (
         <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
            <div className="bg-white w-full max-w-2xl rounded-[3.5rem] p-12 shadow-3xl animate-in zoom-in-95 duration-300">
-              <h2 className="text-3xl font-display font-black text-unicou-navy uppercase mb-8">Registry <span className="text-unicou-orange">Asset</span></h2>
+              <h2 className="text-3xl font-display font-black text-unicou-navy uppercase mb-8">Asset <span className="text-unicou-orange">Registry</span></h2>
               <div className="space-y-6">
                  <Input label="Display Name" value={editingProduct.name || ''} onChange={(v:any) => setEditingProduct({...editingProduct, name: v})} />
-                 <Input label="Restored: Voucher Image URL" placeholder="https://verified-source.com/img.png" value={editingProduct.icon || ''} onChange={(v:any) => setEditingProduct({...editingProduct, icon: v})} />
+                 <Input label="Restored: Voucher Image URL" placeholder="https://source.com/img.png" value={editingProduct.icon || ''} onChange={(v:any) => setEditingProduct({...editingProduct, icon: v})} />
                  <div className="grid grid-cols-2 gap-6">
                     <Input label="Category (PTE/IELTS)" value={editingProduct.category || ''} onChange={(v:any) => setEditingProduct({...editingProduct, category: v})} />
                     <Input label="Settlement Price (USD)" type="number" value={editingProduct.basePrice || 0} onChange={(v:any) => setEditingProduct({...editingProduct, basePrice: parseFloat(v)})} />
@@ -266,10 +260,10 @@ const AdminDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => void 
       {editingUser && (
         <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
            <div className="bg-white w-full max-w-2xl rounded-[3.5rem] p-12 shadow-3xl animate-in zoom-in-95 duration-300">
-              <h2 className="text-3xl font-display font-black text-unicou-navy uppercase mb-8">Access <span className="text-unicou-orange">Node</span></h2>
+              <h2 className="text-3xl font-display font-black text-unicou-navy uppercase mb-8">Node <span className="text-unicou-orange">Authority</span></h2>
               <div className="space-y-6">
                  <Input label="Staff Name" value={editingUser.name || ''} onChange={(v:any) => setEditingUser({...editingUser, name: v})} />
-                 <Input label="Registry Email" value={editingUser.email || ''} onChange={(v:any) => setEditingUser({...editingUser, email: v})} />
+                 <Input label="Identity Email" value={editingUser.email || ''} onChange={(v:any) => setEditingUser({...editingUser, email: v})} />
                  <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-2">
                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Authority Role</label>
@@ -278,7 +272,6 @@ const AdminDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => void 
                           <option value="Finance Manager">Finance Node</option>
                           <option value="Sales Agent">Sales Hub</option>
                           <option value="Support">Client Desk</option>
-                          <option value="Trainer">Academic Grader</option>
                        </select>
                     </div>
                     <div className="space-y-2">
