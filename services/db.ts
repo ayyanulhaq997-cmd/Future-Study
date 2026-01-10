@@ -81,7 +81,7 @@ export const countryGuides: CountryGuide[] = [
   },
   { 
     id: 'sweden', countryId: 'se', slug: 'sweden', title: 'Study in Sweden', 
-    heroImage: 'https://images.unsplash.com/photo-1509356843151-3e7d96241e11?w=1200&q=80', 
+    heroImage: 'https://images.unsplash.com/photo-1541043353979-99a389274291?w=1200&q=80', 
     costOfLiving: 'SEK 11,000 / Month', 
     visaRequirements: '€7,000 – €25,000 / Year', 
     content: '### The Lagom Life\nSweden focuses on collaborative, non-hierarchical learning. SI Scholarships offer full funding for future leaders. ### Innovation Node\nHome to major industrial nodes like Spotify, IKEA, and Volvo, Sweden is a leader in sustainability and green tech.' 

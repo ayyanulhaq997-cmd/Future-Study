@@ -1,4 +1,3 @@
-
 /**
  * UNICOU Mail Dispatch Service (Production Node)
  * This service dynamically retrieves configuration from the System Settings.
@@ -17,7 +16,6 @@ export interface MailConfig {
 
 export class MailService {
   private static activeVerificationCodes: Record<string, string> = {};
-  public static lastCodeDispatched: string | null = null; 
 
   private static getConfigs(): MailConfig | null {
     const raw = localStorage.getItem(SYSTEM_CONFIG_KEY);
@@ -34,19 +32,17 @@ export class MailService {
    */
   static async sendVerificationCode(userName: string, userEmail: string): Promise<void> {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
-    this.activeVerificationCodes[userEmail.toLowerCase()] = code;
+    const emailKey = userEmail.toLowerCase();
+    this.activeVerificationCodes[emailKey] = code;
     
-    // Always store the last code in a global for the UI fallback
-    this.lastCodeDispatched = code;
-    (window as any)._last_unicou_code = code;
-
     const config = this.getConfigs();
 
     // Check for real configuration
     if (!config || !config.serviceId || config.serviceId.includes('YOUR_') || config.serviceId === '') {
-      console.warn("--- UNICOU SECURITY PROTOCOL: LOCAL DISPATCH MODE ---");
-      console.info(`[INBOX SIMULATION] Verification Code for ${userEmail}: ${code}`);
-      return; 
+      console.warn("--- UNICOU SECURITY PROTOCOL: MAIL NODE NOT CONFIGURED ---");
+      console.info(`[INBOX SIMULATION] Code for ${userEmail}: ${code}`);
+      // Throw error so the Signup component can tell the owner to configure it in Admin settings
+      throw new Error("MAIL_NODE_UNCONFIGURED");
     }
 
     try {
@@ -57,9 +53,8 @@ export class MailService {
         subject: "Your UNICOU Verification Code"
       });
     } catch (e) {
-      console.error("EmailJS Dispatch Failed. Falling back to local UI display.", e);
-      // Ensure the UI knows an error happened but provide the code as fallback
-      throw new Error("MAIL_SERVER_OFFLINE");
+      console.error("EmailJS Dispatch Failed.", e);
+      throw new Error("TRANSMISSION_FAILED");
     }
   }
 
@@ -71,8 +66,6 @@ export class MailService {
     const isValid = stored === inputCode;
     if (isValid) {
       delete this.activeVerificationCodes[email.toLowerCase()];
-      this.lastCodeDispatched = null;
-      (window as any)._last_unicou_code = null;
     }
     return isValid;
   }
