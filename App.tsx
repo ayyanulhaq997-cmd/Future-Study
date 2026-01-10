@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Hero from './components/Hero';
 import Features from './components/Features';
@@ -23,6 +22,7 @@ import AdminDashboard from './components/AdminDashboard';
 import FinanceDashboard from './components/FinanceDashboard';
 import TrainerDashboard from './components/TrainerDashboard';
 import SalesDashboard from './components/SalesDashboard';
+import SupportDashboard from './components/SupportDashboard';
 import CustomerDashboard from './components/CustomerDashboard';
 import QualificationCatalogue from './components/QualificationCatalogue';
 import PolicyPage from './components/PolicyPage';
@@ -32,7 +32,6 @@ import CookieConsent from './components/CookieConsent';
 import PartnerShowcase from './components/PartnerShowcase';
 import UserGuide from './components/UserGuide';
 import SystemMap from './components/SystemMap';
-import HandoverView from './components/HandoverView';
 import { ViewState, User } from './types';
 import { api } from './services/apiService';
 import { LOGO_SRC } from './constants/assets';
@@ -65,7 +64,6 @@ const App: React.FC = () => {
        switch (user.role) {
          case 'System Admin/Owner':
          case 'Operation Manager':
-         case 'Academic Manager':
            return <div className="view-container"><AdminDashboard user={user} onNavigate={navigateTo} /></div>;
          case 'Finance Manager':
          case 'Finance':
@@ -73,11 +71,12 @@ const App: React.FC = () => {
          case 'Sales Manager':
          case 'Sales Agent':
            return <div className="view-container"><SalesDashboard user={user} /></div>;
+         case 'Support':
+           return <div className="view-container"><SupportDashboard user={user} /></div>;
          case 'Agent':
-         case 'Academic Institute':
            return <div className="view-container"><AgentDashboard user={user} onBuy={(p, q) => navigateTo({ type: 'checkout', productId: p, quantity: q })} /></div>;
-         case 'Teacher':
          case 'Trainer':
+         case 'Teacher':
            return <div className="view-container"><TrainerDashboard user={user} /></div>;
          default:
            return <div className="view-container"><CustomerDashboard user={user} onNavigate={navigateTo} initialTab={(view as any).initialTab} /></div>;
@@ -113,7 +112,7 @@ const App: React.FC = () => {
       case 'policy': return <div className="view-container"><PolicyPage policyId={(view as any).policyId} /></div>;
       case 'system-map': return <div className="view-container"><SystemMap /></div>;
       case 'user-guide': return <div className="view-container"><UserGuide /></div>;
-      default: return <div className="view-container text-center pt-40">Syncing Node...</div>;
+      default: return <div className="view-container text-center pt-40 font-bold uppercase text-slate-400">Node Synchronization...</div>;
     }
   };
 
@@ -129,7 +128,7 @@ const App: React.FC = () => {
                  <img src={LOGO_SRC} alt="UniCou Ltd" className="h-12 w-auto mb-8 cursor-pointer object-contain brightness-0 invert" onClick={() => navigateTo({type: 'home'})} />
                  <p className="text-slate-400 text-sm font-bold italic leading-relaxed max-w-sm mb-10">"Premier global academic mobility platform with presence in Manchester, Dubai, and Lahore."</p>
                  <div className="space-y-4">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-unicou-orange">Regional Nodes:</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-unicou-orange">Regional Offices:</p>
                     <div className="text-[11px] text-slate-300 font-bold space-y-1">
                       <p>UK: 123 Oxford Rd, Manchester M13 9PL</p>
                       <p>UAE: Business Bay, Dubai Corporate Hub</p>
@@ -163,7 +162,6 @@ const App: React.FC = () => {
                 <div className="space-y-4 text-xs font-bold text-slate-400 uppercase">
                    <p className="text-unicou-orange">connect@unicou.uk</p>
                    <p>+44 7XX XXXXXXX</p>
-                   <p>UK Registered: 12345678</p>
                 </div>
               </div>
             </div>
