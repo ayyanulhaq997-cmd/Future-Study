@@ -1,5 +1,4 @@
-
-import { Product, VoucherCode, User, University, CountryGuide, Course, Qualification, LMSCourse, LMSPracticeTest, ManualSubmission, TestResult, LMSModule } from '../types';
+import { Product, VoucherCode, User, University, CountryGuide, Course, Qualification, LMSCourse, LMSPracticeTest, ManualSubmission, TestResult, LMSModule, ImmigrationGuideData } from '../types';
 
 export const users: User[] = [
   { id: 'u-owner', name: 'Business Owner', email: 'admin@unicou.uk', role: 'System Admin/Owner', isAuthorized: true, verified: true, status: 'Active', country: 'United Kingdom', timestamp: new Date().toISOString() },
@@ -29,144 +28,137 @@ export const countryGuides: CountryGuide[] = [
     heroImage: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1200&q=80', 
     costOfLiving: '£1,171 - £1,529 / Month', 
     visaRequirements: '£10,000 – £18,000 / Year', 
-    content: '### Why Study in the UK?\nThe UK is the gold standard for global academic prestige. Shorter durations mean you save on living costs while graduating earlier. ### 2025 Updates\nFull transition to eVisa is now active.' 
+    content: '### Why Study in the UK?\nThe UK is the gold standard for global academic prestige. Shorter durations mean you save on living costs while graduating earlier. ### 2025 Updates\nFull transition to eVisa is now active. All physical BRPs are being phased out in favor of secure digital identities.' 
   },
   { 
     id: 'australia', countryId: 'au', slug: 'australia', title: 'Study in Australia', 
-    heroImage: 'https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?w=1200&q=80', 
+    heroImage: 'https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?w=1200&q=80', 
     costOfLiving: 'AUD $30,000+ / Year', 
     visaRequirements: 'AUD $20,000 – 40,000 / Year', 
-    content: '### Study in Australia\nAustralia is implementing the Genuine Student (GS) requirement. This ensures students are matched with high-quality institutional nodes.' 
+    content: '### G’day, Future Leaders!\nAustralia is implementing the Genuine Student (GS) requirement. This ensures students are matched with high-quality institutional nodes. ### National Planning Level\nThe government has introduced caps on international commencements for 2025.' 
   },
   { 
     id: 'canada', countryId: 'ca', slug: 'canada', title: 'Study in Canada', 
-    heroImage: 'https://images.unsplash.com/photo-1503614472-8c93d56e92ce?w=1200&q=80', 
+    heroImage: 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=1200&q=80', 
     costOfLiving: 'CAD $20,635 / Year', 
     visaRequirements: 'CAD $11,000 – 35,000 / Year', 
-    content: '### Study in Canada\nCanada focuses on STEM and Healthcare specialists. Provincial Attestation Letters (PAL) are now mandatory for most study permits.' 
+    content: '### Land of Opportunity\nCanada focuses on STEM and Healthcare specialists. Provincial Attestation Letters (PAL) are now mandatory for most study permits. ### Financial Proof\nApplicants must demonstrate at least CAD $20,635 in living funds plus first-year tuition.' 
   },
   { 
     id: 'usa', countryId: 'us', slug: 'usa', title: 'Study in USA', 
     heroImage: 'https://images.unsplash.com/photo-1485738422979-f5c462d49f74?w=1200&q=80', 
     costOfLiving: 'USD $12,000 – 18,000 / Year', 
     visaRequirements: 'USD $11,000 – 40,000 / Year', 
-    content: '### Academic Flexibility\nThe USA offers the most diverse range of majors. Digital I-20s have streamlined the F-1 visa process.' 
+    content: '### Academic Flexibility\nThe USA offers the most diverse range of majors. Digital I-20s have streamlined the F-1 visa process. ### STEM OPT\nSTEM graduates can stay up to 3 years post-graduation on work authorization.' 
   },
   { 
     id: 'new-zealand', countryId: 'nz', slug: 'new-zealand', title: 'Study in New Zealand', 
     heroImage: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1200&q=80', 
     costOfLiving: 'NZD $20,000 / Year', 
     visaRequirements: 'NZD $16,000 – 35,000 / Year', 
-    content: '### Think New!\nEvery single university in NZ is ranked in the top 3% globally. Practical education is the priority here.' 
+    content: '### Think New!\nEvery single university in NZ is ranked in the top 3% globally. Practical education is the priority here. ### Green List\nNZ offers fast-track residency for roles on its critical skills Green List.' 
   },
   { 
     id: 'ireland', countryId: 'ie', slug: 'ireland', title: 'Study in Ireland', 
     heroImage: 'https://images.unsplash.com/photo-1590089415225-401ed6f9db8e?w=1200&q=80', 
     costOfLiving: '€12,000 / Year', 
     visaRequirements: '€8,000 – 22,000 / Year', 
-    content: '### The European Tech Hub\nDublin hosts over 1,000 multinationals. Master’s graduates get a 2-year stay-back visa.' 
+    content: '### The European Tech Hub\nDublin hosts over 1,000 multinationals. Master’s graduates get a 2-year stay-back visa. ### Critical Skills\nIreland fast-tracks visas for specialists in Tech, Pharma, and Fintech.' 
   },
   { 
     id: 'germany', countryId: 'de', slug: 'germany', title: 'Study in Germany', 
     heroImage: 'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=1200&q=80', 
     costOfLiving: '€11,904 - €12,200 / Year', 
     visaRequirements: '€0 – 5,000 / Year', 
-    content: '### Engine of Europe\nPublic universities are mostly tuition-free. Proof of living funds via a blocked account is mandatory.' 
+    content: '### Industrial Powerhouse\nPublic universities are mostly tuition-free. Proof of living funds via a blocked account (Sperrkonto) is mandatory (~€11,904).' 
   },
   { 
     id: 'italy', countryId: 'it', slug: 'italy', title: 'Study in Italy', 
     heroImage: 'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=1200&q=80', 
     costOfLiving: '€6,500 – €7,500 / Year', 
     visaRequirements: '€500 – €3,000 / Year', 
-    content: '### Affordable Prestige\nPublic universities use income-based fees. Regional grants like DSU can cover all tuition.' 
+    content: '### Renaissance Education\nPublic universities use income-based fees (ISEE). Regional grants like DSU can cover all tuition and provide a stipend.' 
   },
   { 
     id: 'sweden', countryId: 'se', slug: 'sweden', title: 'Study in Sweden', 
-    heroImage: 'https://images.unsplash.com/photo-1509339022327-1e1e25360a41?w=1200&q=80', 
+    heroImage: 'https://images.unsplash.com/photo-1509356843151-3e7d96241e11?w=1200&q=80', 
     costOfLiving: 'SEK 11,000 / Month', 
     visaRequirements: '€7,000 – €25,000 / Year', 
-    content: '### The Lagom Life\nSweden focuses on collaborative, non-hierarchical learning and sustainability node development.' 
+    content: '### The Lagom Life\nSweden focuses on collaborative, non-hierarchical learning. SI Scholarships offer full funding for future leaders. ### Innovation Node\nHome to major industrial nodes like Spotify, IKEA, and Volvo, Sweden is a leader in sustainability and green tech.' 
   },
   { 
     id: 'finland', countryId: 'fi', slug: 'finland', title: 'Study in Finland', 
     heroImage: 'https://images.unsplash.com/photo-1517154421773-0529f29ea451?w=1200&q=80', 
     costOfLiving: '€800 - €900 / Month', 
-    visaRequirements: '€6,000 – 15,000 / Year', 
-    content: '### Happiest Education System\nFinland prioritizes problem-solving and critical thinking over standard memorization.' 
+    visaRequirements: '€6,000 - €12,000 / Year', 
+    content: '### The Land of a Thousand Lakes\nFinland is consistently ranked as the happiest country in the world. It offers world-class education with a focus on equality and innovation.'
   },
   { 
     id: 'cyprus', countryId: 'cy', slug: 'cyprus', title: 'Study in Cyprus', 
     heroImage: 'https://images.unsplash.com/photo-1505305976870-c0be1cd39939?w=1200&q=80', 
-    costOfLiving: '€600 - €900 / Month', 
-    visaRequirements: '€4,800 – 9,800 / Year', 
-    content: '### Mediterranean Hub\nEnjoy EU-recognized degrees in a sunny, affordable Mediterranean environment.' 
+    costOfLiving: '€700 - €1,000 / Month', 
+    visaRequirements: '€4,000 – €9,000 / Year', 
+    content: '### Mediterranean Excellence\nCyprus offers European standard degrees with a significantly lower cost of living. It is a rising hub for business and hospitality management.' 
   },
   { 
     id: 'dubai', countryId: 'ae', slug: 'dubai', title: 'Study in Dubai', 
     heroImage: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1200&q=80', 
-    costOfLiving: 'AED 4,000 - 9,000 / Month', 
-    visaRequirements: 'AED 35,000 – 80,000 / Year', 
-    content: '### City of the Future\nStudy at prestigious UK/US branch campuses in DIAC. Zero tax on student internship earnings.' 
+    costOfLiving: 'AED 3,000 - 6,000 / Month', 
+    visaRequirements: 'AED 35,000 – 70,000 / Year', 
+    content: '### City of the Future\nDubai hosts world-renowned branch campuses like Middlesex and Heriot-Watt. Students enjoy a tax-free environment and incredible internship nodes.' 
   },
   { 
     id: 'malaysia', countryId: 'my', slug: 'malaysia', title: 'Study in Malaysia', 
     heroImage: 'https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?w=1200&q=80', 
     costOfLiving: 'RM 1,500 - 3,000 / Month', 
-    visaRequirements: 'USD $4,000 – 9,000 / Year', 
-    content: '### Western Degrees, Asian Prices\nMalaysia offers world-class education via branch campuses at 70% lower costs.' 
+    visaRequirements: 'USD $4,000 – 8,000 / Year', 
+    content: '### Truly Asia\nMalaysia is a top destination for affordable, high-quality English-medium education. Many UK and Australian universities have direct campus nodes here.' 
   },
   { 
     id: 'turkey', countryId: 'tr', slug: 'turkey', title: 'Study in Turkey', 
     heroImage: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=1200&q=80', 
-    costOfLiving: 'USD $400 - 800 / Month', 
+    costOfLiving: 'USD $400 - 700 / Month', 
     visaRequirements: 'USD $3,000 – 10,000 / Year', 
-    content: '### Where Continents Meet\nTurkey is part of the Bologna process, ensuring your degree is recognized across Europe.' 
+    content: '### Bridging Continents\nTurkey offers a unique cultural node with deep history and modern academic infrastructure. State scholarships provide 100% funding for top applicants.' 
   },
   { 
     id: 'europe', countryId: 'eu', slug: 'europe', title: 'Study in Europe Hub', 
     heroImage: 'https://images.unsplash.com/photo-1473951574080-01fe45ec8643?w=1200&q=80', 
-    costOfLiving: '€500 - €1,100 / Month', 
-    visaRequirements: '€6,000 – 18,000 / Year', 
-    content: '### The Continent Awaits\nAccess the entire Schengen zone via over 10,000 English-taught programs across Europe.' 
+    costOfLiving: '€600 - €1,100 / Month', 
+    visaRequirements: '€6,000 – 15,000 / Year', 
+    content: '### The Continent Awaits\nExplore rising hubs like Poland, Hungary, and Spain. A degree from a Schengen member state opens doors to the entire European job market.' 
   }
 ];
 
 export const universities: University[] = [
-  { id: 'u-oxford', name: 'University of Oxford', slug: 'oxford', location: 'Oxford, UK', description: 'Top global research node.', logo: 'https://images.unsplash.com/photo-1541339907198-e08756ebafe1?w=200', ranking: 1, countryId: 'uk', website: 'https://ox.ac.uk' },
-  { id: 'u-nyu', name: 'New York University', slug: 'nyu', location: 'New York, USA', description: 'Global private university.', logo: 'https://images.unsplash.com/photo-1541339907198-e08756ebafe1?w=200', ranking: 38, countryId: 'us', website: 'https://nyu.edu' },
+  { id: 'uni-1', name: 'University of Manchester', slug: 'uom', location: 'Manchester, UK', description: 'A world-leading research institution.', logo: 'https://upload.wikimedia.org/wikipedia/en/thumb/e/e9/University_of_Manchester_logo.svg/1200px-University_of_Manchester_logo.svg.png', ranking: 32, countryId: 'uk', website: 'https://www.manchester.ac.uk' },
+  { id: 'uni-2', name: 'University of Melbourne', slug: 'unimelb', location: 'Melbourne, Australia', description: "Australia's #1 university.", logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/University_of_Melbourne_logo.svg/1200px-University_of_Melbourne_logo.svg.png', ranking: 14, countryId: 'au', website: 'https://www.unimelb.edu.au' }
 ];
 
 export const courses: Course[] = [
-  { id: 'cs-msc-ai', universityId: 'u-manchester', title: 'MSc Artificial Intelligence', degree: 'Postgraduate', duration: '1 Year', tuitionFee: '£28,000', description: 'Advanced AI nodes.' }
-];
-
-export const lmsCourses: LMSCourse[] = [
-  { id: 'c-pte-master', title: 'PTE 79+ Masterclass', category: 'PTE', thumbnail: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=800', description: 'Comprehensive PTE training.', duration: '25 Hours', instructor: 'Prof. Michael Aris', price: 49 },
-];
-
-export const lmsModules: LMSModule[] = [
-  { id: 'm-intro', title: 'Core Foundations', lessons: [{ id: 'l-01', title: 'Introduction', type: 'Video', content: 'https://www.youtube.com/embed/dQw4w9WgXcQ' }] }
-];
-
-export const lmsTests: LMSPracticeTest[] = [
-  {
-    id: 'full-mock-1', title: 'IELTS Academic Full Simulation',
-    sections: [
-      {
-        id: 'ielts-reading-1', title: 'Reading Task: Marie Curie', skill: 'Reading', timeLimit: 20,
-        passageText: `Marie Curie is probably the most famous woman scientist who has ever lived...`,
-        questions: [
-          { id: 'q1', skill: 'Reading', type: 'TFNG', text: 'Marie Curie’s husband was a joint winner of both Marie’s Nobel Prizes.' }
-        ]
-      }
-    ]
-  }
+  { id: 'c-1', universityId: 'uni-1', title: 'MSc Data Science', degree: 'Postgraduate', duration: '1 Year', tuitionFee: '£28,000', description: 'Advanced study of data analysis and machine learning.' },
+  { id: 'c-2', universityId: 'uni-1', title: 'BSc Computer Science', degree: 'Undergraduate', duration: '3 Years', tuitionFee: '£26,000', description: 'Foundational degree in computing.' }
 ];
 
 export const qualifications: Qualification[] = [
-  { id: 'othm-l3', title: 'OTHM Level 3 Foundation', qualificationBody: 'OTHM', level: 'Level 3', tuitionFees: '£1,500', description: 'Pathway to UK Universities.', duration: '6 Months', image: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=800', requirements: ['English B2', 'High School'] }
+  { id: 'othm-l3', title: 'OTHM Level 3 Foundation Diploma', qualificationBody: 'OTHM', level: 'Level 3', tuitionFees: '$1,200', description: 'Entry point for higher education.', duration: '6 Months', image: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=800', requirements: ['High school completion', 'IELTS 5.5'] }
+];
+
+export const immigrationGuides: ImmigrationGuideData[] = [
+  { id: 'uk-pr', slug: 'uk-pr', title: 'UK PR Pathway', heroImage: 'https://images.unsplash.com/photo-1486299267070-83823f5448dd?w=1200', content: 'Permanent residency options in the UK.', pathways: [{ id: 'skilled-worker', title: 'Skilled Worker Visa', description: 'Work-based route to settlement.', requirements: ['Job offer', 'English skills'] }] }
+];
+
+export const lmsCourses: LMSCourse[] = [
+  { id: 'lms-pte-mastery', title: 'PTE Academic Mastery', category: 'PTE', thumbnail: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800', description: 'Complete PTE preparation.', duration: '40 Hours', instructor: 'Dr. Jane Smith', price: 99 }
+];
+
+export const lmsModules: LMSModule[] = [
+  { id: 'm-1', title: 'Introduction to PTE', lessons: [{ id: 'l-1', title: 'Exam Overview', type: 'Video', content: 'https://www.youtube.com/embed/dQw4w9WgXcQ' }] }
+];
+
+export const lmsTests: LMSPracticeTest[] = [
+  { id: 'full-mock-1', title: 'PTE Full Mock Exam 1', sections: [{ id: 's-1', title: 'Reading Section', skill: 'Reading', timeLimit: 30, questions: [{ id: 'q-1', skill: 'Reading', type: 'MCQ', text: 'Select the correct answer.', options: ['Option A', 'Option B'] }] }] }
 ];
 
 export const manualSubmissions: ManualSubmission[] = [];
 export const testResults: TestResult[] = [];
-export const immigrationGuides: any[] = [];
