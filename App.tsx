@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import Hero from './components/Hero';
 import Features from './components/Features';
@@ -41,16 +42,17 @@ const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
 
-  // DOMAIN DETECTION LOGIC (For Separate Launches)
-  const domainView = useMemo<ViewState>(() => {
-    const host = window.location.hostname;
-    if (host.includes('exams.')) return { type: 'store' };
-    if (host.includes('lms.')) return { type: 'lms-dashboard' };
-    if (host.includes('agents.')) return { type: 'join-hub' };
+  // PATH-BASED ROUTING SIMULATION
+  const initialView = useMemo<ViewState>(() => {
+    const path = window.location.pathname.toLowerCase();
+    if (path === '/studyabroad') return { type: 'country-list' };
+    if (path === '/exams') return { type: 'store' };
+    if (path === '/learninghub') return { type: 'lms-dashboard' };
+    if (path === '/blogs') return { type: 'resources' };
     return { type: 'home' };
   }, []);
 
-  const [view, setView] = useState<ViewState>(domainView);
+  const [view, setView] = useState<ViewState>(initialView);
 
   useEffect(() => {
     const active = api.getCurrentUser();
@@ -130,45 +132,52 @@ const App: React.FC = () => {
     <div className="min-h-screen text-unicou-navy bg-white relative flex flex-col">
       <Navbar view={view as any} user={user} scrolled={scrolled} onNavigate={navigateTo} onLogout={handleLogout} onOpenSearch={() => setSearchOpen(true)} isVisible={!isFocusMode} />
       <main className="relative z-0 flex-grow">{renderContent()}</main>
+
       {!isFocusMode && (
         <footer className="bg-slate-900 text-white pt-24 pb-12 mt-auto">
           <div className="max-w-7xl mx-auto px-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 pb-16 border-b border-white/10">
               <div className="lg:col-span-2">
-                 <img src={LOGO_SRC} alt="UniCou Ltd" className="h-12 w-auto mb-8 cursor-pointer object-contain brightness-0 invert" onClick={() => navigateTo({type: 'home'})} />
-                 <p className="text-slate-400 text-sm font-bold italic leading-relaxed max-w-sm mb-10">"Premier global academic mobility platform with presence in Manchester, Dubai, and Lahore."</p>
+                 <div className="inline-block bg-white p-4 rounded-3xl mb-8 shadow-xl">
+                   <img src={LOGO_SRC} alt="UniCou Ltd" className="h-10 w-auto cursor-pointer object-contain" onClick={() => navigateTo({type: 'home'})} />
+                 </div>
+                 <p className="text-slate-400 text-sm font-bold italic leading-relaxed max-w-sm mb-10">"Premier global academic mobility platform with presence in Manchester, Dubai, and Pakistan."</p>
                  <div className="space-y-4">
                     <p className="text-[10px] font-black uppercase tracking-widest text-unicou-orange">Regional Offices:</p>
                     <div className="text-[11px] text-slate-300 font-bold space-y-1">
-                      <p>UK: 123 Oxford Rd, Manchester M13 9PL</p>
-                      <p>UAE: Business Bay, Dubai Corporate Hub</p>
-                      <p>PK: Gulberg III, Lahore Academic Node</p>
+                      <p>UK: Sale Manchester, UK M33 4QP</p>
+                      <p>UAE: 24695 Deira, Dubai, UAE</p>
+                      <p>PK: 23-17-B-1, Township, Lahore, Pakistan</p>
                     </div>
                  </div>
               </div>
               <div>
-                <h5 className="text-[10px] font-black text-white uppercase tracking-widest mb-6">Verticals</h5>
-                <ul className="space-y-4 text-xs font-bold text-slate-400 uppercase">
-                  <li><button onClick={() => navigateTo({type: 'store'})} className="hover:text-unicou-orange transition-colors">Exam Vouchers</button></li>
-                  <li><button onClick={() => navigateTo({type: 'lms-dashboard'})} className="hover:text-unicou-orange transition-colors">Study Hub</button></li>
-                  <li><button onClick={() => navigateTo({type: 'join-hub'})} className="hover:text-unicou-orange transition-colors">Admission Hub</button></li>
-                  <li><button onClick={() => navigateTo({type: 'about'})} className="hover:text-unicou-orange transition-colors">About Us</button></li>
+                <h5 className="text-[10px] font-black text-white uppercase tracking-widest mb-6">Quick Links</h5>
+                <ul className="space-y-4 text-xs font-bold text-slate-400">
+                  <li><button onClick={() => navigateTo({type: 'apply', formType: 'student-apply'})} className="hover:text-unicou-orange transition-colors">Apply Now</button></li>
+                  <li><a href="https://lms.unicou.uk" target="_blank" rel="noopener noreferrer" className="hover:text-unicou-orange transition-colors">Learning Hub</a></li>
+                  <li><a href="https://vouchers.unicou.uk" target="_blank" rel="noopener noreferrer" className="hover:text-unicou-orange transition-colors">Vouchers</a></li>
+                  <li><button onClick={() => navigateTo({ type: 'apply', formType: 'general' })} className="hover:text-unicou-orange transition-colors">Contact Us</button></li>
+                  <li><button onClick={() => navigateTo({ type: 'apply', formType: 'careers' })} className="hover:text-unicou-orange transition-colors">Career</button></li>
                 </ul>
               </div>
               <div>
                 <h5 className="text-[10px] font-black text-white uppercase tracking-widest mb-6">Legal & Policies</h5>
-                <ul className="space-y-4 text-xs font-bold text-slate-400 uppercase">
-                  <li><button onClick={() => navigateTo({type: 'policy', policyId: 'privacy'})} className="hover:text-unicou-orange transition-colors">Privacy Policy</button></li>
-                  <li><button onClick={() => navigateTo({type: 'policy', policyId: 'modern-slavery'})} className="hover:text-unicou-orange transition-colors">Modern Slavery</button></li>
-                  <li><button onClick={() => navigateTo({type: 'policy', policyId: 'accessibility'})} className="hover:text-unicou-orange transition-colors">Accessibility</button></li>
-                  <li><button onClick={() => navigateTo({type: 'policy', policyId: 'terms-of-use'})} className="hover:text-unicou-orange transition-colors">Terms of Use</button></li>
+                <ul className="space-y-3 text-xs font-bold text-slate-400">
+                  <li><button onClick={() => navigateTo({type: 'policy', policyId: 'privacy'})} className="hover:text-unicou-orange transition-colors text-left">Privacy Policy</button></li>
+                  <li><button onClick={() => navigateTo({type: 'policy', policyId: 'terms-of-use'})} className="hover:text-unicou-orange transition-colors text-left">Terms of Use</button></li>
+                  <li><button onClick={() => navigateTo({type: 'policy', policyId: 'modern-slavery'})} className="hover:text-unicou-orange transition-colors text-left">Modern Slavery</button></li>
+                  <li><button onClick={() => navigateTo({type: 'policy', policyId: 'accessibility'})} className="hover:text-unicou-orange transition-colors text-left">Accessibility</button></li>
+                  <li><button onClick={() => navigateTo({type: 'policy', policyId: 'cookies'})} className="hover:text-unicou-orange transition-colors text-left">Cookie Use Policy</button></li>
+                  <li><button onClick={() => navigateTo({type: 'policy', policyId: 'whistleblowing'})} className="hover:text-unicou-orange transition-colors text-left">Whistleblowing</button></li>
+                  <li><button onClick={() => navigateTo({type: 'policy', policyId: 'carbon-reduction'})} className="hover:text-unicou-orange transition-colors text-left">Carbon Reduction</button></li>
                 </ul>
               </div>
               <div>
                 <h5 className="text-[10px] font-black text-white uppercase tracking-widest mb-6">Contact</h5>
-                <div className="space-y-4 text-xs font-bold text-slate-400 uppercase">
-                   <p className="text-unicou-orange underline">connect@unicou.uk</p>
-                   <p>+44 7XX XXXXXXX</p>
+                <div className="space-y-4 text-xs font-bold text-slate-400">
+                   <p className="text-unicou-orange underline cursor-pointer lowercase" onClick={() => navigateTo({ type: 'apply', formType: 'general' })}>connect@unicou.uk</p>
+                   <p className="capitalize">Manchester Registry Office</p>
                 </div>
               </div>
             </div>
@@ -176,7 +185,7 @@ const App: React.FC = () => {
           </div>
         </footer>
       )}
-      <AIChat />
+      <AIChat onNavigate={navigateTo} />
       <CookieConsent />
       {searchOpen && <SearchOverlay onClose={() => setSearchOpen(false)} onNavigate={navigateTo} />}
     </div>

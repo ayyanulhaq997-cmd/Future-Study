@@ -1,16 +1,22 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { GeminiService } from '../services/geminiService';
+import { api } from '../services/apiService';
+import { ViewState } from '../types';
 
 interface Message {
   role: 'user' | 'model';
   text: string;
 }
 
+interface AIChatProps {
+  onNavigate: (view: ViewState) => void;
+}
+
 const CHAT_HISTORY_KEY = 'unicou_chat_v4';
 const INITIAL_MESSAGE: Message = { 
   role: 'model', 
-  text: "Hello! Welcome to UniCou Ltd. I'm your AI consultant. To protect your identity, I am forbidden from sharing contact details or personal data in this terminal. How can I help with vouchers or admissions?" 
+  text: "Hello! Welcome to UniCou Ltd. I'm your primary support node. For the best experience and to track your support history, please ensure you are signed in. How can I help with vouchers or admissions?" 
 };
 
 // MANDATORY SECURITY FILTERS (Requirement V.v)
@@ -23,12 +29,13 @@ const securityProtocol = (text: string) => {
     .replace(phoneRegex, (match) => match.length > 8 ? "[REDACTED: CONTACT RESTRICTION]" : match);
 };
 
-const AIChat: React.FC = () => {
+const AIChat: React.FC<AIChatProps> = ({ onNavigate }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const currentUser = api.getCurrentUser();
 
   useEffect(() => {
     const saved = localStorage.getItem(CHAT_HISTORY_KEY);
@@ -49,7 +56,6 @@ const AIChat: React.FC = () => {
     if (!input.trim() || isTyping) return;
 
     const rawInput = input.trim();
-    // Restriction on contact details sharing (Requirement V.v)
     const sanitizedInput = securityProtocol(rawInput);
     
     setInput('');
@@ -58,11 +64,11 @@ const AIChat: React.FC = () => {
     setIsTyping(true);
 
     try {
-      // Escalation logic to Sales Agent (Requirement V.v / V.viii.v)
+      // Escalation logic to Sales Agent
       const escalationKeywords = ['agent', 'human', 'call', 'talk to person', 'help', 'stuck', 'failed'];
       if (escalationKeywords.some(kw => rawInput.toLowerCase().includes(kw))) {
         await new Promise(r => setTimeout(r, 1200));
-        setMessages(prev => [...prev, { role: 'model', text: "I've detected a requirement for human intervention. I am establishing a handshake with an available Sales Agent... Please remain active in this portal node." }]);
+        setMessages(prev => [...prev, { role: 'model', text: "Establishing a secure handshake with a human Support Agent. Your current identity node is logged for performance tracking." }]);
         setIsTyping(false);
         return;
       }
@@ -95,13 +101,29 @@ const AIChat: React.FC = () => {
 
       {isOpen && (
         <div className="absolute bottom-20 right-0 w-[380px] h-[600px] bg-white rounded-3xl border border-slate-100 shadow-premium flex flex-col overflow-hidden animate-in slide-in-from-bottom-4">
-          <div className="p-8 bg-unicou-navy flex items-center gap-4 border-b border-slate-100">
-            <div className="w-12 h-12 rounded-xl bg-unicou-orange flex items-center justify-center text-2xl shadow-lg">🤖</div>
-            <div>
-              <h3 className="text-white font-bold text-lg leading-none uppercase tracking-tighter">Unicou AI</h3>
-              <div className="flex items-center gap-2 mt-1.5"><div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" /><p className="text-emerald-400 text-[9px] font-black uppercase tracking-widest">Secure Privacy Node Active</p></div>
+          <div className="p-6 bg-unicou-navy flex items-center justify-between border-b border-slate-100">
+            <div className="flex items-center gap-4">
+               <div className="w-10 h-10 rounded-xl bg-unicou-orange flex items-center justify-center text-xl shadow-lg">🤖</div>
+               <div>
+                 <h3 className="text-white font-bold text-sm leading-none uppercase tracking-tighter">Unified Hub</h3>
+                 <div className="flex items-center gap-2 mt-1"><div className="w-1 h-1 bg-emerald-500 rounded-full animate-pulse" /><p className="text-emerald-400 text-[8px] font-black uppercase tracking-widest">Active Node</p></div>
+               </div>
             </div>
+            {!currentUser && (
+               <div className="flex gap-1">
+                  <button onClick={() => onNavigate({type: 'login'})} className="px-3 py-1 bg-white/10 hover:bg-white/20 text-white rounded-lg text-[8px] font-black uppercase transition-all">Sign In</button>
+                  <button onClick={() => onNavigate({type: 'signup'})} className="px-3 py-1 bg-unicou-orange text-white rounded-lg text-[8px] font-black uppercase transition-all">Sign Up</button>
+               </div>
+            )}
           </div>
+
+          {currentUser && (
+            <div className="bg-slate-50 px-6 py-2 border-b border-slate-100 flex items-center justify-between">
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Logged in as: {currentUser.name.split(' ')[0]}</span>
+              <span className="text-[8px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100 uppercase tracking-tighter">Verified session</span>
+            </div>
+          )}
+
           <div ref={scrollRef} className="flex-grow overflow-y-auto p-6 space-y-6 bg-slate-50 no-scrollbar">
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -109,13 +131,14 @@ const AIChat: React.FC = () => {
               </div>
             ))}
           </div>
+
           <form onSubmit={handleSend} className="p-6 bg-white border-t border-slate-100 flex gap-3">
             <input type="text" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Consult about vouchers..." className="flex-grow bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-unicou-navy transition-all font-bold" />
             <button type="submit" disabled={isTyping || !input.trim()} className="w-12 h-12 bg-unicou-orange hover:bg-orange-600 rounded-xl flex items-center justify-center text-white shadow-action transition-all active:scale-90 disabled:opacity-30">
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
             </button>
           </form>
-          <div className="bg-slate-100 px-8 py-2 text-center border-t border-slate-200"><p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Requirement V.v: Identity masking enabled. Contact details protected.</p></div>
+          <div className="bg-slate-100 px-8 py-2 text-center border-t border-slate-200"><p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Single active support terminal. All interactions logged for performance audit.</p></div>
         </div>
       )}
     </div>

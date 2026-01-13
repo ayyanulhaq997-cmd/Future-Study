@@ -27,61 +27,49 @@ export const countryGuides: CountryGuide[] = [
     id: 'uk',
     countryId: 'uk',
     slug: 'uk',
-    title: 'Study in United Kingdom',
+    title: 'Study in the United Kingdom',
     heroImage: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1200',
-    costOfLiving: '£1,171 / Month',
-    visaRequirements: '£12,000 / Year',
-    content: `Are you dreaming of walking through the historic campuses of Oxford, London, Manchester, Birmingham, Glasgow, Cardiff, Belfast ? The United Kingdom remains one of the world's premier destinations for higher education, offering a blend of tradition, innovation, and global career opportunities. However, as we move into 2025 and look toward  , the landscape for international students is shifting.
-At UniCou, we understand that navigating visa changes and university applications can feel overwhelming. That is why we have put together this comprehensive guide to help you understand exactly what it takes to study in the UK today.
-Why Study in the UK in 2025?
-The UK’s reputation for academic excellence is unmatched. With a degree from a UK institution, you aren't just getting an education; you are gaining a globally recognized credential. In 2025, several factors continue to make the UK a top choice:
-Shorter Course Durations: Unlike many other countries, most UK Bachelor’s degrees take only three years, and Master’s degrees are typically completed in just one year. This saves you both time and tuition costs.
-World-Class Research: UK universities are at the forefront of global innovation, especially in AI, renewable energy, and healthcare.
-Cultural Diversity: You will join a vibrant community of students from over 180 countries, building a global network that will last a lifetime.
-The Latest 2025/  UK Student Visa Rules
-The UK government has introduced several important updates that you need to be aware of before applying. Staying compliant with these UK study visa requirements is the key to a successful application.
-1. Increased Financial Maintenance Requirements
-As of November 11, 2025, the Home Office has increased the amount of money you must show to cover your living costs.
-Studying in London: You now need to demonstrate £1,529 per month (for up to 9 months).
-Studying Outside London: You need to show £1,171 per month (for up to 9 months).
-These funds must be held in your bank account for at least 28 consecutive days before you submit your application.
-2. English Language Requirements
-Confirmation of Acceptance for Studies (CAS) in 2025, the English language requirements differ strictly based on the level of your course and the institution's status. For below degree-level courses (such as Foundation, Pathway, or Diploma programs), the UK Home Office mandates a Secure English Language Test (SELT) taken at an approved physical test center. In these cases, you must choose from the official SELT list: IELTS for UKVI, PTE Academic UKVI, LanguageCert International ESOL SELT, PSI (Skills for English UKVI), or Trinity College London (ISE/GESE). Unlike degree-level students, those on below-degree programs cannot typically use MOI or internal university tests to satisfy visa requirements.
-For students applying to degree-level programs or higher, UK Higher Education Institutions (HEIs) have the flexibility to accept a wider range of online and home-based English exams. These "non-SELT" options are increasingly popular due to their convenience, though acceptance varies by university. Common online and home-based exams accepted for CAS issuance in 2025 include:
-Oxford ELLT (English Language Level Test) Digital
-LanguageCert ESOL (Online with remote proctoring)
-Password Skills Plus
-TOEFL iBT Home Edition (Note: Accepted by universities via self-assessment, but not a SELT)
-IELTS Online
-PTE Academic Online
-Duolingo English Test (DET) (Accepted by a specific list of UK universities)
-University Internal English Tests (In-house assessments designed by specific institutions)
-While these online tests are excellent for securing a CAS for degree-level studies, it is vital to confirm that your university is a Student Sponsor with a track record of compliance, as this status allows them to "self-assess" your English proficiency using these non-SELT methods. Always verify with your Education Consultancy or the university's admissions office before booking a home-based exam to ensure it meets the specific criteria for your 2025 enrollment.
- 
-3. Transition to eVisas
-Say goodbye to the physical Biometric Residence Permit (BRP). The UK has fully transitioned to eVisas. You will now access and prove your immigration status online through a secure UKVI account.
-Top Courses in Demand for 2025- 
-Choosing the right course is about balancing your passion with future employability. In the current UK job market, several fields stand out:
-Computer Science & AI: With the UK investing billions in tech innovation, specialists in AI, cybersecurity, and data science are in massive demand.
-Healthcare & Nursing: The NHS continues to face staffing shortages, making healthcare degrees a reliable pathway to visa sponsorship.
-Renewable Energy Engineering: As the UK pushes for "Net Zero," engineers specializing in green technology are seeing a surge in job openings.
-Business Analytics & FinTech: London remains a global financial hub, and the demand for graduates who can bridge the gap between finance and technology is at an all-time high.
-Post-Study Work: The Graduate Route Update
-One of the most frequent questions we get is: "Can I stay and work in the UK after I graduate?" The answer is yes, but with updated timelines.
-Currently, the Graduate Route visa allows you to stay and work (at any skill level) for 2 years after a Bachelor’s or Master’s degree, or 3 years after a PhD.
-Important Change: For applications made on or after January 1, 2027, the post-study work period for non-PhD graduates will be reduced to 18 months. If you are planning to start your studies in late 2025 or  , you must plan your career timeline carefully to maximize this window.
-Common Mistakes to Avoid in Your Visa Application
-Applying for a UK student visa requires precision. Even small errors can lead to a rejection. Here are the most common pitfalls we see:
-Last-Minute Funding: Moving large sums of money into your account just before applying is a major "red flag." Ensure your funds are stable for the full 28-day period.
-Expired CAS: Your Confirmation of Acceptance for Studies (CAS) is only valid for six months. Don't wait until the last minute to apply.
-Incomplete TB Testing: If you are from a country that requires a Tuberculosis (TB) test, ensure you visit a UKVI-approved clinic.
-How UniCou Can Help You
-At UniCou, we are more than just agents; we are your partners in success. Our team stays updated on every policy change to ensure your journey to the UK is smooth and stress-free. We provide:
-Personalized University Selection: We help you find the best institution for your budget and career goals.
-Visa Application Support: From document checklists to interview prep, we handle the hard part.
-Scholarship Guidance: We identify merit-based scholarships that can significantly reduce your tuition burden.
-Final Thoughts: Start Your Journey Today
-The UK is ready for you, but the rules are more detailed than they used to be. By starting early and working with experts, you can turn your "Study in UK" dream into a reality.`
+    costOfLiving: '£10,539 - £13,761 / Year',
+    visaRequirements: '£10,000 - £18,000 / Year',
+    content: `### Official Destination Hub | Updated: 2025/2026 Cycle
+
+### Why Study in the UK in 2026?
+The United Kingdom remains one of the world’s most respected education destinations for those who wish to study in UK for international students, offering internationally recognised qualifications, innovative research environments, and strong global employability outcomes through leading UK universities. With a long-standing academic tradition combined with modern teaching excellence, the UK continues to attract ambitious students from across the world.
+
+### Global Academic Excellence
+The UK is home to some of the world’s highest-ranked universities, known for rigorous academic standards, industry-led curricula, and cutting-edge research. UK qualifications are respected globally and valued by employers across sectors.
+
+### Shorter Course Durations
+Unlike many other destinations, most UK Bachelor’s degrees are completed in three years, while Master’s programmes typically take just one year. This structure allows students to save both time and overall tuition costs while entering the workforce sooner.
+
+### Career-Focused Education
+UK universities place strong emphasis on practical learning, employability skills, and industry exposure, helping graduates transition confidently into global careers.
+
+### The Latest 2025 Student Visa Updates
+As of November 2025, updated study in UK visa financial requirements apply:
+- London: £1,529 per month (living costs)
+- Outside London: £1,171 per month
+Students are advised to plan their finances carefully and ensure that documentation meets current UKVI guidelines before submitting their application.
+
+### Transition to UK eVisas
+The UK has fully transitioned from physical BRP cards to digital eVisas. Students can now securely access and prove their immigration status through their UKVI online account, simplifying travel and compliance processes.
+
+### Destination Facts
+- Estimated Living Annual Costs:
+  - Outside London: £10,539
+  - Inner London: £13,761
+- Annual Tuition Fees:
+  - Undergraduate & Postgraduate: £10,000 – £18,000 per year (varies by institution and programme)
+
+### Featured Academic Institutions
+- University of Oxford: QS World Ranking: #1
+- University of Manchester: QS World Ranking: Top 40
+
+### Start Your Global Journey
+Requirement 1: UKVI Join the UniCou Admission Hub to receive mission-critical academic support for the 2026/2027 intake, including university selection, application strategy, and exam readiness.
+
+### Need Verification?
+Speak with a verified education counsellor to finalise your study plans, understand entry requirements, and prepare a strong university application.`
   },
   {
     id: 'australia',
@@ -89,60 +77,40 @@ The UK is ready for you, but the rules are more detailed than they used to be. B
     slug: 'australia',
     title: 'Study in Australia',
     heroImage: 'https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?w=1200',
-    costOfLiving: 'AUD $2,500 / Month',
-    visaRequirements: 'AUD $30,000 / Year',
-    content: `G’day, future leaders! If you are looking for a destination that combines world-class education with an outdoor lifestyle that is second to none, Australia is likely at the top of your list. From the bustling tech hubs of Sydney and Melbourne to the stunning coastlines of Perth and Brisbane, the "Land Down Under" is more than just a place to get a degree it is a place to launch a global career.
-However, if you have been following the news in 2025, you know that Australian immigration is undergoing its biggest transformation in a decade. At UniCou Ltd, we are here to simplify the noise and provide you with a clear, honest roadmap to your Australian dream.
+    costOfLiving: 'AUD 21,000 / Year',
+    visaRequirements: 'AUD 30,000 / Year',
+    content: `### Official Destination Hub | Updated: 2025/2026 Cycle
 
-Why Choose Australia?
-Despite the recent policy shifts, Australia remains a global powerhouse in education. In  , the focus is on employability. Australian universities have integrated industry placements into almost every degree, ensuring you don't just graduate with a certificate, but with a professional network.
-Rankings and Reputation: Australia continues to host multiple universities in the global Top 100, recognized for excellence in Engineering, Healthcare, and Business.
-The Lifestyle Factor: Whether you enjoy surfing, hiking, or exploring cosmopolitan cities, Australia offers a balance that prevents student burnout.
-Post-Study Opportunities: With a refined 485 visa structure in  , Australia remains one of the best places to gain international work experience.
-The  National Planning Level (Enrollment Caps)
-The most significant change for  is the National Planning Level (NPL). The Australian government now sets a cap on the number of new international student commencements across the country.
-What does this mean for you?
-At UniCou Ltd, we advise our students that "timing is everything." Because universities have a limited number of spots for international students, competition will be fierce. You can no longer afford to apply at the last minute. To secure your spot for the  intake, you should aim to have your application submitted at least 8 to 10 months in advance.
-Mastering the Genuine Student (GS) Requirement
-Gone are the days of the generic GTE essay. In  , the Genuine Student (GS) requirement is the heartbeat of your visa application. The Department of Home Affairs now uses targeted questions to assess your intentions.
-When you work with UniCou Ltd, we help you articulate:
-Course Value: Why is this specific course better for your career than options available in your home country?
-Incentives to Return: What are your long-term plans back home?
-Circumstances: A clear explanation of any study gaps or career changes.
-Pro Tip: In  , "vague" is the enemy. Be specific about the modules you want to study and the companies you plan to work for after graduation.
-New Financial Capacity Requirements for  
-To ensure students can focus on their studies without financial hardship, the minimum "show money" has been adjusted for inflation. As of late 2025 heading into  , students must demonstrate proof of approximately AUD $30,000+ for living expenses, in addition to their tuition fees and travel costs.
-UniCou Ltd ensures that your financial documentation is "visa-ready." We help you verify that your funds have been held for the required duration and that your sources of income are transparent and verifiable, reducing the risk of a sudden visa refusal.
-English Language Standards: The  Benchmark
-English proficiency requirements have stabilized at a higher level in  to ensure academic success.
-Student Visa (Subclass 500): Minimum IELTS 6.0 (or equivalent).
-ELICOS Pathways: Minimum IELTS 5.0.
-Post-Study Work Visa: Minimum IELTS 6.5.
-At UniCou Ltd, we recommend taking your English test early. Whether you choose IELTS, PTE Academic, or TOEFL iBT, ensure your scores are recent and meet both the university's and the Department of Home Affairs' specific benchmarks.
-High-Demand Courses for PR and Careers in  
-If your goal is to transition from a student to a permanent resident (PR), your choice of course is critical. In  , the Australian government is prioritizing "Nation Building" sectors.
-Healthcare & Nursing: Registered nurses and midwives remain at the top of the priority list for state-sponsored visas.
-Early Childhood Education: With a massive shortage of teachers, this is a very high-prospect path for international students.
-Green Energy Engineering: Australia’s push toward solar and wind energy has created a vacuum for skilled engineers.
-Cybersecurity & AI: As digital threats grow, tech specialists are being fast-tracked in the skilled migration streams.
-Social Work & Occupational Therapy: These "human-centric" roles are consistently on the Medium and Long-term Strategic Skills List (MLTSSL).
-Post-Study Work Rights (Subclass 485) in  
-The  rules for the Graduate Visa have been streamlined to reward those who study in areas of need.
-Bachelor/Master’s Graduates: Typically 2 years of work rights.
-Regional Advantage: If you study at a regional campus (like in Adelaide, Perth, or Hobart), UniCou Ltd can help you apply for an additional 1-2 years of work rights, giving you more time to find a sponsoring employer.
-Common  Visa Pitfalls to Avoid
-The "Quality" crackdown means visa officers are looking for reasons to refuse applications that aren't perfect.
-"Course Hopping": Switching to a lower-level vocational course after arriving on a university visa is now extremely difficult and often leads to visa cancellation.
-Incomplete Documentation: Missing a single bank statement or a health check can lead to months of delays.
-Generic Statements: If your application looks like a "copy-paste" from a website, it will be flagged.
-How UniCou Ltd Makes the Difference
-Navigating the  Australian migration landscape alone is risky. UniCou Ltd acts as your professional shield and strategist. We provide:
-University Shortlisting: Matching your budget and grades to the best available  caps.
-GS Strategy Sessions: We interview you just like a visa officer would, ensuring your story is airtight.
-Scholarship Hunting: Many Australian universities offer "Regional Support" or "Academic Excellence" scholarships worth up to 25% of tuition.
-End-to-End Support: From the first "Hello" to your first day on campus in Australia.
-Final Thoughts: Your Australian Dream is Still Possible
-While the headlines might make Australia seem "closed," the truth is that it is simply "selective." Australia wants the best and brightest students who are serious about their education. By starting your process with UniCou Ltd, you ensure that you are part of that elite group.`
+### Why Choose Australia to Study?
+Australia combines globally recognised qualifications with a high standard of living and strong graduate employability. Despite recent policy shifts, the country remains a powerhouse for international education. Australia is a leading global education destination, attracting thousands of international learners each year who wish to study in Australia for its academic excellence, strong quality assurance, and post-study career opportunities. With world-ranked institutions, multicultural campuses, and a transparent visa system, Australia offers long-term value for students planning international education.
+
+### Global Recognition & Quality Education
+Australian universities are known for research-driven teaching, industry-aligned programmes, and globally portable qualifications.
+
+### Enrolment Caps & Policy Awareness
+The Australian Government has introduced enrolment caps (NPL) for international student commencements. Strategic planning with experienced consultants in Australia is now more important than ever.
+
+### Australia Student Visa Requirements (2025–2026)
+To study in Australia, international students must meet updated Australia student visa requirements, including a valid Confirmation of Enrolment (CoE), compliance with the Genuine Student (GS) requirement, proof of financial capacity (generally AUD 30,000 or more for living expenses), and evidence of English language proficiency. A clear understanding of visa documentation and application timelines is essential to avoid delays or refusals.
+
+### Admission Requirements in Australia
+The standard admission requirements in Australia usually include academic transcripts and certificates, English language test results such as IELTS, PTE, or TOEFL, and a Statement of Purpose or GS statement. Some courses may also require relevant work experience, and requirements vary by institution and course level.
+
+### Scholarships in Australia
+Many universities and government bodies in Australia offer competitive scholarships to reduce tuition costs for overseas learners. These include merit-based awards, destination-specific funding, and Australia scholarships for international students across undergraduate and postgraduate levels.
+
+### Destination Facts
+- Estimated Living Expenses (Annual): AUD 21,000 / year
+- Average Tuition Fees (Annual): AUD 20,000 – 40,000 (varies by institution and programme)
+
+### Featured Academic Institutions
+- Australian National University (ANU): QS World Ranking: Top 30
+
+### Need Verification?
+Speak with a verified education counsellor to understand visa compliance, course suitability, and admission strategy.
+
+### Start Your Global Journey
+Join the UniCou Admission Hub to receive mission-critical support for your 2025/2026 intake, including university selection, visa strategy, scholarship guidance, and exam readiness.`
   },
   {
     id: 'canada',
@@ -488,7 +456,7 @@ As we look toward  , the New Zealand government has refined its immigration and 
 Study in New Zealand  : Your Ultimate Guide to a Global Future
 Meta Description: Planning to study in New Zealand in  ? UniCou Ltd explores the latest  Green List visa pathways, updated financial requirements, and post-study work rights. Discover how to secure your future in the world’s most peaceful study destination.
 Kia Ora, future adventurers! If you are looking for a study destination that offers a perfect balance between high-quality education and a lifestyle defined by breathtaking natural beauty, New Zealand (Aotearoa) is calling. Known for its "think new" approach to learning, New Zealand is a place where innovation, creativity, and student well-being come first.
-As we look toward  , the New Zealand government has refined its immigration and education policies to attract students who are serious about long-term career success. At UniCou Ltd, we specialize in turning these complex  regulations into a simple, stress-free journey for you. Here is everything you need to know about starting your academic life in New Zealand.
+As we look toward  , the New Zealand government has refined its immigration and education policies to attract students who are serious about long-term career success. At UniCou Ltd, we specialize in turning these complex  regulations into a simple, scale-free journey for you. Here is everything you need to know about starting your academic life in New Zealand.
 Why Choose New Zealand in  ?
 New Zealand isn't just about the scenery; it’s about a world-class education system where every single university is ranked in the top 3% globally. In  , the focus is on sustainable careers and global citizenship.
 The 8-University Excellence: All eight of New Zealand's universities are government-funded and recognized worldwide for research and teaching quality.
@@ -827,13 +795,13 @@ Contact UniCou Ltd today. Let’s make  the year you move to Malaysia and start 
     visaRequirements: 'Varies',
     content: `Your Gateway to a World-Class Education Where Continents Meet
 If you’re looking for a study destination that feels like a bridge between history and the future, then Turkey (Türkiye) is likely calling your name for  . Imagine sitting in a lecture in the morning and walking across the Bosphorus bridge by the afternoon, transitioning from Europe to Asia in just minutes. Turkey isn't just about the stunning mosques of Istanbul or the hot air balloons of Cappadocia; it is rapidly becoming a global powerhouse for international education.
-At UniCou Ltd, we’ve seen Turkey evolve into a top-tier choice for students who want European-quality degrees without the "Western" price tag. As we look toward the  academic year, the Turkish government has introduced several smart updates to its "Study in Türkiye" initiative, making it easier than ever for global talent to join their booming universities. Here is your human-to-human guide to making Turkey your new home with UniCou Ltd.
+At UniCou Ltd, we’ve spent years helping students find their feet in the tropics. We know that the transition from home to the tropics can feel like a big move, but as we look toward the  academic year, the Turkish government has introduced several smart updates to its "Study in Türkiye" initiative, making it easier than ever for global talent to join their booming universities. Here is your human-to-human guide to making Turkey your new home with UniCou Ltd.
 The Turkish Edge: European Standards, Mediterranean Soul
 The first thing you need to know about studying in Turkey in  is the Bologna Process. Turkey is a full member of the European Higher Education Area. This means a degree from a Turkish university whether it’s in Engineering, Medicine, or Architecture is recognized across all of Europe.
 In  , Turkish universities are doubling down on English-taught programs. You don't have to be fluent in Turkish to succeed here. Whether you choose a prestigious state university or a high-tech private foundation university in Istanbul, Ankara, or Izmir, you’ll be learning in a global environment. At UniCou Ltd, we help you navigate the choice between State Universities (where competition is fierce but fees are nearly zero) and Foundation (Private) Universities (which offer incredible facilities and more English options).
 The  Residence Permit (Ikamet) & Visa Rules
 To study in Turkey, you’ll need a Student Visa, followed by a Student Residence Permit (Ikamet). For  , the Turkish Migration Management (GÖÇ İDARESİ) has digitized the process to make it faster for international students.
-When you apply through UniCou Ltd, we handle the technicalities. For  , you’ll need to show:
+When you apply through UniCou Ltd, we handle the technicalities. For  , you’ll need:
 A Valid Acceptance Letter: From a university recognized by the Council of Higher Education (YÖK).
 Financial Proof: You’ll need to show that you have roughly USD $5,000 to $7,000 available for your first year. Turkey remains incredibly affordable, but the government wants to ensure you can focus on your studies.
 Health Insurance: This is mandatory for your Ikamet. We help you find GSS (General Health Insurance) or private options that meet the  legal standards.
@@ -878,64 +846,71 @@ Are you ready to cross the bridge to your future?
 Contact UniCou Ltd today. Let’s make  the year you move to Turkey and start an education that truly has no borders.`
   },
   {
-    id: 'usa-dest',
-    countryId: 'us',
-    slug: 'usa',
-    title: 'Study in USA',
-    heroImage: 'https://images.unsplash.com/photo-1485738422979-f5c462d49f74?w=1200',
-    costOfLiving: 'USD $2,000 / Month',
-    visaRequirements: 'USD $25,000 / Year',
-    content: `Hello, future innovators! If you have ever imagined yourself studying in the heart of Silicon Valley, walking the historic halls of the Ivy League, or researching in world-class labs in Boston, the United States remains the undisputed "Land of Opportunity." In  , the USA continues to host more international students than any other country, offering an unparalleled academic flexibility that allows you to tailor your education to your exact passions.
-However, the road to a U.S. degree is changing. With new digital visa processes and a  focus on high-tech labor needs, you need a modern strategy. At UniCou Ltd, we specialize in cutting through the complexity of the American application process. We don't just help you get "in"; we help you thrive.
-Why Choose the USA in  ?
-The U.S. education system is famous for its "Liberal Arts" philosophy, meaning you aren't locked into one subject from day one. In  , this flexibility is your greatest asset in a fast-changing job market.
-Global Rankings: The USA dominates the QS and Times Higher Education rankings, with hundreds of universities offering top-tier programs.
-STEM Powerhouse: If you are into AI, Robotics, or Biotech, the USA is the global epicenter for research funding and corporate partnerships.
-Diversity and Networking: You will study alongside the brightest minds from every corner of the globe, building a professional network that spans continents.
-Campus Culture: From NCAA sports to thousands of student clubs, the "American College Experience" is designed to build leadership skills outside the classroom.
-The  F-1 Student Visa: New Rules and Digital Shifts
-Navigating the F-1 Student Visa is the most critical part of your journey. For  , the U.S. Department of State has streamlined several processes, but the scrutiny of "Student Intent" remains high.
-1. Digital I-20s and SEVIS Updates
-In  , the paper-heavy days are over. Most universities now issue digital I-20 forms, which are sent instantly to your email. UniCou Ltd helps you ensure that your SEVIS (Student and Exchange Visitor Information System) fee is paid correctly and that your digital records match your passport exactly to avoid delays at the embassy.
-2. The  Financial Requirement (Cost of Attendance)
-Living costs in the USA have shifted due to inflation. For  , universities are requiring higher proof of funding on your I-20. You must demonstrate that you have the "liquid funds" (cash in bank, educational loans, or scholarships) to cover one full year of tuition, fees, and living expenses. UniCou Ltd provides a thorough audit of your financial documents to ensure they meet the specific "liquid asset" requirements of U.S. Consular officers.
-3. Expanded Interview Waiver Programs
-The U.S. has expanded interview waivers for many returning students and certain low-risk categories in  . However, for most first-time applicants, the Visa Interview is the "make or break" moment. We provide 1-on-1 mock interviews to help you confidently explain why you chose your specific university and how you plan to fund your stay.
-STEM OPT: The 3-Year Work Advantage
-The biggest draw for studying in the USA in  is the Optional Practical Training (OPT).
-Standard OPT: All graduates get 12 months of work authorization.
-STEM Extension: If you graduate with a degree in a Science, Technology, Engineering, or Math field, you are eligible for an additional 24-month extension.
-Total Work Time: This gives you a total of 3 years to work for U.S. companies like Google, Tesla, or Amazon without needing a H-1B work visa. UniCou Ltd helps you select "STEM-designated" courses to ensure you qualify for this massive career boost.
-Top High-Growth Courses for  
-To maximize your ROI (Return on Investment), UniCou Ltd recommends focusing on these high-demand sectors in the  U.S. economy:
-Artificial Intelligence & Machine Learning: Specialized Master’s programs in AI are currently seeing the highest starting salaries in the country.
-Data Science & Business Analytics: Every U.S. industry, from retail to healthcare, is desperate for experts who can interpret "Big Data."
-Healthcare Administration: As the U.S. healthcare system digitizes, the need for managers who understand both health and tech is skyrocketing.
-Cybersecurity: With federal mandates increasing, cybersecurity professionals are among the most "recession-proof" roles in America.
-Sustainability & Green Energy: Engineering programs focused on electric vehicles and grid modernization are receiving massive federal grants in  .
-Scholarships and Financial Aid in  
-The "sticker price" of a U.S. education can be high, but almost no international student pays the full amount. In  , many mid-tier and private universities are offering Merit-Based Scholarships to attract global talent.
-In-State Tuition Waivers: Some public universities offer "In-State" rates to high-achieving international students.
-Graduate Assistantships (GAs): If you are a Master’s or PhD student, UniCou Ltd can help you find programs that offer tuition remissions and stipends in exchange for research or teaching.
-The Community College "2+2" Pathway
-A major trend for  is the 2+2 Pathway. Students spend their first two years at a Community College (paying 50% less tuition) and then transfer to a top-tier University (like UCLA or NYU) for their final two years. This is a brilliant way to save money while still graduating with a prestigious degree. UniCou Ltd has exclusive partnerships with top U.S. community colleges to make this transition seamless.
-Common  Visa Pitfalls to Avoid
-"Stock" Answers in Interviews: Consular officers can tell when you are reading from a script. Your answers must be personal and specific to your life.
-Inadequate Tie to Home Country: You must demonstrate that you have strong social or economic ties to your home country, even if you plan to use your OPT.
-Late Applications: U.S. universities have much earlier deadlines (often Dec/Jan for the August intake) than other countries.
-How UniCou Ltd Leads the Way
-Applying to the USA is a marathon, not a sprint. UniCou Ltd is your coach through every mile:
-University Matching: We use data-driven tools to find universities where you have the highest chance of admission and scholarships.
-SOP and Essay Editing: We help you craft a "Statement of Purpose" that stands out to U.S. admissions officers who value personality and leadership.
-Visa Mastery: Our visa success rate for the USA is among the highest in the industry because we focus on the "why" behind your study plan.
-Pre-Departure Support: From health insurance (highly critical in the USA) to finding the best off-campus housing in cities like Chicago or Dallas.
-Final Thoughts: Your American Journey Starts with a Single Step
-The USA in  remains the most exciting academic frontier in the world. While the requirements are precise, the reward a degree that opens doors in every country on Earth is worth the effort. With UniCou Ltd handling the technicalities, you can focus on what matters: your future.`
+    id: 'italy-dest',
+    countryId: 'it',
+    slug: 'italy',
+    title: 'Study in Italy',
+    heroImage: 'https://images.unsplash.com/photo-1529260839312-42e3dfda0d6d?w=1200',
+    costOfLiving: '€800 / Month',
+    visaRequirements: '€7,000 / Year',
+    content: `The Secret to an Affordable, World-Class European Education
+Let’s be honest when you think of Italy, your mind probably goes straight to pizza, the Colosseum, and wandering through cobblestone streets. But for students looking toward  , Italy is becoming famous for something else: being one of the most affordable and high-quality study destinations in the world.
+If you’ve been dreaming of a European degree but the tuition fees in the UK or the USA have made your jaw drop, Italy is your answer. We’re talking about some of the oldest and most prestigious universities in the world where tuition is based on your family income, not a fixed high rate.
+At UniCou Ltd, we’ve helped countless students navigate the "Italian maze." It’s a country that rewards those who know the system, and as we look at the rules for  , there are a few major things you need to know. Here is your "no-phluff" guide to studying in Italy.
+The "Income-Based" Tuition Secret
+This is the part that surprises most people. In Italy, public universities operate on a system called ISEE. Essentially, they look at your family's financial background, and your tuition fees are adjusted accordingly.
+For  , many international students will find that their tuition fees at top-tier public universities range from €500 to €3,000 per year. That is not a typo. You can get a world-class education in Engineering, Architecture, or Fashion for a fraction of what you’d pay elsewhere. At UniCou Ltd, we guide you through the ISEE documentation process so you can claim the lowest possible fee.
+The  Pre-Enrollment & Universitaly Portal
+If you want to study in Italy in  , you need to get familiar with the Universitaly portal. This is the centralized gateway for all international students.
+The  rules have made this process even more digital. You don’t just apply to the university; you must complete a "Pre-Enrollment" request on this portal. Once the university validates it, the info goes straight to the Italian Embassy in your country. It sounds simple, but one mistake on this portal can lead to a visa rejection. Our team at UniCou Ltd manages your Universitaly profile to ensure your application is airtight.
+Scholarships: The "DSU" Advantage
+Italy offers some of the most generous regional scholarships in Europe, known as DSU (Diritto allo Studio Universitario).
+For the  intake, these scholarships aren't just based on your grades they are based on financial need. If you qualify, you could get:
+Zero tuition fees.
+A free meal a day at the university canteen.
+A yearly stipend of roughly €5,000 to €7,000 to cover your living costs.
+Wait times for these scholarships can be long, and the paperwork (like translated and apostilled income certificates) is intense. At UniCou Ltd, we start your scholarship documentation months in advance to make sure you don't miss out on these life-changing funds.
+Entrance Exams: IMAT, TOLC, and Beyond
+Italy is very big on entrance exams. If you want to study Medicine in English, you’ll need to ace the IMAT. For Engineering or Economics, you might need a TOLC or SAT score.
+In  , these exams are becoming more competitive as more students flock to Italy. UniCou Ltd provides prep resources and booking assistance for these exams. Remember, many of these tests happen only once a year, so if you miss the date, you miss the year!
+The  Italian Student Visa (Type D)
+The Italian student visa is a "National Visa" that allows you to stay in Italy for more than 90 days. For  , the embassy has increased its focus on "Financial Means."
+You will need to show that you have roughly €6,500 to €7,500 for the year (this amount is updated annually). This can be shown through bank statements, scholarships, or a personal guarantee. The visa officers also want to see proof of accommodation which, in a busy city like Milan or Rome, can be tricky. We help our students find verified student housing to ensure their visa application is solid.
+Working While You Study
+Yes, you can work! In  , international students in Italy are permitted to work 20 hours per week. While the pay for part-time jobs (like in cafes or English tutoring) isn't as high as in Germany, it’s definitely enough to cover your "aperitivo" and weekend travels around Europe. Plus, it’s a great way to learn the language which you will need if you want to find a job after graduation.
+Post-Study Work Rights: The "Permesso di Soggiorno"
+Once you graduate, you can apply for a Permesso di Soggiorno per ricerca lavoro (a stay-back permit for job seeking). This allows you to stay in Italy for 12 months after your degree to find a job related to your field.
+Italy is currently looking for talent in:
+Automotive Engineering (think Ferrari, Lamborghini, Ducati).
+Fashion & Design Management.
+Artificial Intelligence & Robotics.
+Sustainable Architecture.
+Cost of Living: Expect the Unexpected
+Italy is affordable, but cities like Milan and Rome can be expensive for housing. In  , we suggest students look at "student cities" like Padua, Bologna, Turin, or Pisa.
+Rent: €350 - €600 (Shared room vs. Private studio).
+Food: €200/month (Italy has some of the best-quality, affordable groceries in the world).
+Transport: €20 - €30/month (Huge discounts for students).
+Common  Pitfalls to Avoid
+The "Dichiarazione di Valore" (DoV): This is a document that proves your previous education is valid in Italy. Some universities require it, others accept a CIMEA certificate. Getting the wrong one can stall your enrollment.
+Missing the "Permesso" Deadline: Within 8 days of arriving in Italy, you must apply for your Residency Permit. Many students forget this and face legal issues later.
+Underestimating the Language: Even if your course is in English, you need basic Italian to navigate daily life and find part-time work.
+Why Partner with UniCou Ltd?
+Italy is beautiful, but the bureaucracy is famous for being "slow." UniCou Ltd acts as your local guide. We know which universities are more likely to offer scholarships, which cities have the best housing, and how to translate your local documents so the Italian government accepts them.
+We offer:
+Universitaly Portal Assistance: We do the technical work for you.
+DOV/CIMEA Guidance: Making sure your degrees are recognized.
+Scholarship Application Support: Maximizing your chances for DSU.
+Visa Mock Interviews: Ensuring you’re ready for the embassy.
+Final Thoughts: Your Italian Dream Starts Here
+Italy in  is the perfect choice for the student who wants a mix of high-level academics, deep culture, and financial common sense. It’s a place that teaches you as much outside the classroom as it does inside.
+Ready to start your journey?
+Reach out to the team at UniCou Ltd today. Let’s make  the year you move to Italy.`
   }
 ];
 
 export const universities: University[] = [
-  { id: 'uni-1', name: 'University of Manchester', slug: 'uom', location: 'Manchester, UK', description: 'A world-leading research institution.', logo: 'https://upload.wikimedia.org/wikipedia/en/thumb/e/e9/University_of_Manchester_logo.svg/1200px-University_of_Manchester_logo.svg.png', ranking: 32, countryId: 'uk' }
+  { id: 'uni-1', name: 'University of Manchester', slug: 'uom', location: 'Manchester, UK', description: 'A world-leading research institution.', logo: 'https://upload.wikimedia.org/wikipedia/en/thumb/e/e9/University_of_Manchester_logo.svg/1200px-University_of_Manchester_logo.svg.png', ranking: 32, countryId: 'uk' },
+  { id: 'uni-ox', name: 'University of Oxford', slug: 'oxford', location: 'Oxford, UK', description: 'The oldest university in the English-speaking world.', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/Oxford-University-Circlet.svg/1200px-Oxford-University-Circlet.svg.png', ranking: 1, countryId: 'uk' }
 ];
 
 export const courses: Course[] = [

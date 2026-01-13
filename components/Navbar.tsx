@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ViewState, User } from '../types';
 import { LOGO_SRC } from '../constants/assets';
@@ -41,38 +40,41 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
       ]
     },
     { 
-      label: 'Exam Vouchers', 
+      label: 'Exams', 
       type: 'store',
+      isMega: true,
       subItems: [
-        { label: 'PTE Academic', type: 'store' },
-        { label: 'IELTS Vouchers', type: 'store' },
-        { label: 'TOEFL iBT', type: 'store' },
-        { label: 'LanguageCert', type: 'store' },
-        { label: 'Skills for English', type: 'store' },
+        { label: 'IELTS', type: 'store', category: 'IELTS' },
+        { label: 'PTE Academic', type: 'store', category: 'PTE' },
+        { label: 'TOEFL iBT', type: 'store', category: 'TOEFL' },
+        { label: 'LanguageCert', type: 'store', category: 'LANGUAGECERT' },
+        { label: 'Skills for English', type: 'store', category: 'SKILLS FOR ENGLISH' },
+        { label: 'Duolingo', type: 'store', category: 'DUOLINGO' },
+        { label: 'Oxford ELLT', type: 'store', category: 'OXFORD ELLT' },
+        { label: 'Password Skills Plus', type: 'store', category: 'PASSWORD SKILLS' },
+        { label: 'Exam Comparison', type: 'store', category: 'COMPARISON' },
       ]
     },
-    { 
-      label: 'Learning Hub', 
-      type: 'lms-dashboard',
-      subItems: [
-        { label: 'Digital Library', type: 'lms-dashboard' },
-        { label: 'Mock Exams', type: 'lms-dashboard', tab: 'exams' },
-        { label: 'Prep Courses', type: 'lms-dashboard', tab: 'academy' },
-        { label: 'Qualifications', type: 'qualifications' },
-      ]
-    },
-    { label: 'Resources', type: 'resources' },
+    { label: 'Learning Hub', type: 'lms-dashboard' },
+    { label: 'Blogs', type: 'resources' },
     { 
       label: 'Connect', 
       type: 'join-hub',
       subItems: [
-        { label: 'Student Admission', type: 'apply', formType: 'student-apply' },
-        { label: 'Agent Registration', type: 'apply', formType: 'agent-reg' },
-        { label: 'Training Centers', type: 'apply', formType: 'prep-center-reg' },
-        { label: 'Institutional Sync', type: 'apply', formType: 'institute-connect' },
+        { label: 'Student', type: 'apply', formType: 'student-apply' },
+        { label: 'Agent', type: 'apply', formType: 'agent-reg' },
+        { label: 'Edu Institute', type: 'apply', formType: 'institute-connect' },
       ]
     }
   ];
+
+  // Filter navigation items specifically for the Agent Dashboard role
+  const visibleNavItems = navigationItems.filter(item => {
+    if (user?.role === 'Agent') {
+      return item.label !== 'Study Abroad' && item.label !== 'Learning Hub';
+    }
+    return true;
+  });
 
   const handleProfileClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -92,7 +94,7 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
             </button>
 
             <div className="hidden lg:flex items-center gap-0.5">
-              {navigationItems.map((item) => (
+              {visibleNavItems.map((item) => (
                 <div 
                   key={item.label} 
                   className="relative group"
@@ -121,6 +123,7 @@ const Navbar: React.FC<NavbarProps> = ({ view, user, scrolled, onNavigate, onLog
                               onClick={() => {
                                 if (sub.slug) onNavigate({ type: 'country-guide', slug: sub.slug });
                                 else if (sub.formType) onNavigate({ type: 'apply', formType: sub.formType } as any);
+                                else if (sub.type === 'store') onNavigate({ type: 'store', initialCategory: sub.category } as any);
                                 else if (sub.type) onNavigate({ type: sub.type, initialTab: sub.tab } as any);
                                 setActiveDropdown(null);
                               }}

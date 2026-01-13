@@ -28,22 +28,36 @@ const Hero: React.FC<HeroProps> = ({ onStart, onApplyClick }) => {
           Secure your University Admission, Master your Exams with our LMS, and Save on Official Vouchers for IELTS, PTE, TOEFL, LanguageCert, Duolingo, GRE and more.
         </p>
         
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-6 animate-slide-up">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up">
+          {/* 2) Buy Discounted Voucher */}
           <button 
             onClick={onStart} 
-            className="w-full sm:w-auto px-10 py-5 bg-unicou-orange text-white rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all hover:bg-orange-600 shadow-xl active:scale-95 flex items-center justify-center gap-3"
+            className="w-full sm:w-auto px-8 py-5 bg-unicou-orange text-white rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all hover:bg-orange-600 shadow-xl active:scale-95 flex items-center justify-center gap-3"
           >
-            Buy Exam Vouchers
+            Buy Discounted Voucher
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
           </button>
+
+          {/* 1) Apply Now */}
           <button 
             onClick={onApplyClick}
-            className="w-full sm:w-auto px-10 py-5 bg-unicou-navy text-white rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all hover:bg-slate-900 shadow-xl active:scale-95 flex items-center justify-center gap-3 relative overflow-hidden group"
+            className="w-full sm:w-auto px-8 py-5 bg-unicou-navy text-white rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all hover:bg-slate-900 shadow-xl active:scale-95 flex items-center justify-center gap-3 relative overflow-hidden group"
           >
-            <span className="relative z-10">Application Hub</span>
+            <span className="relative z-10">Apply Now</span>
             <div className="absolute top-0 left-0 w-1 h-full bg-unicou-orange group-hover:w-full transition-all duration-500 opacity-20" />
             <svg className="w-4 h-4 relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
           </button>
+
+          {/* 3) Learning Hub */}
+          <a 
+            href="https://lms.unicou.uk"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full sm:w-auto px-8 py-5 bg-white border-2 border-slate-900 text-slate-900 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all hover:bg-slate-50 shadow-xl active:scale-95 flex items-center justify-center gap-3"
+          >
+            Learning Hub
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+          </a>
         </div>
 
         <div className="mt-16 flex justify-center">

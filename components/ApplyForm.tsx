@@ -74,7 +74,7 @@ const ApplyForm: React.FC<ApplyFormProps> = ({ type, context, onSuccess }) => {
       <form onSubmit={handleSubmit} className="relative z-10 space-y-12">
         {isStudent && (
           <>
-            {/* Section 01: Personal (Ref: edify.pk) */}
+            {/* Section 01: Personal */}
             <div>
               <h4 className="text-[10px] font-black text-unicou-navy uppercase tracking-[0.4em] mb-8 flex items-center gap-3">
                 <span className="w-6 h-6 rounded bg-unicou-navy text-white flex items-center justify-center text-[8px]">01</span>
@@ -100,8 +100,8 @@ const ApplyForm: React.FC<ApplyFormProps> = ({ type, context, onSuccess }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6">
                 <Input label="Email Address" type="email" placeholder="student@example.com" required value={formData.email || ''} onChange={(v: string) => handleFieldChange('email', v)} />
                 <div className="grid grid-cols-2 gap-4">
-                  <Input label="Mobile No" placeholder="+92 3XX XXXXXXX" required value={formData.phone || ''} onChange={(v: string) => handleFieldChange('phone', v)} />
-                  <Input label="WhatsApp No" placeholder="+92 3XX XXXXXXX" required value={formData.whatsapp || ''} onChange={(v: string) => handleFieldChange('whatsapp', v)} />
+                  <Input label="Mobile No" placeholder="+XX XXXXXXX" required value={formData.phone || ''} onChange={(v: string) => handleFieldChange('phone', v)} />
+                  <Input label="WhatsApp No" placeholder="+XX XXXXXXX" required value={formData.whatsapp || ''} onChange={(v: string) => handleFieldChange('whatsapp', v)} />
                 </div>
                 <Input label="City" placeholder="Current Residence City" required value={formData.city || ''} onChange={(v: string) => handleFieldChange('city', v)} />
                 <Input label="Country" placeholder="Current Country" required value={formData.country || ''} onChange={(v: string) => handleFieldChange('country', v)} />
@@ -118,11 +118,11 @@ const ApplyForm: React.FC<ApplyFormProps> = ({ type, context, onSuccess }) => {
                 Academic Background
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6">
-                <Select label="Highest Degree" options={['Matric / O-Level', 'Intermediate / A-Level', 'Bachelor (2 Year)', 'Bachelor (4 Year)', 'Master', 'MPhil', 'PhD']} value={formData.degree_level || ''} onChange={(v: string) => handleFieldChange('degree_level', v)} />
+                <Select label="Highest Degree" options={['Matric / O-Level', 'Intermediate / A-Level', 'Bachelor', 'Master', 'PhD']} value={formData.degree_level || ''} onChange={(v: string) => handleFieldChange('degree_level', v)} />
                 <Input label="Passing Year" placeholder="e.g. 2023" required value={formData.pass_year || ''} onChange={(v: string) => handleFieldChange('pass_year', v)} />
                 <Input label="Board / University" placeholder="Institution Name" required value={formData.board_uni || ''} onChange={(v: string) => handleFieldChange('board_uni', v)} />
                 <Input label="Marks / CGPA" placeholder="e.g. 3.8/4.0" required value={formData.cgpa || ''} onChange={(v: string) => handleFieldChange('cgpa', v)} />
-                <Select label="English Proficiency Test" options={['IELTS', 'PTE', 'TOEFL', 'Duolingo', 'Oxford ELLT', 'None / Awaiting']} value={formData.test_type || ''} onChange={(v: string) => handleFieldChange('test_type', v)} />
+                <Select label="English Proficiency Test" options={['IELTS', 'PTE', 'TOEFL', 'Duolingo', 'Oxford ELLT', 'Skills for English', 'Password Skills Plus', 'None']} value={formData.test_type || ''} onChange={(v: string) => handleFieldChange('test_type', v)} />
                 <Input label="Test Date / Expected Date" type="date" value={formData.test_date || ''} onChange={(v: string) => handleFieldChange('test_date', v)} />
               </div>
             </div>
@@ -134,7 +134,7 @@ const ApplyForm: React.FC<ApplyFormProps> = ({ type, context, onSuccess }) => {
                 Study Targets
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6">
-                <Select label="Target Country" options={['United Kingdom', 'Australia', 'Canada', 'USA', 'Germany', 'Ireland', 'Italy', 'Other Europe']} value={formData.target_country || ''} onChange={(v: string) => handleFieldChange('target_country', v)} />
+                <Select label="Target Country" options={['United Kingdom', 'Australia', 'Canada', 'USA', 'Germany', 'Ireland', 'Italy', 'New Zealand', 'Finland', 'Sweden', 'Dubai', 'Malaysia', 'Turkey', 'Europe Hub']} value={formData.target_country || ''} onChange={(v: string) => handleFieldChange('target_country', v)} />
                 <Input label="Preferred Course" placeholder="e.g. MSc Data Science" required value={formData.course || ''} onChange={(v: string) => handleFieldChange('course', v)} />
                 <Select label="Preferred Intake" options={['Sep/Oct 2025', 'Jan/Feb 2026', 'May/June 2026']} value={formData.intake || ''} onChange={(v: string) => handleFieldChange('intake', v)} />
               </div>
@@ -144,52 +144,13 @@ const ApplyForm: React.FC<ApplyFormProps> = ({ type, context, onSuccess }) => {
 
         {isPartner && (
           <>
-            {/* Section 01: Agency (Ref: afeic.pk) */}
             <div>
-              <h4 className="text-[10px] font-black text-unicou-navy uppercase tracking-[0.4em] mb-8 flex items-center gap-3">
-                <span className="w-6 h-6 rounded bg-unicou-navy text-white flex items-center justify-center text-[8px]">01</span>
-                Corporate Node Identity
-              </h4>
+              <h4 className="text-[10px] font-black text-unicou-navy uppercase tracking-[0.4em] mb-8">Corporate Node Identity</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6">
-                <Input label="Organization / Agency Name" placeholder="Legal Business Name" required value={formData.org_name || ''} onChange={(v: string) => handleFieldChange('org_name', v)} />
-                <Input label="Head of Organization" placeholder="CEO / Proprietor Name" required value={formData.ceo_name || ''} onChange={(v: string) => handleFieldChange('ceo_name', v)} />
-                <Input label="Authorized Contact Person" placeholder="Name of Representative" required value={formData.contact_person || ''} onChange={(v: string) => handleFieldChange('contact_person', v)} />
-                <Input label="Designation" placeholder="e.g. Director Operations" required value={formData.designation || ''} onChange={(v: string) => handleFieldChange('designation', v)} />
-                <Input label="Official Website" placeholder="https://www.agency.com" value={formData.website || ''} onChange={(v: string) => handleFieldChange('website', v)} />
-                <Input label="Social Media (FB/LinkedIn)" placeholder="Organization Profile URL" value={formData.social || ''} onChange={(v: string) => handleFieldChange('social', v)} />
-              </div>
-            </div>
-
-            {/* Section 02: Contact */}
-            <div>
-              <h4 className="text-[10px] font-black text-unicou-navy uppercase tracking-[0.4em] mb-8 flex items-center gap-3">
-                <span className="w-6 h-6 rounded bg-unicou-navy text-white flex items-center justify-center text-[8px]">02</span>
-                Communication Terminals
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6">
-                <Input label="Official Email Address" type="email" placeholder="partnership@agency.com" required value={formData.email || ''} onChange={(v: string) => handleFieldChange('email', v)} />
-                <Input label="Primary Mobile No" placeholder="+92 3XX XXXXXXX" required value={formData.phone || ''} onChange={(v: string) => handleFieldChange('phone', v)} />
-                <Input label="WhatsApp No" placeholder="+92 3XX XXXXXXX" required value={formData.whatsapp || ''} onChange={(v: string) => handleFieldChange('whatsapp', v)} />
-                <Input label="Office Landline" placeholder="+92 42 XXXXXXX" value={formData.landline || ''} onChange={(v: string) => handleFieldChange('landline', v)} />
-                <Input label="City" placeholder="Business Location City" required value={formData.city || ''} onChange={(v: string) => handleFieldChange('city', v)} />
-                <Input label="Country" placeholder="Business Location Country" required value={formData.country || ''} onChange={(v: string) => handleFieldChange('country', v)} />
-                <div className="md:col-span-2">
-                  <Input label="Detailed Office Address" placeholder="Floor, Plaza, Sector, Area..." required value={formData.address || ''} onChange={(v: string) => handleFieldChange('address', v)} />
-                </div>
-              </div>
-            </div>
-
-            {/* Section 03: Business Registration */}
-            <div>
-              <h4 className="text-[10px] font-black text-unicou-navy uppercase tracking-[0.4em] mb-8 flex items-center gap-3">
-                <span className="w-6 h-6 rounded bg-unicou-navy text-white flex items-center justify-center text-[8px]">03</span>
-                Authority & Registry Data
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6">
-                <Input label="Business Reg / NTN No" placeholder="Official Registration Node" required value={formData.ntn || ''} onChange={(v: string) => handleFieldChange('ntn', v)} />
-                <Input label="Years in Industry" type="number" placeholder="Experience in years" required value={formData.years || ''} onChange={(v: string) => handleFieldChange('years', v)} />
-                <Select label="Membership Type" options={['Sub-Agent Registry', 'Authorized Training Center', 'Associate Partner', 'Full Franchise Node']} value={formData.membership_type || ''} onChange={(v: string) => handleFieldChange('membership_type', v)} />
-                <Select label="Business Interest" options={['Education Consultancy', 'English Test Prep', 'Visa Processing', 'B2B Logistics']} value={formData.biz_interest || ''} onChange={(v: string) => handleFieldChange('biz_interest', v)} />
+                <Input label="Agency Name" placeholder="Legal Business Name" required value={formData.org_name || ''} onChange={(v: string) => handleFieldChange('org_name', v)} />
+                <Input label="Contact Person" placeholder="Name of Representative" required value={formData.name || ''} onChange={(v: string) => handleFieldChange('name', v)} />
+                <Input label="Official Email" type="email" placeholder="partnership@agency.com" required value={formData.email || ''} onChange={(v: string) => handleFieldChange('email', v)} />
+                <Input label="Mobile No" placeholder="+XX XXXXXXX" required value={formData.phone || ''} onChange={(v: string) => handleFieldChange('phone', v)} />
               </div>
             </div>
           </>
@@ -202,18 +163,8 @@ const ApplyForm: React.FC<ApplyFormProps> = ({ type, context, onSuccess }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6">
                 <Input label="Contact Name" placeholder="Representative Name" required value={formData.name || ''} onChange={(v: string) => handleFieldChange('name', v)} />
                 <Input label="Email Address" type="email" placeholder="official@institute.edu" required value={formData.email || ''} onChange={(v: string) => handleFieldChange('email', v)} />
-                <Input label="Organization / University" placeholder="Institution Legal Name" required value={formData.org || ''} onChange={(v: string) => handleFieldChange('org', v)} />
+                <Input label="Organization" placeholder="Institution Legal Name" required value={formData.org || ''} onChange={(v: string) => handleFieldChange('org', v)} />
                 <Input label="Phone Number" placeholder="Direct Dial" required value={formData.phone || ''} onChange={(v: string) => handleFieldChange('phone', v)} />
-                <div className="md:col-span-2">
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Proposed Cooperation Area</label>
-                  <textarea 
-                    className="w-full bg-slate-50 border border-slate-100 rounded-[2rem] p-8 text-slate-900 font-bold outline-none focus:border-unicou-orange focus:bg-white transition-all shadow-inner placeholder:text-slate-300 min-h-[200px] resize-none"
-                    placeholder="Describe your partnership inquiry or institutional requirement..."
-                    required
-                    value={formData.message || ''}
-                    onChange={(e) => handleFieldChange('message', e.target.value)}
-                  />
-                </div>
               </div>
             </div>
           </>
