@@ -22,7 +22,6 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
   const [processing, setProcessing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Expanded Card & Billing Nodes
   const [card, setCard] = useState({ 
     name: '', 
     email: '',
@@ -48,7 +47,6 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
     if (!user) { onNavigate({ type: 'login' }); return; }
     setCurrentUser(user);
     setBuyerName(user.name);
-    // Initialize card fields with user data for verification baseline
     setCard(prev => ({ 
       ...prev, 
       name: user.name,
@@ -59,8 +57,8 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
   }, [productId]);
 
   const finalizeOrder = async () => {
-    if (!buyerName.trim()) return alert("Audit Failure: Buyer Legal Name is mandatory.");
-    if (!bankLastFour.trim() || bankLastFour.length !== 4) return alert("Audit Failure: 4-digit Bank A/C identifier required.");
+    if (!buyerName.trim()) return alert("Error: Buyer Legal Name is mandatory.");
+    if (!bankLastFour.trim() || bankLastFour.length !== 4) return alert("Error: 4-digit Bank A/C identifier required.");
     
     if (paymentMethod === 'BankTransfer') {
       if (!bankRef.trim() || !fileAttached) {
@@ -69,26 +67,8 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
     }
 
     if (paymentMethod === 'Gateway') {
-      // MANDATORY IDENTITY MATCH RESTRICTION (Security Protocol V4.3)
-      // Checks registered Name, email ID and billing Country
-      const nameMatch = card.name.trim().toLowerCase() === currentUser?.name.toLowerCase();
-      const emailMatch = card.email.trim().toLowerCase() === currentUser?.email.toLowerCase();
-      const countryMatch = card.country.trim().toLowerCase() === (currentUser?.country || '').toLowerCase();
-
-      if (!nameMatch || !emailMatch || !countryMatch) {
-        alert("SECURITY RESTRICTION TRIGGERED: Your registered UNICOU identity (Name, Email, Country) DOES NOT MATCH your card payment details. Card procurement blocked. Redirecting to Bank Payment Protocol for manual verification.");
-        setPaymentMethod('BankTransfer');
-        return;
-      }
-
-      // Billing Address Validation
-      if (!card.street1 || !card.city || !card.state || !card.postcode || !card.country) {
-        return alert("Full Billing Address is required for card processing.");
-      }
-
-      // Card Format Validation
-      if (card.num.length < 16 || !card.exp.includes('/') || card.cvv.length < 3) {
-        return alert("Invalid Card parameters. Please check your inputs.");
+      if (!card.street1 || !card.city || !card.postcode || !card.country || !card.num || !card.exp || !card.cvv) {
+        return alert("Full Billing and Card details are required for processing.");
       }
     }
     
@@ -98,7 +78,6 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
       if (paymentMethod === 'BankTransfer') {
         order = await api.submitBankTransfer(productId, quantity, currentUser?.email || '', buyerName, bankRef, bankLastFour);
       } else {
-        // Digital settlement node
         order = await api.submitGatewayPayment(productId, quantity, currentUser?.email || '', buyerName, bankLastFour);
       }
       onSuccess(order.id);
@@ -117,7 +96,7 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
         <div className="bg-unicou-navy p-8 text-white flex justify-between items-center shrink-0">
            <div>
              <h2 className="text-3xl font-display font-black tracking-tighter uppercase leading-none">Procurement <span className="text-unicou-orange">Terminal</span></h2>
-             <p className="text-[10px] font-black uppercase tracking-[0.4em] mt-2 opacity-60">Fulfillment Audit Protocol V4.2</p>
+             <p className="text-[10px] font-black uppercase tracking-[0.4em] mt-2 opacity-60">Fulfillment Protocol Ready</p>
            </div>
            <button onClick={onCancel} className="w-12 h-12 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-2xl transition-all text-white">✕</button>
         </div>
@@ -129,7 +108,7 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
 
         <div className="p-8 grid grid-cols-1 lg:grid-cols-2 gap-12 overflow-y-auto max-h-[70vh] no-scrollbar">
           <div className="space-y-8">
-            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Identity Verification Baseline</h3>
+            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Identity Node</h3>
             <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
                <p className="text-[9px] font-black text-unicou-navy uppercase mb-2">Order Identification</p>
                <p className="text-xl font-mono font-black text-slate-900">{sys.current.id}</p>
@@ -141,7 +120,7 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
             </div>
             
             <div className="p-6 border border-slate-100 rounded-3xl bg-slate-50/30">
-               <p className="text-[9px] font-black text-slate-400 uppercase mb-4 tracking-widest border-b pb-2">Registered Profile Nodes</p>
+               <p className="text-[9px] font-black text-slate-400 uppercase mb-4 tracking-widest border-b pb-2">Registered Profile</p>
                <div className="space-y-3">
                  <div className="flex justify-between items-center text-[10px] font-bold">
                     <span className="text-slate-500 uppercase">Profile Name:</span>
@@ -151,15 +130,6 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
                     <span className="text-slate-500 uppercase">Profile Email:</span>
                     <span className="text-unicou-navy">{currentUser.email}</span>
                  </div>
-                 <div className="flex justify-between items-center text-[10px] font-bold">
-                    <span className="text-slate-500 uppercase">Profile Country:</span>
-                    <span className="text-unicou-navy">{currentUser.country || 'N/A'}</span>
-                 </div>
-               </div>
-               <div className="mt-6 p-4 bg-orange-50 border border-orange-100 rounded-xl">
-                 <p className="text-[8px] font-black text-unicou-orange uppercase leading-relaxed italic">
-                   Note: Card Holder Name, Email, and Billing Country MUST match your profile node exactly or transaction will be forced to Bank Transfer.
-                 </p>
                </div>
             </div>
           </div>
@@ -168,7 +138,7 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Settlement Input</h3>
             <div className="space-y-6">
               <div>
-                <label className="block text-[10px] font-black text-unicou-navy uppercase tracking-widest mb-3 ml-2">Buyer Name (Verified Registry)</label>
+                <label className="block text-[10px] font-black text-unicou-navy uppercase tracking-widest mb-3 ml-2">Buyer Name</label>
                 <input className="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-[1.5rem] font-bold text-slate-900 outline-none focus:border-unicou-orange shadow-inner" value={buyerName} onChange={e => setBuyerName(e.target.value)} />
               </div>
               
@@ -197,26 +167,21 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
                   <div className="space-y-4">
                     <h4 className="text-[9px] font-black text-unicou-orange uppercase tracking-[0.2em] border-b pb-2">Card Credentials</h4>
                     <input className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none focus:border-unicou-navy text-sm uppercase" placeholder="CARD HOLDER NAME" value={card.name} onChange={e => setCard({...card, name: e.target.value})} />
-                    <input className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none focus:border-unicou-navy text-sm" placeholder="REGISTERED EMAIL ID" value={card.email} onChange={e => setCard({...card, email: e.target.value})} />
                     <input className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-mono text-lg outline-none focus:border-unicou-navy" placeholder="CARD NUMBER (16 DIGITS)" value={card.num} onChange={e => setCard({...card, num: e.target.value.replace(/\D/g, '').substring(0, 16)})} />
                     <div className="grid grid-cols-2 gap-4">
                       <input className="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-center font-mono" placeholder="MM/YY" value={card.exp} onChange={e => setCard({...card, exp: e.target.value.substring(0, 5)})} />
-                      <input className="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-center font-mono" placeholder="CVC/CVV" type="password" value={card.cvv} onChange={e => setCard({...card, cvv: e.target.value.replace(/\D/g, '').substring(0, 4)})} />
+                      <input className="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-center font-mono" placeholder="CVC" type="password" value={card.cvv} onChange={e => setCard({...card, cvv: e.target.value.replace(/\D/g, '').substring(0, 3)})} />
                     </div>
                   </div>
 
                   <div className="space-y-4">
-                    <h4 className="text-[9px] font-black text-unicou-orange uppercase tracking-[0.2em] border-b pb-2">Billing Identity Node</h4>
-                    <input className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none focus:border-unicou-navy text-sm" placeholder="STREET NAME 1" value={card.street1} onChange={e => setCard({...card, street1: e.target.value})} />
-                    <input className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none focus:border-unicou-navy text-sm" placeholder="STREET NAME 2 (OPTIONAL)" value={card.street2} onChange={e => setCard({...card, street2: e.target.value})} />
+                    <h4 className="text-[9px] font-black text-unicou-orange uppercase tracking-[0.2em] border-b pb-2">Billing Address</h4>
+                    <input className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none focus:border-unicou-navy text-sm" placeholder="STREET NAME" value={card.street1} onChange={e => setCard({...card, street1: e.target.value})} />
                     <div className="grid grid-cols-2 gap-4">
                       <input className="p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none focus:border-unicou-navy text-sm" placeholder="CITY" value={card.city} onChange={e => setCard({...card, city: e.target.value})} />
-                      <input className="p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none focus:border-unicou-navy text-sm" placeholder="PROVINCE / STATE" value={card.state} onChange={e => setCard({...card, state: e.target.value})} />
+                      <input className="p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none focus:border-unicou-navy text-sm uppercase" placeholder="COUNTRY" value={card.country} onChange={e => setCard({...card, country: e.target.value})} />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <input className="p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none focus:border-unicou-navy text-sm" placeholder="POST CODE" value={card.postcode} onChange={e => setCard({...card, postcode: e.target.value})} />
-                      <input className="p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none focus:border-unicou-navy text-sm uppercase" placeholder="BILLING COUNTRY" value={card.country} onChange={e => setCard({...card, country: e.target.value})} />
-                    </div>
+                    <input className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none focus:border-unicou-navy text-sm" placeholder="POST CODE" value={card.postcode} onChange={e => setCard({...card, postcode: e.target.value})} />
                   </div>
                 </div>
               )}
@@ -226,7 +191,7 @@ const CheckoutProcess: React.FC<CheckoutProcessProps> = ({ productId, quantity, 
                 disabled={processing}
                 className="w-full py-6 bg-unicou-orange hover:bg-orange-600 text-white rounded-[2rem] font-black text-xs uppercase tracking-[0.3em] shadow-action transition-all active:scale-95 disabled:opacity-50"
               >
-                {processing ? 'SYNCHRONIZING...' : 'COMMIT SETTLEMENT'}
+                {processing ? 'SYNCING...' : 'COMMIT SETTLEMENT'}
               </button>
             </div>
           </div>

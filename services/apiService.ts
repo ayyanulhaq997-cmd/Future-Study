@@ -1,3 +1,4 @@
+
 import * as db from './db';
 import { 
   Product, VoucherCode, Order, User, LMSCourse, 
@@ -82,8 +83,13 @@ export const api = {
   getProductById: async (id: string) => (await api.getProducts()).find(p => p.id === id),
 
   getCodes: async (): Promise<VoucherCode[]> => {
-    const local = JSON.parse(localStorage.getItem(CODES_KEY) || '[]');
-    return local.length > 0 ? local : db.voucherCodes;
+    const localStr = localStorage.getItem(CODES_KEY);
+    if (!localStr) {
+      // Initialize with default DB codes and commit to storage
+      localStorage.setItem(CODES_KEY, JSON.stringify(db.voucherCodes));
+      return db.voucherCodes;
+    }
+    return JSON.parse(localStr);
   },
 
   injectBulkCodes: async (productId: string, codesList: string[]): Promise<void> => {
@@ -153,11 +159,20 @@ export const api = {
   submitGatewayPayment: async (productId: string, quantity: number, email: string, buyerName: string, bankLastFour: string): Promise<Order> => {
     if (api.getSystemHaltStatus()) throw new Error("Fulfillment system offline.");
     const p = await api.getProductById(productId);
+    
+    // Check stock BEFORE creating order for Gateway
+    const productCodes = await api.getCodes();
+    const available = productCodes.filter(c => c.productId === productId && c.status === 'Available');
+    
+    if (available.length < quantity) {
+      throw new Error("Vault Depletion Error: Desired quantity is not available in stock.");
+    }
+
     const order: Order = {
       id: `UC-${Math.random().toString(36).substr(2, 7).toUpperCase()}`,
       date: new Date().toLocaleDateString('en-GB'),
       time: new Date().toLocaleTimeString('en-GB'),
-      buyerName, bankLastFour, bankRef: 'SETTLED_DIRECTly',
+      buyerName, bankLastFour, bankRef: 'SETTLED_DIRECTLY',
       productName: p?.name || 'Academic Asset',
       totalAmount: (p?.basePrice || 0) * quantity,
       proofAttached: true, userId: 'u-session',
@@ -167,19 +182,17 @@ export const api = {
       voucherCodes: [], quantity
     };
     
-    const productCodes = await api.getCodes();
-    const available = productCodes.filter(c => c.productId === productId && c.status === 'Available');
-    if (available.length >= quantity) {
-      const assigned = available.slice(0, quantity);
-      assigned.forEach(c => {
-        c.status = 'Used';
-        c.orderId = order.id;
-        c.assignmentDate = new Date().toISOString();
-      });
-      order.voucherCodes = assigned.map(c => c.code);
-      order.deliveryTime = new Date().toLocaleTimeString();
-      localStorage.setItem(CODES_KEY, JSON.stringify(productCodes));
-    }
+    const assigned = available.slice(0, quantity);
+    assigned.forEach(c => {
+      c.status = 'Used';
+      c.orderId = order.id;
+      c.assignmentDate = new Date().toISOString();
+    });
+    order.voucherCodes = assigned.map(c => c.code);
+    order.deliveryTime = new Date().toLocaleTimeString();
+    
+    // Persist code assignment
+    localStorage.setItem(CODES_KEY, JSON.stringify(productCodes));
 
     const all = await api.getOrders();
     localStorage.setItem(ORDERS_KEY, JSON.stringify([order, ...all]));
