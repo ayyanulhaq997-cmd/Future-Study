@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { api } from '../services/apiService';
 import { MailService } from '../services/mailService';
@@ -14,6 +15,7 @@ type SignupStep = 'email' | 'code-entry' | 'complete';
 const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
   const [step, setStep] = useState<SignupStep>('email');
   const [verificationCode, setVerificationCode] = useState('');
+  const [generatedCode, setGeneratedCode] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     email: '',
     name: '',
@@ -40,7 +42,10 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
       setStep('code-entry');
     } catch (err: any) {
       if (err.message === 'MAIL_NODE_UNCONFIGURED') {
-        setError("Warning: Email service not configured in Admin Dashboard. Code sent to console for demo.");
+        // Retrieve the code for UI simulation if mail node is offline
+        const stored = (MailService as any).activeVerificationCodes?.[formData.email.toLowerCase()];
+        setGeneratedCode(stored || '123456');
+        setError("Notice: Email node in simulated mode. Code provided below.");
         setStep('code-entry');
       } else {
         setError("Failed to send code. Please try again.");
@@ -60,7 +65,13 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
       setSuccessMsg("A new code has been sent to your inbox.");
       setTimeout(() => setSuccessMsg(''), 5000);
     } catch (err: any) {
-      setError("Resend failed. Check connection.");
+      if (err.message === 'MAIL_NODE_UNCONFIGURED') {
+        const stored = (MailService as any).activeVerificationCodes?.[formData.email.toLowerCase()];
+        setGeneratedCode(stored || '123456');
+        setSuccessMsg("Simulated code refreshed.");
+      } else {
+        setError("Resend failed. Check connection.");
+      }
     } finally {
       setResending(false);
     }
@@ -134,6 +145,12 @@ const Signup: React.FC<SignupProps> = ({ onSuccess, onNavigateToLogin }) => {
                <p className="text-slate-500 font-bold italic leading-relaxed">
                  A 6-digit code has been dispatched to <span className="text-unicou-navy underline">{formData.email}</span>.
                </p>
+               {generatedCode && (
+                 <div className="mt-6 p-4 bg-slate-50 border border-dashed border-slate-200 rounded-2xl">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Simulated Protocol Code:</p>
+                    <p className="text-2xl font-mono font-black text-unicou-orange tracking-[0.5em]">{generatedCode}</p>
+                 </div>
+               )}
             </div>
 
             <form onSubmit={handleVerifyCode} className="space-y-8">

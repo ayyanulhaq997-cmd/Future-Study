@@ -36,16 +36,27 @@ export const api = {
   },
 
   getUsers: async (): Promise<User[]> => {
-    const local = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
-    const combined = [...db.users, ...local];
-    return Array.from(new Map(combined.map(u => [u.email.toLowerCase(), u])).values());
+    const localStr = localStorage.getItem(USERS_KEY);
+    const local: User[] = localStr ? JSON.parse(localStr) : [];
+    
+    const registry = new Map<string, User>();
+    
+    // 1. Load defaults
+    db.users.forEach(u => registry.set(u.email.toLowerCase(), u));
+    
+    // 2. Overwrite with local Admin updates
+    local.forEach(u => {
+      if (u.email) registry.set(u.email.toLowerCase(), u);
+    });
+    
+    return Array.from(registry.values());
   },
 
   verifyLogin: async (id: string, p: string): Promise<User> => {
     const users = await api.getUsers();
     const user = users.find(u => u.email.toLowerCase() === id.toLowerCase());
     if (user) {
-      if (user.status === 'Frozen') throw new Error("Registry access node revoked.");
+      if (user.status === 'Frozen' || user.status === 'Rejected') throw new Error("Registry access node revoked.");
       localStorage.setItem(SESSION_KEY, JSON.stringify(user));
       return user;
     }
@@ -53,14 +64,41 @@ export const api = {
   },
 
   upsertUser: async (u: Partial<User>): Promise<void> => {
-    const local = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
-    const idx = local.findIndex((item: User) => item.id === u.id || item.email?.toLowerCase() === u.email?.toLowerCase());
+    const localStr = localStorage.getItem(USERS_KEY);
+    const local: User[] = localStr ? JSON.parse(localStr) : [];
+    const emailKey = u.email?.toLowerCase();
+    
+    if (!emailKey) return;
+
+    const idx = local.findIndex((item: User) => item.email.toLowerCase() === emailKey);
+    let updatedUser: User;
+
     if (idx > -1) {
-      local[idx] = { ...local[idx], ...u };
+      local[idx] = { ...local[idx], ...u } as User;
+      updatedUser = local[idx];
     } else {
-      local.push({ ...u, id: u.id || `u-${Date.now()}`, status: u.status || 'Active', timestamp: new Date().toISOString() } as User);
+      const staticUser = db.users.find(item => item.email.toLowerCase() === emailKey);
+      const newUser = { 
+        ...(staticUser || {}), 
+        ...u, 
+        id: u.id || staticUser?.id || `u-${Date.now()}`,
+        status: u.status || staticUser?.status || 'Active',
+        timestamp: u.timestamp || staticUser?.timestamp || new Date().toISOString()
+      } as User;
+      local.push(newUser);
+      updatedUser = newUser;
     }
+    
     localStorage.setItem(USERS_KEY, JSON.stringify(local));
+
+    // SYNC SESSION: If the updated user is the one currently logged in, update their session too
+    const currentSession = localStorage.getItem(SESSION_KEY);
+    if (currentSession) {
+      const sessionUser = JSON.parse(currentSession);
+      if (sessionUser.email.toLowerCase() === emailKey) {
+        localStorage.setItem(SESSION_KEY, JSON.stringify(updatedUser));
+      }
+    }
   },
 
   getProducts: async (): Promise<Product[]> => {
@@ -85,7 +123,6 @@ export const api = {
   getCodes: async (): Promise<VoucherCode[]> => {
     const localStr = localStorage.getItem(CODES_KEY);
     if (!localStr) {
-      // Initialize with default DB codes and commit to storage
       localStorage.setItem(CODES_KEY, JSON.stringify(db.voucherCodes));
       return db.voucherCodes;
     }
@@ -111,7 +148,6 @@ export const api = {
     const all = await api.getOrders();
     const idx = all.findIndex(o => o.id === orderId);
     if (idx > -1) {
-      // ATOMIC FULFILLMENT: Move codes from Vault to Identity
       if (status === 'Approved' && all[idx].status !== 'Approved') {
         const productCodes = await api.getCodes();
         const available = productCodes.filter(c => c.productId === all[idx].productId && c.status === 'Available');
@@ -159,14 +195,9 @@ export const api = {
   submitGatewayPayment: async (productId: string, quantity: number, email: string, buyerName: string, bankLastFour: string): Promise<Order> => {
     if (api.getSystemHaltStatus()) throw new Error("Fulfillment system offline.");
     const p = await api.getProductById(productId);
-    
-    // Check stock BEFORE creating order for Gateway
     const productCodes = await api.getCodes();
     const available = productCodes.filter(c => c.productId === productId && c.status === 'Available');
-    
-    if (available.length < quantity) {
-      throw new Error("Vault Depletion Error: Desired quantity is not available in stock.");
-    }
+    if (available.length < quantity) throw new Error("Vault Depletion Error: Desired quantity is not available in stock.");
 
     const order: Order = {
       id: `UC-${Math.random().toString(36).substr(2, 7).toUpperCase()}`,
@@ -191,9 +222,7 @@ export const api = {
     order.voucherCodes = assigned.map(c => c.code);
     order.deliveryTime = new Date().toLocaleTimeString();
     
-    // Persist code assignment
     localStorage.setItem(CODES_KEY, JSON.stringify(productCodes));
-
     const all = await api.getOrders();
     localStorage.setItem(ORDERS_KEY, JSON.stringify([order, ...all]));
     return order;
@@ -201,8 +230,22 @@ export const api = {
 
   getCurrentUser: (): User | null => {
     const s = localStorage.getItem(SESSION_KEY);
-    return s ? JSON.parse(s) : null;
+    if (!s) return null;
+    
+    const sessionUser = JSON.parse(s);
+    // DYNAMIC SYNC: Re-fetch latest status from global registry to prevent stale "Pending" states
+    const localUsers = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+    const latest = localUsers.find((u: User) => u.email.toLowerCase() === sessionUser.email.toLowerCase());
+    
+    if (latest) {
+      // Keep session updated with latest registry data
+      localStorage.setItem(SESSION_KEY, JSON.stringify(latest));
+      return latest;
+    }
+    
+    return sessionUser;
   },
+
   logout: () => localStorage.removeItem(SESSION_KEY),
   getLeads: async (): Promise<Lead[]> => JSON.parse(localStorage.getItem('leads_v18') || '[]'),
   submitLead: async (t: string, d: any): Promise<void> => {
@@ -211,8 +254,19 @@ export const api = {
      localStorage.setItem('leads_v18', JSON.stringify([nl, ...all]));
   },
   signup: async (email: string, role: UserRole): Promise<User> => {
-    const u: User = { id: `u-${Date.now()}`, name: email.split('@')[0], email, role, status: 'Active', verified: true, isAuthorized: true, timestamp: new Date().toISOString() };
+    const u: User = { 
+      id: `u-${Date.now()}`, 
+      name: email.split('@')[0], 
+      email, 
+      role, 
+      status: 'Pending', 
+      verified: true, 
+      isAuthorized: true, 
+      timestamp: new Date().toISOString() 
+    };
     await api.upsertUser(u);
+    // PERSISTENCE FIX: Ensure the new user is set in session so they don't log out on refresh
+    localStorage.setItem(SESSION_KEY, JSON.stringify(u));
     return u;
   },
   getOrderById: async (id: string) => (await api.getOrders()).find(o => o.id === id) || null,

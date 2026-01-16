@@ -1,9 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/apiService';
-import { Product, Order, User, BusinessMetrics, Lead, ViewState, VoucherCode } from '../types';
+import { Product, Order, User, BusinessMetrics, Lead, ViewState, VoucherCode, OrderStatus } from '../types';
 import { MailConfig, SYSTEM_CONFIG_KEY } from '../services/mailService';
 
-type AdminTab = 'intelligence' | 'catalog' | 'registrations' | 'staff' | 'vault' | 'settings';
+type AdminTab = 'intelligence' | 'catalog' | 'registrations' | 'sales' | 'staff' | 'vault' | 'settings';
 
 const AdminDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => void }> = ({ user, onNavigate }) => {
   const [activeTab, setActiveTab] = useState<AdminTab>('intelligence');
@@ -18,6 +19,7 @@ const AdminDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => void 
   }>({ orders: [], users: [], products: [], leads: [], codes: [] });
   
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [editingProduct, setEditingProduct] = useState<Partial<Product> | null>(null);
   const [editingUser, setEditingUser] = useState<Partial<User> | null>(null);
   const [bulkCodes, setBulkCodes] = useState('');
@@ -48,6 +50,31 @@ const AdminDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => void 
   };
 
   useEffect(() => { refreshData(); }, []);
+
+  const handleOrderAction = async (orderId: string, status: OrderStatus) => {
+    setActionLoading(orderId);
+    try {
+      await api.updateOrderStatus(orderId, status);
+      await refreshData();
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleUserAction = async (u: User, status: User['status']) => {
+    setActionLoading(u.id);
+    try {
+      // Explicitly forcing status update to bypass any state caching
+      await api.upsertUser({ email: u.email, status: status as any });
+      await refreshData();
+    } catch (err: any) {
+      alert("Registry Sync Error: " + err.message);
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
   const handleSaveProduct = async () => {
     if (!editingProduct?.name) {
@@ -111,7 +138,7 @@ const AdminDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => void 
           </button>
           
           <div className="flex bg-slate-50 p-1.5 rounded-[2rem] border border-slate-200 shadow-inner overflow-x-auto no-scrollbar">
-            {['intelligence', 'catalog', 'registrations', 'staff', 'vault', 'settings'].map(t => (
+            {['intelligence', 'catalog', 'registrations', 'sales', 'staff', 'vault', 'settings'].map(t => (
               <button key={t} onClick={() => setActiveTab(t as any)} className={`px-6 py-3 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === t ? 'bg-white text-unicou-navy shadow-lg border border-slate-200' : 'text-slate-400'}`}>
                 {t}
               </button>
@@ -133,6 +160,121 @@ const AdminDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => void 
                <h4 className={`text-5xl font-display font-black tracking-tighter ${m.color}`}>{m.val}</h4>
              </div>
            ))}
+        </div>
+      )}
+
+      {activeTab === 'registrations' && (
+        <div className="space-y-12 animate-in fade-in duration-500">
+          <div className="flex justify-between items-center px-4">
+            <h3 className="text-xl font-black uppercase tracking-tighter text-slate-900">Account Registration Requests</h3>
+          </div>
+          <div className="bg-white rounded-[3.5rem] border border-slate-200 shadow-3xl overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-[10px] uppercase">
+                <thead>
+                  <tr className="bg-slate-50 font-black text-slate-500 tracking-widest border-b border-slate-100">
+                    <th className="px-8 py-6">Name</th>
+                    <th className="px-8 py-6">Email Node</th>
+                    <th className="px-8 py-6">Target Role</th>
+                    <th className="px-8 py-6">Current Status</th>
+                    <th className="px-8 py-6 text-center">Fulfillment Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50 font-bold">
+                  {data.users.filter(u => ['Student', 'Agent', 'Academic Institute'].includes(u.role)).map(u => (
+                    <tr key={u.id} className={`hover:bg-slate-50 transition-colors ${actionLoading === u.id ? 'opacity-50 grayscale' : ''}`}>
+                      <td className="px-8 py-6 font-black text-slate-900">{u.name}</td>
+                      <td className="px-8 py-6 font-mono text-unicou-navy lowercase">{u.email}</td>
+                      <td className="px-8 py-6">
+                        <span className="px-2 py-1 bg-slate-100 rounded text-[8px] font-black text-slate-600">{u.role}</span>
+                      </td>
+                      <td className="px-8 py-6">
+                        <span className={`px-3 py-1 rounded-full text-[8px] font-black ${
+                          u.status === 'Active' ? 'bg-emerald-50 text-emerald-600' : 
+                          u.status === 'Hold' ? 'bg-amber-50 text-amber-600' : 
+                          u.status === 'Pending' ? 'bg-indigo-50 text-indigo-600' : 
+                          'bg-red-50 text-red-600'
+                        }`}>{u.status}</span>
+                      </td>
+                      <td className="px-8 py-6">
+                        <div className="flex justify-center gap-2">
+                          <button 
+                            disabled={actionLoading === u.id}
+                            onClick={() => handleUserAction(u, 'Active')} 
+                            className={`px-6 py-2 bg-emerald-500 text-white rounded-xl text-[9px] font-black shadow-lg transition-all ${u.status === 'Active' ? 'ring-2 ring-emerald-200' : 'hover:bg-emerald-600 active:scale-95'}`}
+                          >
+                            {actionLoading === u.id ? '...' : 'Verify'}
+                          </button>
+                          <button 
+                            disabled={actionLoading === u.id}
+                            onClick={() => handleUserAction(u, 'Hold')} 
+                            className="px-6 py-2 bg-amber-500 text-white rounded-xl text-[9px] font-black hover:bg-amber-600 shadow-lg transition-all active:scale-95"
+                          >
+                            Hold
+                          </button>
+                          <button 
+                            disabled={actionLoading === u.id}
+                            onClick={() => handleUserAction(u, 'Rejected')} 
+                            className="px-6 py-2 bg-red-600 text-white rounded-xl text-[9px] font-black hover:bg-red-700 shadow-lg transition-all active:scale-95"
+                          >
+                            Pass
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {data.users.filter(u => ['Student', 'Agent', 'Academic Institute'].includes(u.role)).length === 0 && (
+                    <tr><td colSpan={5} className="p-20 text-center text-slate-400 italic font-bold">No active registrations detected in registry.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'sales' && (
+        <div className="space-y-12 animate-in fade-in duration-500">
+           <div className="flex justify-between items-center px-4">
+              <h3 className="text-xl font-black uppercase tracking-tighter text-slate-900">Procurement Register</h3>
+           </div>
+           <div className="bg-white rounded-[3.5rem] border border-slate-200 shadow-3xl overflow-hidden">
+             <div className="overflow-x-auto">
+                <table className="w-full text-left text-[10px] uppercase">
+                  <thead>
+                    <tr className="bg-slate-50 font-black text-slate-500 tracking-widest border-b border-slate-100">
+                      <th className="px-6 py-6">Order ID</th>
+                      <th className="px-6 py-6">Timestamp</th>
+                      <th className="px-6 py-6">Buyer</th>
+                      <th className="px-6 py-6">Product</th>
+                      <th className="px-6 py-6">Amount</th>
+                      <th className="px-6 py-6 text-center">Status Audit</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50 font-bold">
+                    {data.orders.map(o => (
+                      <tr key={o.id} className={`hover:bg-slate-50 ${actionLoading === o.id ? 'opacity-50 grayscale' : ''}`}>
+                        <td className="px-6 py-6 font-mono text-unicou-navy">{o.id}</td>
+                        <td className="px-6 py-6 text-slate-400">{o.date} {o.time}</td>
+                        <td className="px-6 py-6 font-black text-slate-900">{o.buyerName}</td>
+                        <td className="px-6 py-6 text-unicou-navy">{o.productName}</td>
+                        <td className="px-6 py-6 font-display font-black text-slate-950">${o.totalAmount}</td>
+                        <td className="px-6 py-6">
+                           <div className="flex items-center justify-center gap-2">
+                              <button disabled={actionLoading === o.id} onClick={() => handleOrderAction(o.id, 'Approved')} className={`px-4 py-2 bg-emerald-500 text-white rounded-xl text-[8px] font-black ${o.status === 'Approved' ? 'ring-2 ring-emerald-200' : ''}`}>Verify</button>
+                              <button disabled={actionLoading === o.id} onClick={() => handleOrderAction(o.id, 'Hold')} className={`px-4 py-2 bg-amber-500 text-white rounded-xl text-[8px] font-black ${o.status === 'Hold' ? 'ring-2 ring-amber-200' : ''}`}>Hold</button>
+                              <button disabled={actionLoading === o.id} onClick={() => handleOrderAction(o.id, 'Rejected')} className={`px-4 py-2 bg-red-600 text-white rounded-xl text-[8px] font-black ${o.status === 'Rejected' ? 'ring-2 ring-red-200' : ''}`}>Reject</button>
+                           </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {data.orders.length === 0 && (
+                      <tr><td colSpan={6} className="p-20 text-center text-slate-400 italic font-bold">No procurement records identified.</td></tr>
+                    )}
+                  </tbody>
+                </table>
+             </div>
+           </div>
         </div>
       )}
 
@@ -167,7 +309,7 @@ const AdminDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => void 
             <button onClick={() => setEditingUser({ role: 'Sales Agent', status: 'Active' })} className="px-8 py-4 bg-unicou-navy text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl hover:scale-105 transition-all">+ ADD STAFF</button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {data.users.filter(u => u.role !== 'Student').map(u => (
+            {data.users.filter(u => !['Student', 'Agent', 'Academic Institute'].includes(u.role)).map(u => (
               <div key={u.id} className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-xl group hover:border-unicou-navy/20 transition-all">
                  <div className="flex items-center gap-6 mb-6">
                     <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center font-black text-xl text-unicou-navy shadow-inner uppercase">{u.name.charAt(0)}</div>
@@ -249,7 +391,7 @@ const AdminDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => void 
                     <Input label="Settlement Price (USD)" type="number" value={editingProduct.basePrice || 0} onChange={(v:any) => setEditingProduct({...editingProduct, basePrice: parseFloat(v)})} />
                  </div>
                  <div className="flex gap-4 pt-8">
-                    <button onClick={() => setEditingProduct(null)} className="flex-1 py-5 bg-slate-100 text-slate-500 rounded-2xl font-black text-xs uppercase tracking-widest">Cancel</button>
+                    <button onClick={() => editingProduct.id?.startsWith('p-') ? handleSaveProduct() : setEditingProduct(null)} className="flex-1 py-5 bg-slate-100 text-slate-500 rounded-2xl font-black text-xs uppercase tracking-widest">Cancel</button>
                     <button onClick={handleSaveProduct} className="flex-[2] py-5 bg-unicou-navy text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl">Commit Asset</button>
                  </div>
               </div>
@@ -278,6 +420,8 @@ const AdminDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => void 
                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Node Status</label>
                        <select value={editingUser.status} onChange={e => setEditingUser({...editingUser, status: e.target.value as any})} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl font-bold">
                           <option value="Active">Authorized</option>
+                          <option value="Hold">On Hold</option>
+                          <option value="Rejected">Rejected</option>
                           <option value="Frozen">Revoked</option>
                        </select>
                     </div>

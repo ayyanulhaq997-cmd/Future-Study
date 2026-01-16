@@ -1,3 +1,4 @@
+
 import { Product, VoucherCode, User, University, CountryGuide, Course, Qualification, LMSCourse, LMSPracticeTest, ManualSubmission, TestResult, LMSModule, ImmigrationGuideData } from '../types';
 
 export const users: User[] = [
@@ -5,6 +6,7 @@ export const users: User[] = [
   { id: 'u-ops', name: 'Ops Manager', email: 'ops@unicou.uk', role: 'Operation Manager', isAuthorized: true, verified: true, status: 'Active', country: 'United Kingdom', timestamp: new Date().toISOString() },
   { id: 'u-finance', name: 'Finance Lead', email: 'finance@unicou.uk', role: 'Finance Manager', isAuthorized: true, verified: true, status: 'Active', country: 'United Kingdom', timestamp: new Date().toISOString() },
   { id: 'u-support', name: 'Support Node', email: 'support@unicou.uk', role: 'Support', isAuthorized: true, verified: true, status: 'Active', country: 'United Kingdom', timestamp: new Date().toISOString() },
+  { id: 'u-student-test', name: 'Demo Student', email: 'student@test.com', role: 'Student', isAuthorized: true, verified: true, status: 'Active', country: 'United Kingdom', timestamp: new Date().toISOString() },
 ];
 
 export const products: Product[] = [
@@ -281,7 +283,7 @@ Ireland is a country that prizes education, community, and innovation. In  , it 
     title: 'Study in Cyprus',
     heroImage: 'https://images.unsplash.com/photo-1512813588641-5a024775d16c?w=1200',
     costOfLiving: '€800 / Month',
-    visaRequirements: '€8,000 / Year',
+    visaRequirements: '€7,000 / Year',
     content: `If, you’re thinking about studying abroad in  ? You want the "European experience" the high-quality degrees, the travel opportunities, and the global career prospects but maybe you aren’t as keen on the freezing winters of the north or the sky-high tuition fees in cities like London or Paris.
 If that sounds like you, let’s talk about Cyprus.
 At UniCou Ltd, we’ve seen a massive surge in interest for this Mediterranean island recently, and it’s easy to see why. Cyprus isn't just a place for a summer holiday; it’s a booming educational hub that offers a unique "best of both worlds" scenario. You get to live in one of the safest, sunniest countries in the world while earning a degree that is recognized across the entire European Union.
@@ -529,7 +531,7 @@ Tuition Fees and Scholarships for
 If you are from outside the EU/EEA, you will have to pay tuition fees. Generally, these range from SEK 80,000 to SEK 295,000 per year (roughly €7,000 to €25,000).
 But here is the good news: Sweden loves talent. For  , there are two major scholarship routes:
 The Swedish Institute (SI) Global Professionals Scholarship: This is the "big one." It covers full tuition, living costs, and even travel grants. It is highly competitive and aimed at future leaders.
-University-Specific Scholarships: Almost every major university (like KTH, Lund, or Uppsala) offers tuition waivers ranging from 25% to 75% for high-achieving students.
+University-Specific Scholarships: Almost every university (like KTH, Lund, or Uppsala) offers tuition waivers ranging from 25% to 75% for high-achieving students.
 Our team at UniCou Ltd identifies which scholarships you are actually eligible for, so you don't waste time on long-shot applications.
 The  Post-Study Work Visa: Staying for the "Hunt"
 Sweden wants you to stay! In  , once you complete your degree, you can apply to stay for 12 months specifically to look for a job or start your own business.
