@@ -54,12 +54,34 @@ const App: React.FC = () => {
 
   const [view, setView] = useState<ViewState>(initialView);
 
+  // IDENTITY HANDSHAKE & BACKGROUND SYNC
   useEffect(() => {
-    const active = api.getCurrentUser();
-    if (active) setUser(active);
+    const syncUser = () => {
+      const active = api.getCurrentUser();
+      if (active) {
+        // Only update if something actually changed (e.g. status)
+        setUser(prev => {
+          if (!prev || JSON.stringify(prev) !== JSON.stringify(active)) {
+            return active;
+          }
+          return prev;
+        });
+      }
+    };
+
+    syncUser();
+    
+    // Background Identity Polling (Every 5 seconds)
+    // This ensures that when Admin clicks "Verify", the student sees it immediately.
+    const interval = setInterval(syncUser, 5000);
+
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      clearInterval(interval);
+    };
   }, []);
 
   const navigateTo = (newView: ViewState) => {
