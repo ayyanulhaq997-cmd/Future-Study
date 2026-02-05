@@ -16,24 +16,37 @@ const CustomerDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => vo
       : 'vouchers'
   );
 
+  // DATA SYNCHRONIZATION LOOP
   useEffect(() => {
-    const fetch = async () => {
-      const [o, r, c, t] = await Promise.all([
-        api.getOrders(), 
-        api.getTestResults(), 
-        api.getEnrolledCourses(),
-        api.getAllTests()
-      ]);
-      setOrders(o);
-      setResults(r);
-      setCourses(c);
-      setTests(t);
-      setLoading(false);
+    const fetchData = async () => {
+      try {
+        const [o, r, c, t] = await Promise.all([
+          api.getOrders(), 
+          api.getTestResults(), 
+          api.getEnrolledCourses(),
+          api.getAllTests()
+        ]);
+        
+        // Only update state if data has actually changed to prevent jitter
+        setOrders(prev => JSON.stringify(prev) !== JSON.stringify(o) ? o : prev);
+        setResults(prev => JSON.stringify(prev) !== JSON.stringify(r) ? r : prev);
+        setCourses(prev => JSON.stringify(prev) !== JSON.stringify(c) ? c : prev);
+        setTests(prev => JSON.stringify(prev) !== JSON.stringify(t) ? t : prev);
+      } catch (error) {
+        console.error("Hub Sync Error:", error);
+      } finally {
+        setLoading(false);
+      }
     };
-    fetch();
+
+    fetchData();
+    
+    // Live Polling: Re-sync every 5 seconds to catch Admin verifications
+    const interval = setInterval(fetchData, 5000);
+    return () => clearInterval(interval);
   }, []);
 
-  if (loading) return <div className="p-40 text-center animate-pulse text-unicou-navy font-black uppercase tracking-widest text-[11px]">Syncing Portal Nodes...</div>;
+  if (loading && orders.length === 0) return <div className="p-40 text-center animate-pulse text-unicou-navy font-black uppercase tracking-widest text-[11px]">Syncing Portal Nodes...</div>;
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-8 bg-white min-h-screen">
@@ -88,12 +101,15 @@ const CustomerDashboard: React.FC<{ user: User; onNavigate: (v: ViewState) => vo
                     </div>
                     
                     <div className="flex flex-wrap gap-2">
-                      {o.voucherCodes.length > 0 ? o.voucherCodes.map((code, idx) => (
+                      {o.status === 'Approved' && o.voucherCodes.length > 0 ? o.voucherCodes.map((code, idx) => (
                         <div key={idx} className="bg-slate-50 px-4 py-1.5 rounded-xl border border-slate-200 flex items-center gap-3 shadow-inner">
                           <span className="font-mono text-xs font-black text-unicou-navy tracking-widest">{code}</span>
                         </div>
                       )) : (
-                        <span className="text-[9px] font-black px-4 py-1.5 bg-slate-50 text-slate-500 rounded-full uppercase border border-slate-100">Pending Verification</span>
+                        <div className="flex items-center gap-2 px-4 py-1.5 bg-slate-50 rounded-full border border-slate-100">
+                          <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse" />
+                          <span className="text-[9px] font-black text-slate-500 uppercase">Verification in Progress</span>
+                        </div>
                       )}
                     </div>
                 </div>

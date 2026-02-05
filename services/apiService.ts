@@ -49,7 +49,6 @@ export const api = {
     const user = users.find(u => u.email.toLowerCase() === id.toLowerCase());
     if (user) {
       if (user.status === 'Frozen' || user.status === 'Rejected') throw new Error("Registry access node revoked.");
-      // We only store the basic info in session; status comes from Registry
       localStorage.setItem(SESSION_KEY, JSON.stringify({ email: user.email, name: user.name, role: user.role }));
       return user;
     }
@@ -84,14 +83,12 @@ export const api = {
     if (!s) return null;
     const sessionData = JSON.parse(s);
     
-    // HOT SYNC: Always pull the latest user profile from the registry
     const localStr = localStorage.getItem(USERS_KEY);
     const local: User[] = localStr ? JSON.parse(localStr) : [];
     const latest = local.find(u => u.email.toLowerCase() === sessionData.email.toLowerCase());
     
     if (latest) return latest;
     
-    // Fallback to static DB if not in local registry
     const staticMatch = db.users.find(u => u.email.toLowerCase() === sessionData.email.toLowerCase());
     return staticMatch || null;
   },
@@ -104,14 +101,13 @@ export const api = {
     return Array.from(new Map(combined.map(item => [item.id, item])).values());
   },
 
-  // Added upsertProduct to fix Error in components/AdminDashboard.tsx
   upsertProduct: async (p: Partial<Product>): Promise<void> => {
     const local = JSON.parse(localStorage.getItem(PRODUCTS_KEY) || '[]');
     const idx = local.findIndex((item: Product) => item.id === p.id);
     if (idx > -1) {
       local[idx] = { ...local[idx], ...p };
     } else {
-      local.push({ ...p, id: p.id || `p-${Date.now()}` });
+      local.push({ ...p, id: p.id || `p-${Date.now()}` } as Product);
     }
     localStorage.setItem(PRODUCTS_KEY, JSON.stringify(local));
   },
@@ -131,7 +127,6 @@ export const api = {
 
   getOrders: async (): Promise<Order[]> => JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]'),
   
-  // Added getOrderById to fix Error in components/SuccessScreen.tsx
   getOrderById: async (id: string): Promise<Order | null> => {
     const all = await api.getOrders();
     return all.find(o => o.id === id) || null;
@@ -144,11 +139,21 @@ export const api = {
       if (status === 'Approved' && all[idx].status !== 'Approved') {
         const productCodes = await api.getCodes();
         const available = productCodes.filter(c => c.productId === all[idx].productId && c.status === 'Available');
-        if (available.length < all[idx].quantity) throw new Error("Vault Depletion Error");
+        
+        if (available.length < all[idx].quantity) {
+          throw new Error("Vault Depletion: Not enough vouchers available.");
+        }
+
         const assigned = available.slice(0, all[idx].quantity);
-        assigned.forEach(c => { c.status = 'Used'; c.orderId = orderId; });
+        assigned.forEach(c => { 
+          c.status = 'Used'; 
+          c.orderId = orderId; 
+          c.assignmentDate = new Date().toISOString();
+        });
+        
         all[idx].voucherCodes = assigned.map(c => c.code);
         all[idx].status = 'Approved';
+        all[idx].deliveryTime = new Date().toLocaleTimeString();
         localStorage.setItem(CODES_KEY, JSON.stringify(productCodes));
       } else {
         all[idx].status = status;
@@ -191,7 +196,6 @@ export const api = {
     const local = JSON.parse(localStorage.getItem('enrolled_v18') || '[]');
     return db.lmsCourses.filter(c => local.includes(c.id));
   },
-  // Added getEnrollmentByCourse to fix Error in components/LMSCoursePlayer.tsx
   getEnrollmentByCourse: async (courseId: string): Promise<Enrollment | null> => {
     const all = JSON.parse(localStorage.getItem('progress_v18') || '{}');
     const progress = all[courseId];
@@ -208,7 +212,6 @@ export const api = {
   getCourseModules: async (courseId: string): Promise<LMSModule[]> => db.lmsModules,
   getAllTests: async () => db.lmsTests,
   getTestById: async (id: string) => db.lmsTests.find(t => t.id === id),
-  // Added submitTestResult to fix Error in components/LMSPracticeTest.tsx
   submitTestResult: async (testId: string, answers: Record<string, any>, timeTaken: number): Promise<TestResult> => {
     const test = await api.getTestById(testId);
     const result: TestResult = {
@@ -227,7 +230,6 @@ export const api = {
   },
   getTestResults: async () => JSON.parse(localStorage.getItem('results_v18') || '[]'),
   getPendingSubmissions: async () => JSON.parse(localStorage.getItem('submissions_v18') || '[]').filter((s: ManualSubmission) => s.status === 'Pending'),
-  // Added gradeSubmission to fix Error in components/TrainerDashboard.tsx
   gradeSubmission: async (id: string, score: number, feedback: string): Promise<void> => {
     const all = JSON.parse(localStorage.getItem('submissions_v18') || '[]');
     const idx = all.findIndex((s: ManualSubmission) => s.id === id);
@@ -237,12 +239,10 @@ export const api = {
     }
   },
   getQualifications: async (): Promise<Qualification[]> => db.qualifications,
-  // Added getQualificationById to fix Error in components/QualificationLeadForm.tsx
   getQualificationById: async (id: string): Promise<Qualification | undefined> => {
     const all = await api.getQualifications();
     return all.find(q => q.id === id);
   },
-  // Added submitQualificationLead to fix Error in components/QualificationLeadForm.tsx
   submitQualificationLead: async (data: any): Promise<QualificationLead> => {
     const lead: QualificationLead = {
       id: `QL-${Date.now()}`,
@@ -253,7 +253,6 @@ export const api = {
     localStorage.setItem('qual_leads_v18', JSON.stringify([lead, ...all]));
     return lead;
   },
-  // Added submitTestBooking to fix Error in components/RegistrationForm.tsx
   submitTestBooking: async (data: any): Promise<TestBooking> => {
     const booking: TestBooking = {
       id: `TB-${Date.now()}`,
@@ -264,7 +263,6 @@ export const api = {
     localStorage.setItem('test_bookings_v18', JSON.stringify([booking, ...all]));
     return booking;
   },
-  // Added verifyEmail to fix Error in components/VerificationPending.tsx
   verifyEmail: async (email: string): Promise<void> => {
     await api.upsertUser({ email, verified: true, status: 'Active' });
   },
